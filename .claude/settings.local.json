@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(xargs ls:*)",
+      "Bash(wc -l /Users/murattkilinc/Desktop/scald-project/apps/api/src/db/seed/*.py)",
+      "Bash(git add:*)",
+      "Bash(git init:*)"
+    ]
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "navigation": {
+    "overview": "Overview",
+    "analytics": "Analytics",
+    "reports": "Reports",
+    "map": "Map",
+    "aiAssistant": "AI Assistant",
+    "settings": "Settings"
+  },
+  "auth": {
+    "login": "Login",
+    "logout": "Logout",
+    "register": "Register",
+    "email": "Email",
+    "password": "Password"
+  },
+  "metadata": {
+    "appName": "SCALD",
+    "description": "Data-driven decision support ecosystem for local governments"
+  },
+  "accessibility": {
+    "skipToMain": "Skip to main content",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
+    "loading": "Loading...",
+    "error": "An error occurred"
+  }
+}

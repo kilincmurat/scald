@@ -1,0 +1,28 @@
+{
+  "navigation": {
+    "overview": "Genel Bakış",
+    "analytics": "Analitik",
+    "reports": "Raporlar",
+    "map": "Harita",
+    "aiAssistant": "AI Asistan",
+    "settings": "Ayarlar"
+  },
+  "auth": {
+    "login": "Giriş Yap",
+    "logout": "Çıkış Yap",
+    "register": "Kayıt Ol",
+    "email": "E-posta",
+    "password": "Şifre"
+  },
+  "metadata": {
+    "appName": "SCALD",
+    "description": "Yerel yönetimler için veriye dayalı karar destek ekosistemi"
+  },
+  "accessibility": {
+    "skipToMain": "Ana içeriğe geç",
+    "openMenu": "Menüyü aç",
+    "closeMenu": "Menüyü kapat",
+    "loading": "Yükleniyor...",
+    "error": "Hata oluştu"
+  }
+}
