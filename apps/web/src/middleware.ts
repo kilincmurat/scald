@@ -9,8 +9,8 @@ const intlMiddleware = createIntlMiddleware({
   localePrefix: 'always',
 });
 
-// Login ve public sayfalar — auth gerekmez
-const PUBLIC_PATHS = ['/login'];
+// Login, register ve public sayfalar — auth gerekmez
+const PUBLIC_PATHS = ['/login', '/register'];
 
 function isPublicPath(pathname: string): boolean {
   return locales.some((locale) =>

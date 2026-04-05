@@ -12,7 +12,14 @@
       "Bash(git rm:*)",
       "Bash(node_modules/.bin/tsc --noEmit)",
       "Bash(node_modules/.bin/next build:*)",
-      "Bash(pnpm add:*)"
+      "Bash(pnpm add:*)",
+      "Bash(mkdir -p \"/Users/murattkilinc/Desktop/scald-project/apps/web/src/app/[locale]/\\(dashboard\\)\")",
+      "Bash(mkdir -p \"/Users/murattkilinc/Desktop/scald-project/apps/web/src/app/[locale]/\\(auth\\)\")",
+      "Bash(mv '/Users/murattkilinc/Desktop/scald-project/apps/web/src/app/[locale]/page.tsx' '/Users/murattkilinc/Desktop/scald-project/apps/web/src/app/[locale]/\\(dashboard\\)/page.tsx')",
+      "Bash(mv '/Users/murattkilinc/Desktop/scald-project/apps/web/src/app/[locale]/ai-dss' '/Users/murattkilinc/Desktop/scald-project/apps/web/src/app/[locale]/\\(dashboard\\)/ai-dss')",
+      "Bash(mv '/Users/murattkilinc/Desktop/scald-project/apps/web/src/app/[locale]/ai-rt' '/Users/murattkilinc/Desktop/scald-project/apps/web/src/app/[locale]/\\(dashboard\\)/ai-rt')",
+      "Bash(mv '/Users/murattkilinc/Desktop/scald-project/apps/web/src/app/[locale]/efct' '/Users/murattkilinc/Desktop/scald-project/apps/web/src/app/[locale]/\\(dashboard\\)/efct')",
+      "Bash(mv '/Users/murattkilinc/Desktop/scald-project/apps/web/src/app/[locale]/login' '/Users/murattkilinc/Desktop/scald-project/apps/web/src/app/[locale]/\\(auth\\)/login')"
     ]
   }
 }
