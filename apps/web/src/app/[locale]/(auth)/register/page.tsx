@@ -291,7 +291,7 @@ export default function RegisterPage({ params: _params }: PageProps) {
         </div>
 
         <p className="mt-6 text-center text-[11px] text-slate-400">
-          © 2025 SCALD · EU Funded Project
+          © 2026 SCALD · EU Funded Project
         </p>
       </div>
     </div>

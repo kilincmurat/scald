@@ -91,13 +91,13 @@ export default function LoginPage({ params: _params }: PageProps) {
 
           {/* Logo */}
           <div className="flex-shrink-0">
-            <div className="inline-flex items-center rounded-2xl bg-white/10 backdrop-blur-sm px-5 py-3 border border-white/15">
+            <div className="inline-flex items-center rounded-2xl bg-white/15 backdrop-blur-sm px-6 py-4 border border-white/20">
               <Image
                 src="/images/logo.jpeg"
                 alt="SCALD Logo"
-                width={200}
-                height={48}
-                className="h-10 w-auto object-contain"
+                width={280}
+                height={68}
+                className="h-14 w-auto object-contain"
                 priority
               />
             </div>
@@ -255,29 +255,8 @@ export default function LoginPage({ params: _params }: PageProps) {
             </Link>
           </p>
 
-          {/* Demo hesaplar */}
-          <div className="mt-6 rounded-xl border border-slate-100 bg-slate-50 p-4">
-            <p className="mb-3 text-[10px] font-bold uppercase tracking-widest text-slate-400">
-              Demo Hesaplar
-            </p>
-            <div className="space-y-2.5">
-              {[
-                { label: 'Admin', badge: 'Tüm yetkiler', color: 'bg-emerald-100 text-emerald-700' },
-                { label: 'Belediye Kullanıcısı', badge: 'Kendi belediyesi', color: 'bg-blue-100 text-blue-700' },
-                { label: 'Vatandaş', badge: 'Sadece görüntüleme', color: 'bg-slate-100 text-slate-500' },
-              ].map((item) => (
-                <div key={item.label} className="flex items-center justify-between">
-                  <span className="text-xs text-slate-600">{item.label}</span>
-                  <span className={clsx('rounded-full px-2 py-0.5 text-[10px] font-semibold', item.color)}>
-                    {item.badge}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-
           <p className="mt-6 text-center text-[11px] text-slate-400">
-            © 2025 SCALD · EU Funded Project
+            © 2026 SCALD · EU Funded Project
           </p>
         </div>
       </div>
