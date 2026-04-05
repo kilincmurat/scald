@@ -39,9 +39,11 @@ export function Sidebar({ locale }: SidebarProps) {
   return (
     <aside className="fixed inset-y-0 left-0 z-50 flex w-64 flex-col bg-slate-900">
 
-      {/* Logo alanı — beyaz şerit */}
+      {/* Logo alanı */}
       <Link href={`/${locale}`} className="group block flex-shrink-0">
-        <div className="relative overflow-hidden bg-white px-5 py-4">
+        <div className="relative overflow-hidden px-5 pt-5 pb-0"
+          style={{ background: 'linear-gradient(180deg, #ffffff 0%, #ffffff 70%, #0f172a 100%)' }}
+        >
           <Image
             src="/images/logo.jpeg"
             alt="SCALD"
@@ -50,15 +52,13 @@ export function Sidebar({ locale }: SidebarProps) {
             className="h-13 w-auto object-contain"
             priority
           />
-          {/* Alt kenarda geçiş efekti */}
-          <div className="absolute inset-x-0 bottom-0 h-px bg-slate-900/10" />
+          {/* Gradyan geçiş katmanı */}
+          <div className="absolute inset-x-0 bottom-0 h-8"
+            style={{ background: 'linear-gradient(180deg, transparent 0%, #0f172a 100%)' }}
+          />
         </div>
-        {/* Proje alt başlığı */}
-        <div className="bg-slate-800 px-5 py-2">
-          <p className="text-[10px] font-medium uppercase tracking-widest text-slate-400">
-            Climate Adaption Platform
-          </p>
-        </div>
+        {/* İnce ayırıcı çizgi */}
+        <div className="mx-4 border-t border-slate-700/60" />
       </Link>
 
       {/* Navigation */}
