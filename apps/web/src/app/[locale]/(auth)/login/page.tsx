@@ -3,149 +3,33 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { createClient } from '@/lib/supabase/client';
-import { Leaf, Eye, EyeOff, AlertCircle } from 'lucide-react';
+import { Eye, EyeOff, AlertCircle, Building2, Cpu, Leaf, BarChart3, Globe2 } from 'lucide-react';
 import { clsx } from 'clsx';
 
-// Doğa temalı SVG — gündüz, açık renkler, yazısız
-function NatureBackground() {
-  return (
-    <svg
-      viewBox="0 0 900 700"
-      xmlns="http://www.w3.org/2000/svg"
-      className="h-full w-full"
-      preserveAspectRatio="xMidYMid slice"
-    >
-      <defs>
-        <linearGradient id="sky" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stopColor="#bfdbfe" />
-          <stop offset="55%" stopColor="#dbeafe" />
-          <stop offset="100%" stopColor="#eff6ff" />
-        </linearGradient>
-        <linearGradient id="mtn1" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stopColor="#6ee7b7" />
-          <stop offset="100%" stopColor="#34d399" />
-        </linearGradient>
-        <linearGradient id="mtn2" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stopColor="#a7f3d0" />
-          <stop offset="100%" stopColor="#6ee7b7" />
-        </linearGradient>
-        <linearGradient id="mtn3" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stopColor="#d1fae5" />
-          <stop offset="100%" stopColor="#a7f3d0" />
-        </linearGradient>
-        <linearGradient id="ground" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stopColor="#bbf7d0" />
-          <stop offset="100%" stopColor="#86efac" />
-        </linearGradient>
-        <linearGradient id="lake" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stopColor="#bae6fd" stopOpacity="0.7" />
-          <stop offset="100%" stopColor="#7dd3fc" stopOpacity="0.5" />
-        </linearGradient>
-        <radialGradient id="sun" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#fef9c3" />
-          <stop offset="60%" stopColor="#fde68a" />
-          <stop offset="100%" stopColor="#fde68a" stopOpacity="0" />
-        </radialGradient>
-        <filter id="softBlur">
-          <feGaussianBlur stdDeviation="2.5" />
-        </filter>
-        <filter id="blur1">
-          <feGaussianBlur stdDeviation="1.5" />
-        </filter>
-      </defs>
-
-      {/* Gökyüzü */}
-      <rect width="900" height="700" fill="url(#sky)" />
-
-      {/* Güneş */}
-      <circle cx="680" cy="100" r="70" fill="url(#sun)" opacity="0.7" />
-      <circle cx="680" cy="100" r="38" fill="#fef08a" opacity="0.85" />
-      <circle cx="680" cy="100" r="26" fill="#fef9c3" />
-
-      {/* Bulutlar */}
-      {[
-        { x: 80, y: 80, s: 1 },
-        { x: 220, y: 55, s: 0.8 },
-        { x: 430, y: 70, s: 1.1 },
-        { x: 780, y: 140, s: 0.7 },
-      ].map((c, i) => (
-        <g key={i} transform={`translate(${c.x}, ${c.y}) scale(${c.s})`} opacity="0.75">
-          <ellipse cx="40" cy="20" rx="40" ry="18" fill="white" />
-          <ellipse cx="70" cy="14" rx="30" ry="14" fill="white" />
-          <ellipse cx="100" cy="20" rx="35" ry="16" fill="white" />
-          <ellipse cx="70" cy="24" rx="55" ry="12" fill="white" />
-        </g>
-      ))}
-
-      {/* Uzak dağlar (en arka, soluk) */}
-      <path
-        d="M0,420 L70,270 L150,330 L230,220 L320,295 L400,200 L480,280 L560,230 L640,300 L710,240 L800,290 L900,255 L900,450 L0,450 Z"
-        fill="url(#mtn3)"
-        filter="url(#softBlur)"
-        opacity="0.5"
-      />
-
-      {/* Orta dağlar */}
-      <path
-        d="M0,460 L90,300 L180,360 L270,240 L370,320 L450,210 L540,295 L620,250 L710,330 L790,275 L900,320 L900,480 L0,480 Z"
-        fill="url(#mtn2)"
-        filter="url(#blur1)"
-        opacity="0.75"
-      />
-
-      {/* Ön dağlar */}
-      <path
-        d="M0,500 L80,340 L180,400 L280,280 L380,360 L460,270 L560,350 L650,295 L750,370 L840,315 L900,345 L900,520 L0,520 Z"
-        fill="url(#mtn1)"
-      />
-
-      {/* Zemin */}
-      <path
-        d="M0,500 Q225,480 450,490 Q675,480 900,500 L900,700 L0,700 Z"
-        fill="url(#ground)"
-      />
-
-      {/* Göl */}
-      <ellipse cx="450" cy="580" rx="200" ry="38" fill="url(#lake)" />
-      {/* Göl yansıma çizgileri */}
-      <path d="M290,572 Q370,565 450,568 Q530,565 610,572" stroke="#7dd3fc" strokeWidth="1.2" fill="none" opacity="0.5" />
-      <path d="M320,582 Q390,576 450,579 Q510,576 580,582" stroke="#7dd3fc" strokeWidth="0.8" fill="none" opacity="0.4" />
-
-      {/* Sol ağaç grubu */}
-      {[
-        { x: 30, trunkH: 55, rx: 22, ry: 60, color1: '#16a34a', color2: '#22c55e' },
-        { x: 75, trunkH: 65, rx: 18, ry: 72, color1: '#15803d', color2: '#16a34a' },
-        { x: 115, trunkH: 48, rx: 20, ry: 54, color1: '#22c55e', color2: '#4ade80' },
-        { x: 155, trunkH: 60, rx: 16, ry: 64, color1: '#16a34a', color2: '#22c55e' },
-      ].map((t, i) => (
-        <g key={`ltree-${i}`}>
-          <rect x={t.x + 8} y={700 - t.trunkH} width="7" height={t.trunkH} rx="2" fill="#92400e" opacity="0.6" />
-          <ellipse cx={t.x + 11.5} cy={700 - t.trunkH - t.ry * 0.5} rx={t.rx} ry={t.ry * 0.6} fill={t.color1} />
-          <ellipse cx={t.x + 11.5} cy={700 - t.trunkH - t.ry * 0.65} rx={t.rx - 4} ry={t.ry * 0.5} fill={t.color2} />
-        </g>
-      ))}
-
-      {/* Sağ ağaç grubu */}
-      {[
-        { x: 710, trunkH: 58, rx: 20, ry: 62, color1: '#16a34a', color2: '#22c55e' },
-        { x: 752, trunkH: 70, rx: 22, ry: 75, color1: '#15803d', color2: '#16a34a' },
-        { x: 798, trunkH: 50, rx: 18, ry: 56, color1: '#22c55e', color2: '#4ade80' },
-        { x: 838, trunkH: 62, rx: 20, ry: 66, color1: '#16a34a', color2: '#22c55e' },
-        { x: 875, trunkH: 45, rx: 15, ry: 50, color1: '#15803d', color2: '#16a34a' },
-      ].map((t, i) => (
-        <g key={`rtree-${i}`}>
-          <rect x={t.x + 8} y={700 - t.trunkH} width="7" height={t.trunkH} rx="2" fill="#92400e" opacity="0.6" />
-          <ellipse cx={t.x + 11.5} cy={700 - t.trunkH - t.ry * 0.5} rx={t.rx} ry={t.ry * 0.6} fill={t.color1} />
-          <ellipse cx={t.x + 11.5} cy={700 - t.trunkH - t.ry * 0.65} rx={t.rx - 4} ry={t.ry * 0.5} fill={t.color2} />
-        </g>
-      ))}
-
-      {/* Ön çimen detayı */}
-      <path d="M0,620 Q450,600 900,620 L900,700 L0,700 Z" fill="#86efac" opacity="0.4" />
-    </svg>
-  );
-}
+const features = [
+  {
+    icon: Leaf,
+    title: 'Ekolojik Ayak İzi',
+    desc: '15 ana gösterge ile belediyenizin çevresel performansını ölçün',
+  },
+  {
+    icon: Cpu,
+    title: 'AI Karar Desteği',
+    desc: 'Yapay zeka ile 30+ strateji üretin, iklim adaptasyon skorunuzu artırın',
+  },
+  {
+    icon: BarChart3,
+    title: 'Otomatik Raporlama',
+    desc: 'Şeffaf ve veri odaklı stratejik raporları tek tıkla oluşturun',
+  },
+  {
+    icon: Globe2,
+    title: '5 Dil Desteği',
+    desc: 'TR · EN · EL · RO · MK — tüm ortaklık ülkelerinde kullanılabilir',
+  },
+];
 
 interface PageProps {
   params: Promise<{ locale: string }>;
@@ -182,45 +66,120 @@ export default function LoginPage({ params: _params }: PageProps) {
   };
 
   return (
-    <div className="flex min-h-screen bg-white">
-      {/* Sol: Doğa görseli */}
-      <div className="relative hidden lg:flex lg:w-[58%] xl:w-[62%] overflow-hidden">
-        <NatureBackground />
-        {/* Sağa doğru solar overlay */}
-        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-white/60" />
-        {/* Sol alt logo */}
-        <div className="absolute bottom-8 left-8 flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-600/90 shadow-sm backdrop-blur">
-            <Leaf className="h-4.5 w-4.5 text-white" />
+    <div className="flex min-h-screen">
+
+      {/* ── Sol Panel ── */}
+      <div className="relative hidden lg:flex lg:w-[55%] xl:w-[58%] flex-col overflow-hidden bg-gradient-to-br from-[#0d3b6e] via-[#1056a0] to-[#0d7a4e]">
+
+        {/* Arka plan desen */}
+        <div className="absolute inset-0 opacity-10"
+          style={{
+            backgroundImage: `radial-gradient(circle at 20% 30%, #38bdf8 0%, transparent 45%),
+                              radial-gradient(circle at 75% 70%, #34d399 0%, transparent 40%),
+                              radial-gradient(circle at 55% 15%, #facc15 0%, transparent 30%)`,
+          }}
+        />
+        {/* Grid pattern */}
+        <div className="absolute inset-0 opacity-[0.04]"
+          style={{
+            backgroundImage: `linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)`,
+            backgroundSize: '48px 48px',
+          }}
+        />
+
+        <div className="relative z-10 flex flex-1 flex-col px-12 py-10">
+
+          {/* Logo */}
+          <div className="flex-shrink-0">
+            <div className="inline-flex items-center rounded-2xl bg-white/10 backdrop-blur-sm px-5 py-3 border border-white/15">
+              <Image
+                src="/images/logo.jpeg"
+                alt="SCALD Logo"
+                width={200}
+                height={48}
+                className="h-10 w-auto object-contain"
+                priority
+              />
+            </div>
           </div>
-          <div>
-            <p className="text-base font-bold text-emerald-900">SCALD</p>
-            <p className="text-[11px] text-emerald-700/80">Sustainable Cities & Local Development</p>
+
+          {/* Başlık */}
+          <div className="mt-14">
+            <h1 className="text-3xl font-bold text-white leading-snug">
+              Yerel Yönetimler için<br />
+              <span className="text-emerald-300">İklim Uyum Platformu</span>
+            </h1>
+            <p className="mt-3 text-base text-blue-100/80 leading-relaxed max-w-sm">
+              Veriye dayalı kararlar alın, ekolojik performansınızı artırın
+              ve sürdürülebilir bir gelecek için stratejiler geliştirin.
+            </p>
+          </div>
+
+          {/* Özellik listesi */}
+          <div className="mt-10 grid grid-cols-1 gap-4 max-w-md">
+            {features.map((f) => {
+              const Icon = f.icon;
+              return (
+                <div key={f.title} className="flex items-start gap-3.5 rounded-xl bg-white/8 border border-white/10 px-4 py-3.5 backdrop-blur-sm">
+                  <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-emerald-400/20">
+                    <Icon className="h-4 w-4 text-emerald-300" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-white">{f.title}</p>
+                    <p className="mt-0.5 text-xs text-blue-100/70 leading-relaxed">{f.desc}</p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Alt bilgi */}
+          <div className="mt-auto pt-10">
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <div className="flex -space-x-1.5">
+                  {['TR', 'GR', 'RO', 'MK'].map((c) => (
+                    <span key={c} className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-white/20 bg-white/10 text-[9px] font-bold text-white">
+                      {c}
+                    </span>
+                  ))}
+                </div>
+                <span className="text-xs text-blue-100/60">4 ülke ortaklığı</span>
+              </div>
+              <span className="text-white/20">·</span>
+              <span className="text-xs text-blue-100/60">EU Funded · Horizon 2024</span>
+            </div>
+            <div className="mt-3 flex items-center gap-1.5">
+              <Building2 className="h-3.5 w-3.5 text-blue-200/40" />
+              <span className="text-xs text-blue-100/40">
+                Strengthening Climate Adaption of Local Governments
+              </span>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Sağ: Form paneli */}
+      {/* ── Sağ Panel — Form ── */}
       <div className="flex flex-1 flex-col items-center justify-center bg-white px-8 py-12">
+
         {/* Mobil logo */}
-        <div className="mb-8 flex items-center gap-2.5 lg:hidden">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-600">
-            <Leaf className="h-4 w-4 text-white" />
-          </div>
-          <p className="text-lg font-bold text-slate-900">SCALD</p>
+        <div className="mb-8 lg:hidden">
+          <Image
+            src="/images/logo.jpeg"
+            alt="SCALD Logo"
+            width={180}
+            height={44}
+            className="h-10 w-auto object-contain"
+          />
         </div>
 
         <div className="w-full max-w-[360px]">
-          {/* Başlık */}
           <div className="mb-7">
-            <h1 className="text-2xl font-bold text-slate-900">Hoş Geldiniz</h1>
-            <p className="mt-1 text-sm text-slate-500">
-              Sisteme erişmek için giriş yapın
-            </p>
+            <h2 className="text-2xl font-bold text-slate-900">Hoş Geldiniz</h2>
+            <p className="mt-1 text-sm text-slate-500">Sisteme erişmek için giriş yapın</p>
           </div>
 
           <form onSubmit={handleLogin} className="space-y-4">
-            {/* E-posta */}
             <div>
               <label className="mb-1.5 block text-xs font-semibold text-slate-600">
                 E-posta
@@ -232,11 +191,10 @@ export default function LoginPage({ params: _params }: PageProps) {
                 required
                 autoComplete="email"
                 placeholder="ornek@belediye.gov.tr"
-                className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-sm text-slate-900 placeholder-slate-400 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/15"
+                className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-sm text-slate-900 placeholder-slate-400 outline-none transition focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-500/15"
               />
             </div>
 
-            {/* Şifre */}
             <div>
               <label className="mb-1.5 block text-xs font-semibold text-slate-600">
                 Şifre
@@ -249,7 +207,7 @@ export default function LoginPage({ params: _params }: PageProps) {
                   required
                   autoComplete="current-password"
                   placeholder="••••••••"
-                  className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3.5 py-2.5 pr-10 text-sm text-slate-900 placeholder-slate-400 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/15"
+                  className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3.5 py-2.5 pr-10 text-sm text-slate-900 placeholder-slate-400 outline-none transition focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-500/15"
                 />
                 <button
                   type="button"
@@ -261,7 +219,6 @@ export default function LoginPage({ params: _params }: PageProps) {
               </div>
             </div>
 
-            {/* Hata */}
             {error && (
               <div className="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2.5 text-sm text-red-600">
                 <AlertCircle className="h-4 w-4 shrink-0" />
@@ -269,15 +226,14 @@ export default function LoginPage({ params: _params }: PageProps) {
               </div>
             )}
 
-            {/* Giriş butonu */}
             <button
               type="submit"
               disabled={loading}
               className={clsx(
                 'w-full rounded-lg py-2.5 text-sm font-semibold text-white shadow-sm transition',
                 loading
-                  ? 'cursor-not-allowed bg-emerald-400'
-                  : 'bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800'
+                  ? 'cursor-not-allowed bg-blue-400'
+                  : 'bg-[#1056a0] hover:bg-[#0d3b6e] active:bg-[#0a2d54]'
               )}
             >
               {loading ? (
@@ -292,31 +248,27 @@ export default function LoginPage({ params: _params }: PageProps) {
             </button>
           </form>
 
-          {/* Kayıt ol linki */}
           <p className="mt-5 text-center text-sm text-slate-500">
             Hesabınız yok mu?{' '}
-            <Link
-              href="register"
-              className="font-semibold text-emerald-600 hover:text-emerald-700 transition"
-            >
+            <Link href="register" className="font-semibold text-[#1056a0] hover:text-[#0d3b6e] transition">
               Kayıt Olun
             </Link>
           </p>
 
-          {/* Rol bilgisi */}
+          {/* Demo hesaplar */}
           <div className="mt-6 rounded-xl border border-slate-100 bg-slate-50 p-4">
             <p className="mb-3 text-[10px] font-bold uppercase tracking-widest text-slate-400">
               Demo Hesaplar
             </p>
             <div className="space-y-2.5">
               {[
-                { label: 'Admin', badge: 'Tüm yetkiler', badgeColor: 'bg-emerald-100 text-emerald-700' },
-                { label: 'Belediye Kullanıcısı', badge: 'Kendi belediyesi', badgeColor: 'bg-blue-100 text-blue-700' },
-                { label: 'Vatandaş', badge: 'Sadece görüntüleme', badgeColor: 'bg-slate-100 text-slate-500' },
+                { label: 'Admin', badge: 'Tüm yetkiler', color: 'bg-emerald-100 text-emerald-700' },
+                { label: 'Belediye Kullanıcısı', badge: 'Kendi belediyesi', color: 'bg-blue-100 text-blue-700' },
+                { label: 'Vatandaş', badge: 'Sadece görüntüleme', color: 'bg-slate-100 text-slate-500' },
               ].map((item) => (
                 <div key={item.label} className="flex items-center justify-between">
                   <span className="text-xs text-slate-600">{item.label}</span>
-                  <span className={clsx('rounded-full px-2 py-0.5 text-[10px] font-semibold', item.badgeColor)}>
+                  <span className={clsx('rounded-full px-2 py-0.5 text-[10px] font-semibold', item.color)}>
                     {item.badge}
                   </span>
                 </div>

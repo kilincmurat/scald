@@ -3,8 +3,9 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { createClient } from '@/lib/supabase/client';
-import { Leaf, Eye, EyeOff, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Eye, EyeOff, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { clsx } from 'clsx';
 
 interface PageProps {
@@ -79,6 +80,9 @@ export default function RegisterPage({ params: _params }: PageProps) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-white px-6">
         <div className="w-full max-w-sm text-center">
+          <div className="mb-6 flex justify-center">
+            <Image src="/images/logo.jpeg" alt="SCALD" width={140} height={34} className="h-9 w-auto object-contain" />
+          </div>
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-emerald-100">
             <CheckCircle2 className="h-7 w-7 text-emerald-600" />
           </div>
@@ -101,11 +105,14 @@ export default function RegisterPage({ params: _params }: PageProps) {
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-emerald-50 via-white to-sky-50 px-6 py-12">
       <div className="w-full max-w-[400px]">
         {/* Logo */}
-        <div className="mb-8 flex items-center justify-center gap-2.5">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-600 shadow-sm">
-            <Leaf className="h-4 w-4 text-white" />
-          </div>
-          <p className="text-lg font-bold text-slate-900">SCALD</p>
+        <div className="mb-8 flex justify-center">
+          <Image
+            src="/images/logo.jpeg"
+            alt="SCALD"
+            width={160}
+            height={40}
+            className="h-10 w-auto object-contain"
+          />
         </div>
 
         <div className="rounded-2xl border border-slate-100 bg-white p-8 shadow-sm">
