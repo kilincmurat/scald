@@ -63,10 +63,10 @@ export default function RegisterPage({ params: _params }: PageProps) {
     });
 
     if (signUpError) {
-      if (signUpError.message.includes('already registered')) {
+      if (signUpError.message.includes('already registered') || signUpError.message.includes('already been registered')) {
         setError('Bu e-posta adresi zaten kayıtlı.');
       } else {
-        setError('Kayıt sırasında bir hata oluştu. Lütfen tekrar deneyin.');
+        setError(signUpError.message);
       }
       setLoading(false);
       return;
