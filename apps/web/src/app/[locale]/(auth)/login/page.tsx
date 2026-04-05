@@ -133,7 +133,7 @@ export default function LoginPage({ params: _params }: PageProps) {
                 <span className="text-xs text-blue-100/60">4 ülke ortaklığı</span>
               </div>
               <span className="text-white/20">·</span>
-              <span className="text-xs text-blue-100/60">EU Funded · Horizon 2024</span>
+              <span className="text-xs text-blue-100/60">EU Funded - KA220-ADU</span>
             </div>
             <div className="mt-3 flex items-center gap-1.5">
               <Building2 className="h-3.5 w-3.5 text-blue-200/40" />
