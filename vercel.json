@@ -1,5 +1,5 @@
 {
-  "buildCommand": "turbo run build --filter=@scald/web",
+  "buildCommand": "turbo run build --filter=./apps/web",
   "outputDirectory": "apps/web/.next",
   "framework": "nextjs"
 }
