@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import {
@@ -12,6 +11,7 @@ import {
   Map,
   Settings,
   ChevronRight,
+  Sprout,
 } from 'lucide-react';
 import { clsx } from 'clsx';
 
@@ -40,19 +40,16 @@ export function Sidebar({ locale }: SidebarProps) {
     <aside className="fixed inset-y-0 left-0 z-50 flex w-64 flex-col bg-slate-900">
 
       {/* Logo alanı */}
-      <Link href={`/${locale}`} className="group block flex-shrink-0">
-        <div className="bg-white px-5 py-4">
-          <Image
-            src="/images/logo.jpeg"
-            alt="SCALD"
-            width={180}
-            height={52}
-            className="h-13 w-auto object-contain"
-            priority
-          />
+      <Link href={`/${locale}`} className="group flex items-center gap-3 px-5 py-5 flex-shrink-0">
+        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-500/20">
+          <Sprout className="h-5 w-5 text-emerald-400" />
         </div>
-        <div className="mx-4 border-t border-slate-700/60" />
+        <div>
+          <p className="text-lg font-bold tracking-wide text-white">SCALD</p>
+          <p className="text-[10px] text-slate-500 leading-none">Climate Adaption</p>
+        </div>
       </Link>
+      <div className="mx-4 border-t border-slate-700/60" />
 
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto px-3 py-4">
