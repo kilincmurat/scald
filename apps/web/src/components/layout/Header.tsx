@@ -1,7 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { useRouter, usePathname } from 'next/navigation';
+import { useRouter, usePathname } from '@/lib/i18n/navigation';
 import { Globe, Bell, User, ChevronDown } from 'lucide-react';
 import { locales, localeNames, type Locale } from '@/lib/i18n/config';
 import { useState } from 'react';
@@ -20,9 +20,7 @@ export function Header({ locale, title, subtitle }: HeaderProps) {
   const [langOpen, setLangOpen] = useState(false);
 
   const handleLocaleChange = (newLocale: Locale) => {
-    const segments = pathname.split('/');
-    segments[1] = newLocale;
-    router.push(segments.join('/'));
+    router.replace(pathname, { locale: newLocale });
     setLangOpen(false);
   };
 
