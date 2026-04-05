@@ -4,7 +4,12 @@
       "Bash(xargs ls:*)",
       "Bash(wc -l /Users/murattkilinc/Desktop/scald-project/apps/api/src/db/seed/*.py)",
       "Bash(git add:*)",
-      "Bash(git init:*)"
+      "Bash(git init:*)",
+      "Bash(git commit:*)",
+      "Bash(git branch:*)",
+      "Bash(git remote:*)",
+      "Bash(git push:*)",
+      "Bash(git rm:*)"
     ]
   }
 }
