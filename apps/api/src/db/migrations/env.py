@@ -23,7 +23,7 @@ if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
 # Override the URL from settings (not alembic.ini)
-config.set_main_option("sqlalchemy.url", str(settings.DATABASE_URL))
+config.set_main_option("sqlalchemy.url", str(settings.DATABASE_URL).replace('%', '%%'))
 
 # Schemas managed by Alembic
 SCALD_SCHEMAS = {"core", "data", "iot"}
@@ -75,6 +75,7 @@ async def run_async_migrations() -> None:
     connectable = create_async_engine(
         str(settings.DATABASE_URL),
         poolclass=pool.NullPool,
+        connect_args={"prepared_statement_cache_size": 0, "statement_cache_size": 0}
     )
     async with connectable.connect() as connection:
         await connection.run_sync(do_run_migrations)

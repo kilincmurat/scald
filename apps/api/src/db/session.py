@@ -23,6 +23,7 @@ engine: AsyncEngine = create_async_engine(
     pool_pre_ping=True,          # Detect stale connections
     pool_recycle=3600,           # Recycle connections every hour
     echo=settings.DEBUG,         # Log SQL in DEBUG mode
+    connect_args={"prepared_statement_cache_size": 0, "statement_cache_size": 0}
 )
 
 AsyncSessionLocal = async_sessionmaker(
