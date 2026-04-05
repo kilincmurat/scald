@@ -1,0 +1,28 @@
+{
+  "navigation": {
+    "overview": "Prezentare generală",
+    "analytics": "Analiză",
+    "reports": "Rapoarte",
+    "map": "Hartă",
+    "aiAssistant": "Asistent AI",
+    "settings": "Setări"
+  },
+  "auth": {
+    "login": "Autentificare",
+    "logout": "Deconectare",
+    "register": "Înregistrare",
+    "email": "Email",
+    "password": "Parolă"
+  },
+  "metadata": {
+    "appName": "SCALD",
+    "description": "Ecosistem de suport decizional pentru administrațiile locale"
+  },
+  "accessibility": {
+    "skipToMain": "Salt la conținutul principal",
+    "openMenu": "Deschide meniu",
+    "closeMenu": "Închide meniu",
+    "loading": "Se încarcă...",
+    "error": "A apărut o eroare"
+  }
+}

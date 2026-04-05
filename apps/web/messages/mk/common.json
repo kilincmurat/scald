@@ -1,0 +1,28 @@
+{
+  "navigation": {
+    "overview": "Преглед",
+    "analytics": "Аналитика",
+    "reports": "Извештаи",
+    "map": "Карта",
+    "aiAssistant": "AI Асистент",
+    "settings": "Поставки"
+  },
+  "auth": {
+    "login": "Најава",
+    "logout": "Одјава",
+    "register": "Регистрација",
+    "email": "Е-пошта",
+    "password": "Лозинка"
+  },
+  "metadata": {
+    "appName": "SCALD",
+    "description": "Екосистем за поддршка на одлуки за локални власти"
+  },
+  "accessibility": {
+    "skipToMain": "Прескокни на главната содржина",
+    "openMenu": "Отвори мени",
+    "closeMenu": "Затвори мени",
+    "loading": "Се вчитува...",
+    "error": "Настана грешка"
+  }
+}

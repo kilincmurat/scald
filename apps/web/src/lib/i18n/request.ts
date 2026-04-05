@@ -1,20 +1,15 @@
-export const locales = ['tr', 'en', 'el', 'ro', 'mk'] as const;
-export type Locale = (typeof locales)[number];
+import { getRequestConfig } from 'next-intl/server';
+import { defaultLocale, locales, type Locale } from './config';
 
-export const defaultLocale: Locale = 'tr';
+export default getRequestConfig(async ({ requestLocale }) => {
+  let locale = await requestLocale;
 
-export const localeNames: Record<Locale, string> = {
-  tr: 'Türkçe',
-  en: 'English',
-  el: 'Ελληνικά',
-  ro: 'Română',
-  mk: 'Македонски',
-};
+  if (!locale || !locales.includes(locale as Locale)) {
+    locale = defaultLocale;
+  }
 
-export const localeDirections: Record<Locale, 'ltr' | 'rtl'> = {
-  tr: 'ltr',
-  en: 'ltr',
-  el: 'ltr',
-  ro: 'ltr',
-  mk: 'ltr',
-};
+  return {
+    locale,
+    messages: (await import(`../../../messages/${locale}/common.json`)).default,
+  };
+});

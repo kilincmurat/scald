@@ -1,0 +1,28 @@
+{
+  "navigation": {
+    "overview": "Επισκόπηση",
+    "analytics": "Αναλυτικά",
+    "reports": "Αναφορές",
+    "map": "Χάρτης",
+    "aiAssistant": "AI Βοηθός",
+    "settings": "Ρυθμίσεις"
+  },
+  "auth": {
+    "login": "Σύνδεση",
+    "logout": "Αποσύνδεση",
+    "register": "Εγγραφή",
+    "email": "Email",
+    "password": "Κωδικός"
+  },
+  "metadata": {
+    "appName": "SCALD",
+    "description": "Οικοσύστημα υποστήριξης αποφάσεων για τοπικές κυβερνήσεις"
+  },
+  "accessibility": {
+    "skipToMain": "Μετάβαση στο κύριο περιεχόμενο",
+    "openMenu": "Άνοιγμα μενού",
+    "closeMenu": "Κλείσιμο μενού",
+    "loading": "Φόρτωση...",
+    "error": "Παρουσιάστηκε σφάλμα"
+  }
+}
