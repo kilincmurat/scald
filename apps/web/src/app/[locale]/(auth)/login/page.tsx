@@ -89,22 +89,8 @@ export default function LoginPage({ params: _params }: PageProps) {
 
         <div className="relative z-10 flex flex-1 flex-col px-12 py-10">
 
-          {/* Logo */}
-          <div className="flex-shrink-0">
-            <div className="inline-flex items-center rounded-2xl bg-white/15 backdrop-blur-sm px-6 py-4 border border-white/20">
-              <Image
-                src="/images/logo.jpeg"
-                alt="SCALD Logo"
-                width={280}
-                height={68}
-                className="h-14 w-auto object-contain"
-                priority
-              />
-            </div>
-          </div>
-
-          {/* Başlık */}
-          <div className="mt-14">
+          {/* Başlık + Logo */}
+          <div className="mt-6">
             <h1 className="text-3xl font-bold text-white leading-snug">
               Yerel Yönetimler için<br />
               <span className="text-emerald-300">İklim Uyum Platformu</span>
@@ -162,18 +148,19 @@ export default function LoginPage({ params: _params }: PageProps) {
       {/* ── Sağ Panel — Form ── */}
       <div className="flex flex-1 flex-col items-center justify-center bg-white px-8 py-12">
 
-        {/* Mobil logo */}
-        <div className="mb-8 lg:hidden">
-          <Image
-            src="/images/logo.jpeg"
-            alt="SCALD Logo"
-            width={180}
-            height={44}
-            className="h-10 w-auto object-contain"
-          />
-        </div>
-
         <div className="w-full max-w-[360px]">
+          {/* Logo */}
+          <div className="mb-8 flex justify-center">
+            <Image
+              src="/images/logo.jpeg"
+              alt="SCALD Logo"
+              width={240}
+              height={60}
+              className="h-16 w-auto object-contain"
+              priority
+            />
+          </div>
+
           <div className="mb-7">
             <h2 className="text-2xl font-bold text-slate-900">Hoş Geldiniz</h2>
             <p className="mt-1 text-sm text-slate-500">Sisteme erişmek için giriş yapın</p>
