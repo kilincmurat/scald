@@ -19,75 +19,71 @@ interface PageProps {
   params: Promise<{ locale: string }>;
 }
 
-const recentActivities = [
-  { type: 'success', label: 'Enerji tüketim verisi güncellendi', time: '2 saat önce' },
-  { type: 'pending', label: 'Su kullanım raporu bekleniyor', time: '5 saat önce' },
-  { type: 'warning', label: 'Atık verileri eksik — Q3 2024', time: '1 gün önce' },
-  { type: 'success', label: '12 yeni strateji üretildi', time: '2 gün önce' },
-  { type: 'success', label: 'Yıllık rapor oluşturuldu', time: '3 gün önce' },
-];
-
 export default async function DashboardPage({ params }: PageProps) {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'dashboard' });
 
+  const recentActivities = [
+    { type: 'success', label: t('activity1'), time: t('activity1Time') },
+    { type: 'pending', label: t('activity2'), time: t('activity2Time') },
+    { type: 'warning', label: t('activity3'), time: t('activity3Time') },
+    { type: 'success', label: t('activity4'), time: t('activity4Time') },
+    { type: 'success', label: t('activity5'), time: t('activity5Time') },
+  ];
+
   return (
     <main id="main-content" className="flex-1">
-      <Header
-        locale={locale}
-        title={t('title')}
-        subtitle={t('subtitle')}
-      />
+      <Header locale={locale} title={t('title')} subtitle={t('subtitle')} />
 
       <div className="p-6 space-y-6">
         {/* KPI Cards */}
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-3 xl:grid-cols-5">
           <StatCard
-            title="Ekolojik Ayak İzi"
+            title={t('ecologicalScore')}
             value="3.7"
-            unit="gHa/kişi"
+            unit={t('unitGha')}
             trend="up"
-            trendLabel="−0.2 yıllık"
-            target="2.8 gHa"
+            trendLabel={t('trendAnnual')}
+            target={`2.8 gHa`}
             color="green"
             icon={Trees}
           />
           <StatCard
-            title="Karbon Emisyonu"
+            title={t('carbonEmission')}
             value="4.2"
-            unit="ton CO₂"
+            unit={t('unitCo2')}
             trend="up"
-            trendLabel="−8% geçen yıl"
+            trendLabel={t('trendLastYear8')}
             target="3.5 ton"
             color="blue"
             icon={Wind}
           />
           <StatCard
-            title="Su Kullanımı"
+            title={t('waterUsage')}
             value="145"
-            unit="L/gün kişi"
+            unit={t('unitWater')}
             trend="stable"
-            trendLabel="Stabil"
+            trendLabel={t('stable')}
             target="120 L"
             color="blue"
             icon={Droplets}
           />
           <StatCard
-            title="Geri Dönüşüm"
+            title={t('recyclingRate')}
             value="34"
             unit="%"
             trend="down"
-            trendLabel="+2% hedefin altı"
-            target="%50"
+            trendLabel={t('trendBelowTarget')}
+            target="50%"
             color="amber"
             icon={Recycle}
           />
           <StatCard
-            title="Enerji Tüketimi"
+            title={t('energyConsumption')}
             value="3.850"
-            unit="kWh/yıl"
+            unit={t('unitEnergy')}
             trend="up"
-            trendLabel="−5% geçen yıl"
+            trendLabel={t('trendLastYear5')}
             target="3.200 kWh"
             color="purple"
             icon={Zap}
@@ -99,8 +95,8 @@ export default async function DashboardPage({ params }: PageProps) {
           {/* Radar Chart */}
           <div className="lg:col-span-2 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
             <div className="mb-4">
-              <h2 className="text-sm font-semibold text-slate-900">Gösterge Performansı</h2>
-              <p className="text-xs text-slate-500 mt-0.5">Mevcut durum vs 2030 hedefi</p>
+              <h2 className="text-sm font-semibold text-slate-900">{t('indicatorPerformance')}</h2>
+              <p className="text-xs text-slate-500 mt-0.5">{t('currentVsTarget')}</p>
             </div>
             <EcologicalRadarChart locale={locale} />
           </div>
@@ -109,11 +105,11 @@ export default async function DashboardPage({ params }: PageProps) {
           <div className="lg:col-span-3 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
             <div className="mb-4 flex items-start justify-between">
               <div>
-                <h2 className="text-sm font-semibold text-slate-900">Ekolojik Ayak İzi Trendi</h2>
-                <p className="text-xs text-slate-500 mt-0.5">6 yıllık tarihsel veri (gHa/kişi)</p>
+                <h2 className="text-sm font-semibold text-slate-900">{t('footprintTrend')}</h2>
+                <p className="text-xs text-slate-500 mt-0.5">{t('historicalData')}</p>
               </div>
               <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-medium text-emerald-700">
-                ↓ İyileşiyor
+                ↓ {t('improving')}
               </span>
             </div>
             <FootprintTrendChart locale={locale} />
@@ -125,9 +121,9 @@ export default async function DashboardPage({ params }: PageProps) {
           {/* Recent Activity */}
           <div className="lg:col-span-2 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
             <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-sm font-semibold text-slate-900">Son Aktiviteler</h2>
+              <h2 className="text-sm font-semibold text-slate-900">{t('recentActivity')}</h2>
               <button className="text-xs font-medium text-emerald-600 hover:text-emerald-700">
-                Tümünü Gör
+                {t('viewAll')}
               </button>
             </div>
             <ul className="space-y-3">
@@ -153,27 +149,27 @@ export default async function DashboardPage({ params }: PageProps) {
 
           {/* Quick Actions */}
           <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-            <h2 className="mb-4 text-sm font-semibold text-slate-900">Hızlı İşlemler</h2>
+            <h2 className="mb-4 text-sm font-semibold text-slate-900">{t('quickActions')}</h2>
             <div className="space-y-2">
               <Link
                 href={`/${locale}/efct`}
                 className="flex items-center justify-between rounded-lg border border-slate-100 p-3 text-sm text-slate-700 transition hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-700"
               >
-                <span className="font-medium">Veri Gir</span>
+                <span className="font-medium">{t('addData')}</span>
                 <ArrowRight className="h-4 w-4" />
               </Link>
               <Link
                 href={`/${locale}/ai-dss`}
                 className="flex items-center justify-between rounded-lg border border-slate-100 p-3 text-sm text-slate-700 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
               >
-                <span className="font-medium">Strateji Üret</span>
+                <span className="font-medium">{t('viewStrategies')}</span>
                 <ArrowRight className="h-4 w-4" />
               </Link>
               <Link
                 href={`/${locale}/ai-rt`}
                 className="flex items-center justify-between rounded-lg border border-slate-100 p-3 text-sm text-slate-700 transition hover:border-purple-200 hover:bg-purple-50 hover:text-purple-700"
               >
-                <span className="font-medium">Rapor Oluştur</span>
+                <span className="font-medium">{t('generateReport')}</span>
                 <ArrowRight className="h-4 w-4" />
               </Link>
             </div>
@@ -181,20 +177,20 @@ export default async function DashboardPage({ params }: PageProps) {
             {/* Summary Stats */}
             <div className="mt-4 space-y-3 border-t border-slate-100 pt-4">
               <div className="flex items-center justify-between text-xs">
-                <span className="text-slate-500">Aktif Belediyeler</span>
+                <span className="text-slate-500">{t('activeMunicipalities')}</span>
                 <span className="font-semibold text-slate-900">1</span>
               </div>
               <div className="flex items-center justify-between text-xs">
-                <span className="text-slate-500">Aktif Stratejiler</span>
+                <span className="text-slate-500">{t('activeStrategies')}</span>
                 <span className="font-semibold text-slate-900">24</span>
               </div>
               <div className="flex items-center justify-between text-xs">
-                <span className="text-slate-500">Veri Kalitesi</span>
-                <span className="font-semibold text-emerald-600">%78 Doğrulanmış</span>
+                <span className="text-slate-500">{t('dataQuality')}</span>
+                <span className="font-semibold text-emerald-600">{t('dataQualityValue')}</span>
               </div>
               <div className="flex items-center justify-between text-xs">
-                <span className="text-slate-500">Son Güncelleme</span>
-                <span className="font-semibold text-slate-900">Bugün, 14:32</span>
+                <span className="text-slate-500">{t('lastUpdated')}</span>
+                <span className="font-semibold text-slate-900">{t('todayTime')}</span>
               </div>
             </div>
           </div>
