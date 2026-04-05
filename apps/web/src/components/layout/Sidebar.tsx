@@ -41,9 +41,7 @@ export function Sidebar({ locale }: SidebarProps) {
 
       {/* Logo alanı */}
       <Link href={`/${locale}`} className="group block flex-shrink-0">
-        <div className="relative overflow-hidden px-5 pt-5 pb-0"
-          style={{ background: 'linear-gradient(180deg, #ffffff 0%, #ffffff 70%, #0f172a 100%)' }}
-        >
+        <div className="bg-white px-5 py-4">
           <Image
             src="/images/logo.jpeg"
             alt="SCALD"
@@ -52,12 +50,7 @@ export function Sidebar({ locale }: SidebarProps) {
             className="h-13 w-auto object-contain"
             priority
           />
-          {/* Gradyan geçiş katmanı */}
-          <div className="absolute inset-x-0 bottom-0 h-8"
-            style={{ background: 'linear-gradient(180deg, transparent 0%, #0f172a 100%)' }}
-          />
         </div>
-        {/* İnce ayırıcı çizgi */}
         <div className="mx-4 border-t border-slate-700/60" />
       </Link>
 
