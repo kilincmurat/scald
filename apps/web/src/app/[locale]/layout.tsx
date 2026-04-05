@@ -5,7 +5,7 @@ import { Inter } from 'next/font/google';
 import { locales, type Locale } from '@/lib/i18n/config';
 
 const inter = Inter({
-  subsets: ['latin', 'latin-ext', 'greek'],
+  subsets: ['latin', 'latin-ext', 'greek', 'cyrillic'],
   variable: '--font-inter',
 });
 
