@@ -9,133 +9,33 @@ interface PageProps {
 }
 
 const mainIndicators = [
-  {
-    id: 1,
-    name: 'Enerji Tüketimi',
-    nameEn: 'Energy Consumption',
-    layer: 1,
-    status: 'validated',
-    score: 62,
-    unit: 'kWh/kişi/yıl',
-    value: '3.850',
-    subCount: 8,
-  },
-  {
-    id: 2,
-    name: 'Su Kullanımı',
-    nameEn: 'Water Usage',
-    layer: 1,
-    status: 'validated',
-    score: 71,
-    unit: 'L/kişi/gün',
-    value: '145',
-    subCount: 6,
-  },
-  {
-    id: 3,
-    name: 'Atık Yönetimi',
-    nameEn: 'Waste Management',
-    layer: 1,
-    status: 'estimated',
-    score: 45,
-    unit: 'kg/kişi/yıl',
-    value: '412',
-    subCount: 7,
-  },
-  {
-    id: 4,
-    name: 'Ulaşım & Mobilite',
-    nameEn: 'Transport & Mobility',
-    layer: 1,
-    status: 'estimated',
-    score: 38,
-    unit: 'km/kişi/yıl',
-    value: '8.200',
-    subCount: 9,
-  },
-  {
-    id: 5,
-    name: 'Yeşil Alan & Arazi Kullanımı',
-    nameEn: 'Green Space & Land Use',
-    layer: 1,
-    status: 'validated',
-    score: 58,
-    unit: 'm²/kişi',
-    value: '12,4',
-    subCount: 5,
-  },
-  {
-    id: 6,
-    name: 'Nüfus & Demografik',
-    nameEn: 'Population & Demographics',
-    layer: 1,
-    status: 'validated',
-    score: 100,
-    unit: 'kişi',
-    value: '284.000',
-    subCount: 4,
-  },
-  {
-    id: 7,
-    name: 'İklim Verileri (API)',
-    nameEn: 'Climate Data (API)',
-    layer: 1,
-    status: 'validated',
-    score: 100,
-    unit: '°C / mm',
-    value: 'Otomatik',
-    subCount: 6,
-  },
-  {
-    id: 8,
-    name: 'Hava Kalitesi',
-    nameEn: 'Air Quality',
-    layer: 2,
-    status: 'estimated',
-    score: 66,
-    unit: 'µg/m³ PM2.5',
-    value: '18,4',
-    subCount: 5,
-  },
-  {
-    id: 9,
-    name: 'Taşkın & İklim Riski',
-    nameEn: 'Flood & Climate Risk',
-    layer: 2,
-    status: 'pilot',
-    score: 0,
-    unit: 'risk indeksi',
-    value: '—',
-    subCount: 7,
-  },
-  {
-    id: 10,
-    name: 'Biyolojik Çeşitlilik',
-    nameEn: 'Biodiversity',
-    layer: 2,
-    status: 'pilot',
-    score: 42,
-    unit: 'tür/km²',
-    value: '124',
-    subCount: 8,
-  },
+  { id: 1, nameKey: 'indicatorEnergy', layer: 1, status: 'validated', score: 62, unit: 'kWh/kişi/yıl', value: '3.850', subCount: 8 },
+  { id: 2, nameKey: 'indicatorWater', layer: 1, status: 'validated', score: 71, unit: 'L/kişi/gün', value: '145', subCount: 6 },
+  { id: 3, nameKey: 'indicatorWaste', layer: 1, status: 'estimated', score: 45, unit: 'kg/kişi/yıl', value: '412', subCount: 7 },
+  { id: 4, nameKey: 'indicatorTransport', layer: 1, status: 'estimated', score: 38, unit: 'km/kişi/yıl', value: '8.200', subCount: 9 },
+  { id: 5, nameKey: 'indicatorGreenSpace', layer: 1, status: 'validated', score: 58, unit: 'm²/kişi', value: '12,4', subCount: 5 },
+  { id: 6, nameKey: 'indicatorPopulation', layer: 1, status: 'validated', score: 100, unit: 'kişi', value: '284.000', subCount: 4 },
+  { id: 7, nameKey: 'indicatorClimate', layer: 1, status: 'validated', score: 100, unit: '°C / mm', value: 'automatic', subCount: 6 },
+  { id: 8, nameKey: 'indicatorAirQuality', layer: 2, status: 'estimated', score: 66, unit: 'µg/m³ PM2.5', value: '18,4', subCount: 5 },
+  { id: 9, nameKey: 'indicatorFloodRisk', layer: 2, status: 'pilot', score: 0, unit: 'riskIndex', value: '—', subCount: 7 },
+  { id: 10, nameKey: 'indicatorBiodiversity', layer: 2, status: 'pilot', score: 42, unit: 'tür/km²', value: '124', subCount: 8 },
 ];
-
-const statusConfig = {
-  validated: { label: 'Doğrulanmış', labelEn: 'Validated', color: 'text-emerald-700 bg-emerald-100', icon: CheckCircle2 },
-  estimated: { label: 'Tahmini', labelEn: 'Estimated', color: 'text-amber-700 bg-amber-100', icon: AlertCircle },
-  pilot: { label: 'Pilot', labelEn: 'Pilot', color: 'text-purple-700 bg-purple-100', icon: Circle },
-};
-
-const layerConfig = {
-  1: { label: 'Katman 1', color: 'bg-blue-100 text-blue-700' },
-  2: { label: 'Katman 2', color: 'bg-violet-100 text-violet-700' },
-  3: { label: 'Katman 3', color: 'bg-orange-100 text-orange-700' },
-};
 
 export default async function EfctPage({ params }: PageProps) {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'efct' });
+
+  const statusConfig = {
+    validated: { label: t('validated'), color: 'text-emerald-700 bg-emerald-100', icon: CheckCircle2 },
+    estimated: { label: t('estimated'), color: 'text-amber-700 bg-amber-100', icon: AlertCircle },
+    pilot: { label: t('pilot'), color: 'text-purple-700 bg-purple-100', icon: Circle },
+  };
+
+  const layerConfig: Record<number, { label: string; color: string }> = {
+    1: { label: t('layerShort1'), color: 'bg-blue-100 text-blue-700' },
+    2: { label: t('layerShort2'), color: 'bg-violet-100 text-violet-700' },
+    3: { label: t('layerShort3'), color: 'bg-orange-100 text-orange-700' },
+  };
 
   const validatedCount = mainIndicators.filter((i) => i.status === 'validated').length;
   const totalScore = Math.round(
@@ -151,29 +51,29 @@ export default async function EfctPage({ params }: PageProps) {
         {/* Summary Cards */}
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
           <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-            <p className="text-xs font-medium text-slate-500">Ortalama Skor</p>
+            <p className="text-xs font-medium text-slate-500">{t('averageScore')}</p>
             <p className="mt-1 text-3xl font-bold text-slate-900">{totalScore}</p>
-            <p className="mt-1 text-xs text-slate-400">100 üzerinden</p>
+            <p className="mt-1 text-xs text-slate-400">{t('outOf100')}</p>
           </div>
           <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-            <p className="text-xs font-medium text-slate-500">Ana Göstergeler</p>
+            <p className="text-xs font-medium text-slate-500">{t('mainIndicators')}</p>
             <p className="mt-1 text-3xl font-bold text-slate-900">15</p>
-            <p className="mt-1 text-xs text-slate-400">{mainIndicators.length} aktif</p>
+            <p className="mt-1 text-xs text-slate-400">{mainIndicators.length} {t('active')}</p>
           </div>
           <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-            <p className="text-xs font-medium text-slate-500">Alt Göstergeler</p>
+            <p className="text-xs font-medium text-slate-500">{t('subIndicators')}</p>
             <p className="mt-1 text-3xl font-bold text-slate-900">80</p>
             <p className="mt-1 text-xs text-emerald-600">
-              {mainIndicators.reduce((a, i) => a + i.subCount, 0)} veri noktası
+              {mainIndicators.reduce((a, i) => a + i.subCount, 0)} {t('dataPoints')}
             </p>
           </div>
           <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-            <p className="text-xs font-medium text-slate-500">Doğrulanmış Veri</p>
+            <p className="text-xs font-medium text-slate-500">{t('validatedData')}</p>
             <p className="mt-1 text-3xl font-bold text-emerald-600">
               %{Math.round((validatedCount / mainIndicators.length) * 100)}
             </p>
             <p className="mt-1 text-xs text-slate-400">
-              {validatedCount}/{mainIndicators.length} gösterge
+              {validatedCount}/{mainIndicators.length} {t('indicatorSuffix')}
             </p>
           </div>
         </div>
@@ -184,18 +84,20 @@ export default async function EfctPage({ params }: PageProps) {
             <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
               <div>
                 <h2 className="text-sm font-semibold text-slate-900">{t('mainIndicators')}</h2>
-                <p className="text-xs text-slate-500 mt-0.5">15 ana gösterge · 80 alt gösterge</p>
+                <p className="text-xs text-slate-500 mt-0.5">{t('mainIndicatorsDesc')}</p>
               </div>
               <button className="rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-emerald-700">
-                + Veri Gir
+                {t('addDataBtn')}
               </button>
             </div>
 
             <div className="divide-y divide-slate-50">
               {mainIndicators.map((indicator) => {
                 const status = statusConfig[indicator.status as keyof typeof statusConfig];
-                const layer = layerConfig[indicator.layer as keyof typeof layerConfig];
+                const layer = layerConfig[indicator.layer];
                 const StatusIcon = status.icon;
+                const displayValue = indicator.value === 'automatic' ? t('automatic') : indicator.value;
+                const displayUnit = indicator.unit === 'riskIndex' ? t('riskIndex') : indicator.unit;
 
                 return (
                   <div
@@ -205,14 +107,14 @@ export default async function EfctPage({ params }: PageProps) {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-0.5">
                         <p className="text-sm font-medium text-slate-800">
-                          {locale === 'en' ? indicator.nameEn : indicator.name}
+                          {t(indicator.nameKey as any)}
                         </p>
                         <span className={clsx('rounded-full px-1.5 py-0.5 text-[10px] font-medium', layer.color)}>
                           {layer.label}
                         </span>
                       </div>
                       <p className="text-xs text-slate-400">
-                        {indicator.value} {indicator.unit} · {indicator.subCount} alt gösterge
+                        {displayValue} {displayUnit} · {indicator.subCount} {t('subIndicatorSuffix')}
                       </p>
                     </div>
 
@@ -236,7 +138,7 @@ export default async function EfctPage({ params }: PageProps) {
 
                       <span className={clsx('flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium', status.color)}>
                         <StatusIcon className="h-3 w-3" />
-                        {locale === 'en' ? status.labelEn : status.label}
+                        {status.label}
                       </span>
 
                       <ChevronRight className="h-4 w-4 text-slate-300" />
@@ -250,8 +152,8 @@ export default async function EfctPage({ params }: PageProps) {
           {/* Bar Chart */}
           <div className="lg:col-span-2 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
             <div className="mb-4">
-              <h2 className="text-sm font-semibold text-slate-900">Performans Skoru</h2>
-              <p className="text-xs text-slate-500 mt-0.5">Ana göstergeler bazında (0–100)</p>
+              <h2 className="text-sm font-semibold text-slate-900">{t('performanceScore')}</h2>
+              <p className="text-xs text-slate-500 mt-0.5">{t('performanceDesc')}</p>
             </div>
             <IndicatorBarChart locale={locale} />
 
@@ -259,15 +161,15 @@ export default async function EfctPage({ params }: PageProps) {
             <div className="mt-4 flex items-center justify-center gap-4 border-t border-slate-100 pt-3">
               <div className="flex items-center gap-1.5">
                 <span className="h-2.5 w-2.5 rounded-sm bg-emerald-500" />
-                <span className="text-xs text-slate-500">İyi (≥65)</span>
+                <span className="text-xs text-slate-500">{t('good')}</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <span className="h-2.5 w-2.5 rounded-sm bg-amber-500" />
-                <span className="text-xs text-slate-500">Orta (40–64)</span>
+                <span className="text-xs text-slate-500">{t('moderate')}</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <span className="h-2.5 w-2.5 rounded-sm bg-red-500" />
-                <span className="text-xs text-slate-500">Zayıf (&lt;40)</span>
+                <span className="text-xs text-slate-500">{t('weak')}</span>
               </div>
             </div>
           </div>

@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import Map, { Marker, Popup, NavigationControl, ScaleControl, Source, Layer } from 'react-map-gl/maplibre';
-import type { LayerProps } from 'react-map-gl/maplibre';
+import { useTranslations } from 'next-intl';
+import Map, { Marker, Popup, NavigationControl, ScaleControl } from 'react-map-gl/maplibre';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
 export interface Municipality {
@@ -34,13 +34,6 @@ const SCORE_COLOR = (score: number) => {
   return '#dc2626';
 };
 
-const SCORE_LABEL = (score: number) => {
-  if (score >= 75) return 'İyi';
-  if (score >= 55) return 'Orta';
-  if (score >= 40) return 'Zayıf';
-  return 'Kritik';
-};
-
 const LAYER_FIELD: Record<string, keyof Municipality> = {
   total: 'score',
   energy: 'energyScore',
@@ -59,6 +52,7 @@ const countryBounds = {
 };
 
 export default function MapView({ municipalities, activeLayer, selectedCountries }: MapViewProps) {
+  const t = useTranslations('map');
   const [popupInfo, setPopupInfo] = useState<Municipality | null>(null);
   const [viewState, setViewState] = useState({
     longitude: 26.5,
@@ -83,6 +77,20 @@ export default function MapView({ municipalities, activeLayer, selectedCountries
     if (!b) return;
     setViewState(v => ({ ...v, longitude: b.center[0], latitude: b.center[1], zoom: b.zoom }));
   };
+
+  const getScoreLabel = (score: number) => {
+    if (score >= 75) return t('goodShort');
+    if (score >= 55) return t('moderateShort');
+    if (score >= 40) return t('weakShort');
+    return t('criticalShort');
+  };
+
+  const COUNTRIES_MAP = [
+    { code: 'TR', name: 'Türkiye', flag: '🇹🇷' },
+    { code: 'GR', name: 'Ελλάδα', flag: '🇬🇷' },
+    { code: 'RO', name: 'România', flag: '🇷🇴' },
+    { code: 'MK', name: 'С. Македонија', flag: '🇲🇰' },
+  ];
 
   return (
     <div className="relative h-full w-full">
@@ -138,23 +146,23 @@ export default function MapView({ municipalities, activeLayer, selectedCountries
               <div className="flex items-center justify-between gap-3">
                 <div>
                   <p className="font-bold text-slate-900">{popupInfo.name}</p>
-                  <p className="text-xs text-slate-500">{popupInfo.country} · {popupInfo.population.toLocaleString()} kişi</p>
+                  <p className="text-xs text-slate-500">{popupInfo.country} · {popupInfo.population.toLocaleString()} {t('people')}</p>
                 </div>
                 <span
                   className="rounded-full px-2 py-1 text-xs font-bold text-white"
                   style={{ backgroundColor: SCORE_COLOR(popupInfo.score) }}
                 >
-                  {SCORE_LABEL(popupInfo.score)}
+                  {getScoreLabel(popupInfo.score)}
                 </span>
               </div>
               <div className="mt-3 grid grid-cols-2 gap-1.5">
                 {[
-                  { label: 'Enerji', val: popupInfo.energyScore },
-                  { label: 'Su', val: popupInfo.waterScore },
-                  { label: 'Atık', val: popupInfo.wasteScore },
-                  { label: 'Ulaşım', val: popupInfo.transportScore },
-                  { label: 'Yeşil Alan', val: popupInfo.greenScore },
-                  { label: 'Genel', val: popupInfo.score },
+                  { label: t('energy'), val: popupInfo.energyScore },
+                  { label: t('water'), val: popupInfo.waterScore },
+                  { label: t('waste'), val: popupInfo.wasteScore },
+                  { label: t('transport'), val: popupInfo.transportScore },
+                  { label: t('greenSpace'), val: popupInfo.greenScore },
+                  { label: t('general'), val: popupInfo.score },
                 ].map(item => (
                   <div key={item.label} className="rounded bg-slate-50 px-2 py-1.5">
                     <p className="text-[10px] text-slate-500">{item.label}</p>
@@ -175,14 +183,9 @@ export default function MapView({ municipalities, activeLayer, selectedCountries
         )}
       </Map>
 
-      {/* Ülke hızlı erişim */}
+      {/* Quick country access */}
       <div className="absolute left-3 top-3 flex flex-col gap-1.5">
-        {[
-          { code: 'TR', name: 'Türkiye', flag: '🇹🇷' },
-          { code: 'GR', name: 'Yunanistan', flag: '🇬🇷' },
-          { code: 'RO', name: 'Romanya', flag: '🇷🇴' },
-          { code: 'MK', name: 'K. Makedonya', flag: '🇲🇰' },
-        ].map(c => (
+        {COUNTRIES_MAP.map(c => (
           <button
             key={c.code}
             onClick={() => flyToCountry(c.code)}
@@ -194,15 +197,15 @@ export default function MapView({ municipalities, activeLayer, selectedCountries
         ))}
       </div>
 
-      {/* Renk skalası */}
+      {/* Color scale */}
       <div className="absolute bottom-8 right-14 rounded-lg bg-white px-3 py-2 shadow-md">
-        <p className="mb-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-500">Skor</p>
+        <p className="mb-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-500">{t('scoreLabel')}</p>
         <div className="flex flex-col gap-1">
           {[
-            { color: '#16a34a', label: '75–100 İyi' },
-            { color: '#65a30d', label: '55–74 Orta' },
-            { color: '#d97706', label: '40–54 Zayıf' },
-            { color: '#dc2626', label: '0–39 Kritik' },
+            { color: '#16a34a', label: t('good') },
+            { color: '#65a30d', label: t('moderate') },
+            { color: '#d97706', label: t('weak') },
+            { color: '#dc2626', label: t('critical') },
           ].map(item => (
             <div key={item.label} className="flex items-center gap-2">
               <span className="h-3 w-3 rounded-full" style={{ backgroundColor: item.color }} />

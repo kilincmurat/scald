@@ -71,7 +71,7 @@ export function Sidebar({ locale, collapsed, onToggle }: SidebarProps) {
           <button
             onClick={onToggle}
             className="ml-auto flex h-7 w-7 items-center justify-center rounded-lg text-slate-500 transition hover:bg-slate-800 hover:text-white"
-            title="Menüyü kapat"
+            title={t('closeMenuTitle')}
           >
             <PanelLeftClose className="h-4 w-4" />
           </button>
@@ -114,7 +114,7 @@ export function Sidebar({ locale, collapsed, onToggle }: SidebarProps) {
         <div className="mt-4 border-t border-slate-700/50 pt-3">
           {!collapsed && (
             <p className="px-3 pb-2 text-[10px] font-semibold uppercase tracking-wider text-slate-500">
-              Sistem
+              {t('system')}
             </p>
           )}
           <Link
@@ -137,17 +137,17 @@ export function Sidebar({ locale, collapsed, onToggle }: SidebarProps) {
           <button
             onClick={onToggle}
             className="flex w-full items-center justify-center rounded-lg py-2 text-slate-500 transition hover:bg-slate-800 hover:text-white"
-            title="Menüyü aç"
+            title={t('openMenuTitle')}
           >
             <PanelLeftOpen className="h-4 w-4" />
           </button>
         ) : (
           <div className="rounded-lg bg-slate-800 p-3">
-            <p className="text-xs font-medium text-white">Demo Belediyesi</p>
-            <p className="mt-0.5 text-[10px] text-slate-400">Türkiye · Nüfus: 284,000</p>
+            <p className="text-xs font-medium text-white">{t('demoMunicipality')}</p>
+            <p className="mt-0.5 text-[10px] text-slate-400">{t('countryPopulation')}</p>
             <div className="mt-2 flex items-center gap-1.5">
               <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-400" />
-              <span className="text-[10px] text-emerald-400">Bağlı</span>
+              <span className="text-[10px] text-emerald-400">{t('connected')}</span>
             </div>
           </div>
         )}
