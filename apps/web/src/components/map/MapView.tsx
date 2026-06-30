@@ -86,10 +86,10 @@ export default function MapView({ municipalities, activeLayer, selectedCountries
   };
 
   const COUNTRIES_MAP = [
-    { code: 'TR', name: 'Türkiye', flag: '🇹🇷' },
-    { code: 'GR', name: 'Ελλάδα', flag: '🇬🇷' },
-    { code: 'RO', name: 'România', flag: '🇷🇴' },
-    { code: 'MK', name: 'С. Македонија', flag: '🇲🇰' },
+    { code: 'TR', name: 'Turkey', flag: '🇹🇷' },
+    { code: 'GR', name: 'Greece', flag: '🇬🇷' },
+    { code: 'RO', name: 'Romania', flag: '🇷🇴' },
+    { code: 'MK', name: 'North Macedonia', flag: '🇲🇰' },
   ];
 
   return (

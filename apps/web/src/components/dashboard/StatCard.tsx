@@ -89,7 +89,7 @@ export function StatCard({
         )}
         {target && (
           <span className={clsx('rounded-full px-2 py-0.5 text-xs font-medium', colors.badge)}>
-            Hedef: {target}
+            Target: {target}
           </span>
         )}
       </div>

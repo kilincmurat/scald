@@ -29,31 +29,26 @@ const MapView = dynamic(() => import('@/components/map/MapView'), {
   ),
 });
 
-// Demo municipalities for 4 partner countries
 const MUNICIPALITIES: Municipality[] = [
-  // Türkiye
-  { id: 'trabzon', name: 'Trabzon', country: 'Türkiye', countryCode: 'TR', lat: 41.0027, lng: 39.7168, population: 284000, score: 62, energyScore: 58, waterScore: 71, wasteScore: 55, transportScore: 60, greenScore: 68 },
-  { id: 'rize', name: 'Rize', country: 'Türkiye', countryCode: 'TR', lat: 41.0201, lng: 40.5234, population: 105000, score: 68, energyScore: 65, waterScore: 78, wasteScore: 60, transportScore: 62, greenScore: 72 },
-  { id: 'artvin', name: 'Artvin', country: 'Türkiye', countryCode: 'TR', lat: 41.1828, lng: 41.8183, population: 28000, score: 74, energyScore: 70, waterScore: 82, wasteScore: 68, transportScore: 65, greenScore: 80 },
-  // Yunanistan
-  { id: 'thessaloniki', name: 'Thessaloniki', country: 'Ελλάδα', countryCode: 'GR', lat: 40.6401, lng: 22.9444, population: 325000, score: 57, energyScore: 52, waterScore: 65, wasteScore: 48, transportScore: 63, greenScore: 55 },
-  { id: 'larissa', name: 'Larissa', country: 'Ελλάδα', countryCode: 'GR', lat: 39.6390, lng: 22.4191, population: 145000, score: 53, energyScore: 50, waterScore: 60, wasteScore: 45, transportScore: 55, greenScore: 52 },
-  { id: 'volos', name: 'Volos', country: 'Ελλάδα', countryCode: 'GR', lat: 39.3601, lng: 22.9405, population: 86000, score: 60, energyScore: 57, waterScore: 68, wasteScore: 52, transportScore: 60, greenScore: 62 },
-  // Romanya
-  { id: 'cluj', name: 'Cluj-Napoca', country: 'România', countryCode: 'RO', lat: 46.7712, lng: 23.6236, population: 322000, score: 65, energyScore: 63, waterScore: 70, wasteScore: 58, transportScore: 68, greenScore: 66 },
-  { id: 'timisoara', name: 'Timișoara', country: 'România', countryCode: 'RO', lat: 45.7489, lng: 21.2087, population: 250000, score: 61, energyScore: 59, waterScore: 66, wasteScore: 55, transportScore: 65, greenScore: 60 },
-  { id: 'iasi', name: 'Iași', country: 'România', countryCode: 'RO', lat: 47.1585, lng: 27.6014, population: 290000, score: 55, energyScore: 52, waterScore: 62, wasteScore: 48, transportScore: 58, greenScore: 54 },
-  // Kuzey Makedonya
-  { id: 'skopje', name: 'Skopje', country: 'Северна Македонија', countryCode: 'MK', lat: 41.9973, lng: 21.4280, population: 545000, score: 44, energyScore: 40, waterScore: 52, wasteScore: 38, transportScore: 47, greenScore: 42 },
-  { id: 'bitola', name: 'Bitola', country: 'Северна Македонија', countryCode: 'MK', lat: 41.0297, lng: 21.3325, population: 74000, score: 48, energyScore: 44, waterScore: 55, wasteScore: 42, transportScore: 50, greenScore: 46 },
-  { id: 'ohrid', name: 'Ohrid', country: 'Северна Македонија', countryCode: 'MK', lat: 41.1172, lng: 20.8019, population: 42000, score: 56, energyScore: 52, waterScore: 64, wasteScore: 50, transportScore: 52, greenScore: 60 },
+  { id: 'trabzon', name: 'Trabzon', country: 'Turkey', countryCode: 'TR', lat: 41.0027, lng: 39.7168, population: 284000, score: 62, energyScore: 58, waterScore: 71, wasteScore: 55, transportScore: 60, greenScore: 68 },
+  { id: 'rize', name: 'Rize', country: 'Turkey', countryCode: 'TR', lat: 41.0201, lng: 40.5234, population: 105000, score: 68, energyScore: 65, waterScore: 78, wasteScore: 60, transportScore: 62, greenScore: 72 },
+  { id: 'artvin', name: 'Artvin', country: 'Turkey', countryCode: 'TR', lat: 41.1828, lng: 41.8183, population: 28000, score: 74, energyScore: 70, waterScore: 82, wasteScore: 68, transportScore: 65, greenScore: 80 },
+  { id: 'thessaloniki', name: 'Thessaloniki', country: 'Greece', countryCode: 'GR', lat: 40.6401, lng: 22.9444, population: 325000, score: 57, energyScore: 52, waterScore: 65, wasteScore: 48, transportScore: 63, greenScore: 55 },
+  { id: 'larissa', name: 'Larissa', country: 'Greece', countryCode: 'GR', lat: 39.6390, lng: 22.4191, population: 145000, score: 53, energyScore: 50, waterScore: 60, wasteScore: 45, transportScore: 55, greenScore: 52 },
+  { id: 'volos', name: 'Volos', country: 'Greece', countryCode: 'GR', lat: 39.3601, lng: 22.9405, population: 86000, score: 60, energyScore: 57, waterScore: 68, wasteScore: 52, transportScore: 60, greenScore: 62 },
+  { id: 'cluj', name: 'Cluj-Napoca', country: 'Romania', countryCode: 'RO', lat: 46.7712, lng: 23.6236, population: 322000, score: 65, energyScore: 63, waterScore: 70, wasteScore: 58, transportScore: 68, greenScore: 66 },
+  { id: 'timisoara', name: 'Timisoara', country: 'Romania', countryCode: 'RO', lat: 45.7489, lng: 21.2087, population: 250000, score: 61, energyScore: 59, waterScore: 66, wasteScore: 55, transportScore: 65, greenScore: 60 },
+  { id: 'iasi', name: 'Iasi', country: 'Romania', countryCode: 'RO', lat: 47.1585, lng: 27.6014, population: 290000, score: 55, energyScore: 52, waterScore: 62, wasteScore: 48, transportScore: 58, greenScore: 54 },
+  { id: 'skopje', name: 'Skopje', country: 'North Macedonia', countryCode: 'MK', lat: 41.9973, lng: 21.4280, population: 545000, score: 44, energyScore: 40, waterScore: 52, wasteScore: 38, transportScore: 47, greenScore: 42 },
+  { id: 'bitola', name: 'Bitola', country: 'North Macedonia', countryCode: 'MK', lat: 41.0297, lng: 21.3325, population: 74000, score: 48, energyScore: 44, waterScore: 55, wasteScore: 42, transportScore: 50, greenScore: 46 },
+  { id: 'ohrid', name: 'Ohrid', country: 'North Macedonia', countryCode: 'MK', lat: 41.1172, lng: 20.8019, population: 42000, score: 56, energyScore: 52, waterScore: 64, wasteScore: 50, transportScore: 52, greenScore: 60 },
 ];
 
 const COUNTRIES = [
-  { code: 'TR', name: 'Türkiye', flag: '🇹🇷' },
-  { code: 'GR', name: 'Ελλάδα', flag: '🇬🇷' },
-  { code: 'RO', name: 'România', flag: '🇷🇴' },
-  { code: 'MK', name: 'С. Македонија', flag: '🇲🇰' },
+  { code: 'TR', name: 'Turkey', flag: '🇹🇷' },
+  { code: 'GR', name: 'Greece', flag: '🇬🇷' },
+  { code: 'RO', name: 'Romania', flag: '🇷🇴' },
+  { code: 'MK', name: 'North Macedonia', flag: '🇲🇰' },
 ];
 
 function StatCard({ label, value, unit, color }: { label: string; value: number; unit: string; color: string }) {
@@ -129,11 +124,11 @@ export default function MapPage() {
       </div>
 
       <div className="flex flex-1 overflow-hidden">
-        {/* Sol analiz paneli */}
+        {/* Left analysis panel */}
         {showPanel && (
           <div className="flex w-72 flex-col gap-4 overflow-y-auto border-r border-slate-200 bg-white p-4">
 
-            {/* Katman seçimi */}
+            {/* Layer selection */}
             <div>
               <div className="mb-2 flex items-center gap-2">
                 <Layers className="h-4 w-4 text-slate-400" />
@@ -161,7 +156,7 @@ export default function MapPage() {
               </div>
             </div>
 
-            {/* Ülke filtresi */}
+            {/* Country filter */}
             <div>
               <div className="mb-2 flex items-center gap-2">
                 <Globe2 className="h-4 w-4 text-slate-400" />
@@ -197,7 +192,7 @@ export default function MapPage() {
               </div>
             </div>
 
-            {/* Özet istatistikler */}
+            {/* Summary stats */}
             <div>
               <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-500">{t('summaryAnalysis')}</p>
               <div className="grid grid-cols-2 gap-2">
@@ -223,7 +218,7 @@ export default function MapPage() {
               )}
             </div>
 
-            {/* Ülke karşılaştırması */}
+            {/* Country comparison */}
             <div>
               <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-500">{t('countryAverages')}</p>
               <div className="flex flex-col gap-2">
@@ -254,7 +249,7 @@ export default function MapPage() {
           </div>
         )}
 
-        {/* Harita alanı */}
+        {/* Map area */}
         <div className="relative flex-1">
           <MapView
             municipalities={MUNICIPALITIES}
