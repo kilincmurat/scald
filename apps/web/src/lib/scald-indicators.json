@@ -1,0 +1,3232 @@
+{
+  "sets": {
+    "ES": {
+      "name": "Environmental",
+      "color": "emerald"
+    },
+    "SS": {
+      "name": "Social",
+      "color": "rose"
+    },
+    "MS": {
+      "name": "Managerial",
+      "color": "blue"
+    },
+    "ECS": {
+      "name": "Economic",
+      "color": "orange"
+    }
+  },
+  "order": [
+    "ES_GI",
+    "ES_EN",
+    "ES_CL",
+    "ES_EF",
+    "ES_LU",
+    "ES_WT",
+    "ES_WA",
+    "ES_DS",
+    "ES_PO",
+    "ES_SI",
+    "SS_CA",
+    "SS_EC",
+    "SS_PV",
+    "SS_PP",
+    "SS_SRM",
+    "MS_INC",
+    "MS_DM",
+    "MS_PM",
+    "MS_CG",
+    "MS_URB",
+    "ECS_CAP",
+    "ECS_WAC",
+    "ECS_CRI",
+    "ECS_REE",
+    "ECS_GB"
+  ],
+  "categories": {
+    "ES_GI": {
+      "code": "ES_GI",
+      "set": "ES",
+      "name": "Green Infrastructure",
+      "indicators": [
+        {
+          "code": "ES_GI1",
+          "name": "Rainwater Permeable Surface Ratio",
+          "unit": "%",
+          "method": "Permeable surface area / total urban area (%)",
+          "thresholds": [
+            "None",
+            "<15",
+            "15.1-30",
+            "30.1-45",
+            "45.1-60",
+            ">60"
+          ],
+          "normalisation": "ratio to urban area",
+          "source": "v4"
+        },
+        {
+          "code": "ES_GI2",
+          "name": "Rainwater Storage Capacity",
+          "unit": "m³/person",
+          "method": "Total rainwater storage capacity / population",
+          "thresholds": [
+            "None",
+            "0.1–0.5",
+            "0.6–1.0",
+            "1.1–1.8",
+            "1.9-2.5",
+            ">2.5"
+          ],
+          "normalisation": "per capita",
+          "source": "v4"
+        },
+        {
+          "code": "ES_GI3",
+          "name": "Building-Based Green Infrastructure Area",
+          "unit": "m²/10,000 people",
+          "method": "Green roof + green wall area",
+          "thresholds": [
+            "None",
+            "1–1000",
+            "1001-3000",
+            "3001-7000",
+            "7001-15.000",
+            ">15000"
+          ],
+          "normalisation": "Per 10,000 inhabitants",
+          "source": "v4"
+        },
+        {
+          "code": "ES_GI4",
+          "name": "Total Climate-Adaptive Green Infrastructure Area",
+          "unit": "m²/person",
+          "method": "Climate-resilient green infrastructure area / population",
+          "thresholds": [
+            "None",
+            "0.1–10",
+            "10.1–20",
+            "20.1–30",
+            "30.1-45",
+            ">45"
+          ],
+          "normalisation": "Per capita",
+          "source": "v4"
+        },
+        {
+          "code": "ES_GI6",
+          "name": "Number of Blue-Green Stormwater Systems (rain gardens, bioponds, etc.)",
+          "unit": "Number",
+          "method": "Number of rain gardens, bio-ponds and similar systems",
+          "thresholds": [
+            "None",
+            "1–2",
+            "3–5",
+            "6–12",
+            "13-25",
+            ">25"
+          ],
+          "normalisation": "Per 100 km² urban area",
+          "source": "v4"
+        },
+        {
+          "code": "ES_GI9",
+          "name": "Ecological Restoration Area (afforestration, habitat improvement\nstream restoration, wetland restoration, flood preventation, etc.)",
+          "unit": "%",
+          "method": "Restoration area / municipal area",
+          "thresholds": [
+            "None",
+            "0.1–0.5",
+            "0.6–1.5",
+            "1.6–3.0",
+            "3.1-5.0",
+            ">5.0"
+          ],
+          "normalisation": "Ratio to municipal area",
+          "source": "v4"
+        },
+        {
+          "code": "ES_GI10",
+          "name": "Household Rainwater Harvesting Ratio",
+          "unit": "%",
+          "method": "Households using rainwater / total households",
+          "thresholds": [
+            "None",
+            "0.1–5",
+            "5.1–10",
+            "10.1–20",
+            "20.1–35",
+            ">35"
+          ],
+          "normalisation": "Ratio to households",
+          "source": "v4"
+        },
+        {
+          "code": "ES_GI11",
+          "name": "Number of Green Certified Buildings",
+          "unit": "Number",
+          "method": "Number of buildings certified to LEED, BREEAM, etc.",
+          "thresholds": [
+            "None",
+            "0.1–0.5",
+            "0.6–1.5",
+            "1.6–3",
+            "3.1–6",
+            ">6"
+          ],
+          "normalisation": "Per 10,000 inhabitants",
+          "source": "v4"
+        },
+        {
+          "code": "ES_GI12",
+          "name": "Coastal Green Infrastructure Length",
+          "unit": "%",
+          "method": "Coastline length converted to green infrastructure",
+          "thresholds": [
+            "None",
+            "0.1–10",
+            "10.1-25",
+            "25.1-40",
+            "40.1-60",
+            ">60"
+          ],
+          "normalisation": "Ratio to total coastline",
+          "source": "v4"
+        }
+      ]
+    },
+    "ES_EN": {
+      "code": "ES_EN",
+      "set": "ES",
+      "name": "Energy",
+      "indicators": [
+        {
+          "code": "ES_EN1",
+          "name": "Clean Fuel Usage Rate (biyogas, hydrogen, biomethane, etc.)",
+          "unit": "%",
+          "method": "The share of clean fuels in total municipal energy consumption",
+          "thresholds": [
+            "None",
+            "0.1–5",
+            "5.1–10",
+            "10.1–20",
+            "20.1–35",
+            ">35"
+          ],
+          "normalisation": "Ratio to total municipal energy consumption",
+          "source": "v4"
+        },
+        {
+          "code": "ES_EN2",
+          "name": "Electricity Consumption per Capita",
+          "unit": "kWh/person/year",
+          "method": "Annual electricity consumption per person (low consumption = high score)",
+          "thresholds": [
+            "None",
+            ">7000",
+            "6000–7000",
+            "4500-5999",
+            "3000-4999",
+            "<3000"
+          ],
+          "normalisation": "Per capita",
+          "source": "v4"
+        },
+        {
+          "code": "ES_EN3",
+          "name": "Energy Storage Capacity",
+          "unit": "MWh/10,000 inhabitants",
+          "method": "Energy storage capacity within the municipal boundaries",
+          "thresholds": [
+            "None",
+            "0.1–1",
+            "1.1-3",
+            "3.1-7.5",
+            "7.6-15",
+            ">15"
+          ],
+          "normalisation": "Per 10,000 inhabitants",
+          "source": "v4"
+        },
+        {
+          "code": "ES_EN4",
+          "name": "Natural Gas Consumption per Capita",
+          "unit": "m³/person/year",
+          "method": "Annual natural gas consumption per capita (low consumption = high score)",
+          "thresholds": [
+            "None",
+            ">1000",
+            "800–1000",
+            "500-799",
+            "200-499",
+            "<200"
+          ],
+          "normalisation": "Per capita",
+          "source": "v4"
+        },
+        {
+          "code": "ES_EN5",
+          "name": "Energy-Efficient Building Ratio",
+          "unit": "%",
+          "method": "The share of energy-efficient buildings in the total building stock",
+          "thresholds": [
+            "None",
+            "0.1–20",
+            "20.1–35",
+            "35.1–50",
+            "50.1–70",
+            ">70"
+          ],
+          "normalisation": "Ratio to total building stock",
+          "source": "v4"
+        },
+        {
+          "code": "ES_EN6",
+          "name": "SECAP (Sustainable Energy and Climate Action Plan) Implementation Level",
+          "unit": "Score",
+          "method": "The preparation, implementation and monitoring of SECAP",
+          "thresholds": [
+            "No plan",
+            "Preparation stage",
+            "Approved but not implemented",
+            "Partially implemented (<50%)",
+            "Largely implemented (≥50%)",
+            "Fully implemented and regularly monitored & evaluated"
+          ],
+          "normalisation": "Maturity level",
+          "source": "v4"
+        }
+      ]
+    },
+    "ES_CL": {
+      "code": "ES_CL",
+      "set": "ES",
+      "name": "Climate",
+      "indicators": [
+        {
+          "code": "ES_CL1",
+          "name": "Number of Extreme Weather Events",
+          "unit": "Number/year",
+          "method": "Average annual number of floods, storms, droughts, wildfires and other climate-related extreme events affecting the municipality",
+          "thresholds": [
+            "None",
+            ">2",
+            "1.6–2",
+            "1.1–1.5",
+            "0.6–1",
+            "0.1–0.5"
+          ],
+          "normalisation": "Per 10,000 inhabitants (10-year average)",
+          "source": "v4"
+        },
+        {
+          "code": "ES_CL2",
+          "name": "Drought Risk Index",
+          "unit": "Index",
+          "method": "Municipal drought risk based on meteorological, hydrological and land-use conditions",
+          "thresholds": [
+            "None",
+            ">0.80",
+            "0.65–0.80",
+            "0.50–0.64",
+            "0.20–0.49",
+            "<0.20"
+          ],
+          "normalisation": "Standardized Index (0–1)",
+          "source": "v4"
+        },
+        {
+          "code": "ES_CL3",
+          "name": "Number of Heatwave Days",
+          "unit": "Days/year",
+          "method": "Average annual number of days exceeding the nationally defined heatwave threshold",
+          "thresholds": [
+            "None",
+            ">50",
+            "36-50",
+            "21-35",
+            "11-20",
+            "1–10"
+          ],
+          "normalisation": "Annual average (last 10 years)",
+          "source": "v4"
+        },
+        {
+          "code": "ES_CL4",
+          "name": "Number of Climate Adaptation Scenario Analyses",
+          "unit": "Number",
+          "method": "Climate adaptation scenario analyses completed using GIS, modelling or decision-support tools",
+          "thresholds": [
+            "None",
+            "1.0",
+            "2–3",
+            "46177.0",
+            "46302.0",
+            ">10"
+          ],
+          "normalisation": "Per municipality (last 5 years)",
+          "source": "v4"
+        },
+        {
+          "code": "ES_CL5",
+          "name": "Air Quality Index (AQI) (PM 2.5, PM 10, NO2, O2, SO2, CO, etc.)",
+          "unit": "AQI",
+          "method": "Annual average Air Quality Index considering PM₂.₅, PM₁₀, NO₂, O₃, SO₂ and CO",
+          "thresholds": [
+            "None",
+            ">150",
+            "101–150",
+            "76–100",
+            "51-75",
+            "0-50"
+          ],
+          "normalisation": "Annual average",
+          "source": "v4"
+        }
+      ]
+    },
+    "ES_EF": {
+      "code": "ES_EF",
+      "set": "ES",
+      "name": "Ecological Footprint",
+      "indicators": [
+        {
+          "code": "ES_EF1",
+          "name": "Ecological Footprint per Capita",
+          "unit": "gha/person",
+          "method": "Total ecological footprint / population",
+          "thresholds": [
+            "None",
+            ">8.0",
+            "6.0–8.0",
+            "4.5–6.0",
+            "3.0–4.5",
+            "<3.0"
+          ],
+          "normalisation": "Per capita",
+          "source": "v4"
+        },
+        {
+          "code": "ES_EF2",
+          "name": "Water Footprint",
+          "unit": "m³/person/year",
+          "method": "Total water footprint / population",
+          "thresholds": [
+            "None",
+            ">2,000",
+            "1,700–2,000",
+            "1,400–1,700",
+            "1,100–1,400",
+            "<1,100"
+          ],
+          "normalisation": "Per capita",
+          "source": "v4"
+        },
+        {
+          "code": "ES_EF4",
+          "name": "Carbon Sink Area",
+          "unit": "%",
+          "method": "Carbon sink areas / total municipal area",
+          "thresholds": [
+            "None",
+            "0.1–5",
+            "5.1–15",
+            "15.1-30",
+            "30.1-50",
+            ">50"
+          ],
+          "normalisation": "Ratio to municipal area",
+          "source": "v4"
+        },
+        {
+          "code": "ES_EF5",
+          "name": "Number of Carbon-Neutral Neighborhoods",
+          "unit": "Number",
+          "method": "Certified or officially recognized carbon-neutral neighbourhoods",
+          "thresholds": [
+            "None",
+            "0.1",
+            "0.2-0.3",
+            "0.4-0.6",
+            "0.7-1",
+            ">1"
+          ],
+          "normalisation": "Per 10,000 inhabitants",
+          "source": "v4"
+        }
+      ]
+    },
+    "ES_LU": {
+      "code": "ES_LU",
+      "set": "ES",
+      "name": "Land Use",
+      "indicators": [
+        {
+          "code": "ES_LU1",
+          "name": "Built-up Area Ratio",
+          "unit": "%",
+          "method": "Built-up area / total municipal area",
+          "thresholds": [
+            "None",
+            ">80",
+            "70–80",
+            "60–70",
+            "40–60",
+            "<40"
+          ],
+          "normalisation": "Ratio to municipal area",
+          "source": "v4"
+        },
+        {
+          "code": "ES_LU2",
+          "name": "Agricultural Land Ratio",
+          "unit": "%",
+          "method": "Agricultural land / total municipal area",
+          "thresholds": [
+            "None",
+            "0.1–10",
+            "10.1–20",
+            "20.1–35",
+            "35.1–50",
+            ">50"
+          ],
+          "normalisation": "Ratio to municipal area",
+          "source": "v4"
+        },
+        {
+          "code": "ES_LU3",
+          "name": "Forest Area Ratio",
+          "unit": "%",
+          "method": "Forest area / total municipal area",
+          "thresholds": [
+            "None",
+            "0.1–10",
+            "10.1–20",
+            "20.1–35",
+            "35.1–50",
+            ">50"
+          ],
+          "normalisation": "Ratio to municipal area",
+          "source": "v4"
+        },
+        {
+          "code": "ES_LU4",
+          "name": "Natural Area Ratio",
+          "unit": "%",
+          "method": "Natural ecosystems / total municipal area",
+          "thresholds": [
+            "None",
+            "0.1–20",
+            "20.1–30",
+            "30.1–45",
+            "45.1–60",
+            ">60"
+          ],
+          "normalisation": "Ratio to municipal area",
+          "source": "v4"
+        },
+        {
+          "code": "ES_LU5",
+          "name": "Brownfield Area Ratio",
+          "unit": "%",
+          "method": "Brownfield area / urban area",
+          "thresholds": [
+            "None",
+            ">15",
+            "10–15",
+            "7–10",
+            "2–7",
+            "<2"
+          ],
+          "normalisation": "Ratio to urban area",
+          "source": "v4"
+        },
+        {
+          "code": "ES_LU6",
+          "name": "Protected Area Ratio",
+          "unit": "%",
+          "method": "Legally protected area / total municipal area",
+          "thresholds": [
+            "None",
+            "0.1–5",
+            "5.1–15",
+            "15.1–30",
+            "30.1–50",
+            ">50"
+          ],
+          "normalisation": "Ratio to municipal area",
+          "source": "v4"
+        },
+        {
+          "code": "ES_LU7",
+          "name": "Wetland Area",
+          "unit": "ha",
+          "method": "Wetland area / total municipal area",
+          "thresholds": [
+            "None",
+            "0.1–1",
+            "1.1–3",
+            "3.1–6",
+            "6.1–10",
+            ">10"
+          ],
+          "normalisation": "Ratio to municipal area",
+          "source": "v4"
+        },
+        {
+          "code": "ES_LU8",
+          "name": "Coastal Area Ratio",
+          "unit": "ha",
+          "method": "Coastal zone / total municipal area (applicable only to coastal municipalities)",
+          "thresholds": [
+            "0.0",
+            "0.1–5",
+            "5.1–10",
+            "10.1–20",
+            "20.1–40",
+            ">40"
+          ],
+          "normalisation": "Ratio to municipal area",
+          "source": "v4"
+        }
+      ]
+    },
+    "ES_WT": {
+      "code": "ES_WT",
+      "set": "ES",
+      "name": "Water",
+      "indicators": [
+        {
+          "code": "ES_WT1",
+          "name": "Urban Water Stress Ratio",
+          "unit": "%",
+          "method": "Annual water demand divided by available water resources",
+          "thresholds": [
+            "None",
+            ">100",
+            "90–100",
+            "75–89",
+            "40–74",
+            "<40"
+          ],
+          "normalisation": "Demand/Supply Ratio",
+          "source": "v4"
+        },
+        {
+          "code": "ES_WT2",
+          "name": "Water Surface Ratio",
+          "unit": "%",
+          "method": "Surface water area divided by total urban area",
+          "thresholds": [
+            "None",
+            "0.1–2",
+            "2.1–4",
+            "4.1–6",
+            "6.1–10",
+            ">10"
+          ],
+          "normalisation": "Ratio to urban area",
+          "source": "v4"
+        },
+        {
+          "code": "ES_WT3",
+          "name": "Daily Water Consumption per Capita",
+          "unit": "L/person/day",
+          "method": "Average daily domestic water consumption",
+          "thresholds": [
+            "None",
+            ">250",
+            "220–250",
+            "190–219",
+            "130–189",
+            "<130"
+          ],
+          "normalisation": "Per capita",
+          "source": "v4"
+        },
+        {
+          "code": "ES_WT4",
+          "name": "Water Loss and Leakage Ratio",
+          "unit": "%",
+          "method": "Percentage of water lost in the distribution network",
+          "thresholds": [
+            "None",
+            ">45",
+            "35–45",
+            "25–34",
+            "10–24",
+            "<10"
+          ],
+          "normalisation": "Ratio to water supplied",
+          "source": "v4"
+        },
+        {
+          "code": "ES_WT5",
+          "name": "Treated Wastewater Ratio",
+          "unit": "%",
+          "method": "Percentage of wastewater receiving treatment",
+          "thresholds": [
+            "None",
+            "0.1–40",
+            "40.1–60",
+            "60.1–80",
+            "80.1–95",
+            ">95"
+          ],
+          "normalisation": "Ratio to total wastewater",
+          "source": "v4"
+        },
+        {
+          "code": "ES_WT6",
+          "name": "Groundwater Usage Ratio",
+          "unit": "%",
+          "method": "Share of groundwater in total municipal water supply",
+          "thresholds": [
+            "None",
+            ">80",
+            "65–80",
+            "50–64",
+            "20–49",
+            "<20"
+          ],
+          "normalisation": "Ratio to total water use",
+          "source": "v4"
+        },
+        {
+          "code": "ES_WT7",
+          "name": "Modern Irrigation Ratio in Agriculture",
+          "unit": "%",
+          "method": "Agricultural land using modern irrigation systems",
+          "thresholds": [
+            "None",
+            "0.1–35",
+            "35.1–50",
+            "50.1–70",
+            "70.1–90",
+            ">90"
+          ],
+          "normalisation": "Ratio to agricultural area",
+          "source": "v4"
+        },
+        {
+          "code": "ES_WT8",
+          "name": "Water Resource Protection Area",
+          "unit": "ha",
+          "method": "Protected water resource areas divided by total municipal area",
+          "thresholds": [
+            "None",
+            "0.1–2",
+            "2.1–5",
+            "5.1–10",
+            "10.1–20",
+            ">20"
+          ],
+          "normalisation": "Ratio to municipal area",
+          "source": "v4"
+        },
+        {
+          "code": "ES_WT9",
+          "name": "Water Storage Reserve Capacity",
+          "unit": "Days",
+          "method": "Number of days that stored water can satisfy municipal demand",
+          "thresholds": [
+            "None",
+            "1–7",
+            "8–15",
+            "16–30",
+            "31–60",
+            ">60"
+          ],
+          "normalisation": "Demand satisfaction",
+          "source": "v4"
+        },
+        {
+          "code": "ES_WT10",
+          "name": "Coastal Water Quality Index",
+          "unit": "Index",
+          "method": "Coastal water quality based on national/EU monitoring standards",
+          "thresholds": [
+            "No monitoring",
+            "Poor",
+            "Moderate",
+            "Good",
+            "Very Good",
+            "Excellent"
+          ],
+          "normalisation": "Standardised index",
+          "source": "v4"
+        },
+        {
+          "code": "ES_WT11",
+          "name": "Number of Marine Pollution Incidents",
+          "unit": "Number/year",
+          "method": "Recorded marine pollution incidents per year",
+          "thresholds": [
+            "None",
+            ">20",
+            "11–20",
+            "46300.0",
+            "2–4",
+            "0.0"
+          ],
+          "normalisation": "Annual total",
+          "source": "v4"
+        }
+      ]
+    },
+    "ES_WA": {
+      "code": "ES_WA",
+      "set": "ES",
+      "name": "Waste",
+      "indicators": [
+        {
+          "code": "ES_WA1",
+          "name": "Recycling Rate",
+          "unit": "%",
+          "method": "Recycled municipal waste / total municipal waste",
+          "thresholds": [
+            "None",
+            "0.1–20",
+            "20.1–35",
+            "35.1–50",
+            "50.1–65",
+            ">65"
+          ],
+          "normalisation": "Ratio to total municipal waste",
+          "source": "v4"
+        },
+        {
+          "code": "ES_WA2",
+          "name": "Composting Rate",
+          "unit": "%",
+          "method": "Composted organic waste / total organic waste",
+          "thresholds": [
+            "None",
+            "0.1–10",
+            "10.1–20",
+            "20.1–35",
+            "35.1–50",
+            ">50"
+          ],
+          "normalisation": "Ratio to organic waste",
+          "source": "v4"
+        },
+        {
+          "code": "ES_WA3",
+          "name": "Amount of Electronic Waste Collected",
+          "unit": "kg/person/year",
+          "method": "Annual e-waste collected per person",
+          "thresholds": [
+            "None",
+            "0.1–3",
+            "3.1–5",
+            "5.1–8",
+            "8.1–12",
+            ">12"
+          ],
+          "normalisation": "Per capita",
+          "source": "v4"
+        },
+        {
+          "code": "ES_WA4",
+          "name": "Number of Hazardous Waste Collection Points",
+          "unit": "Number",
+          "method": "Authorized hazardous waste collection points",
+          "thresholds": [
+            "None",
+            "0.1",
+            "0.2–0.3",
+            "0.4–0.6",
+            "0.7–1",
+            ">1"
+          ],
+          "normalisation": "Per 10,000 inhabitants",
+          "source": "v4"
+        },
+        {
+          "code": "ES_WA5",
+          "name": "Recycling and Recovery Facility Capacity",
+          "unit": "ton/year",
+          "method": "Annual recycling facility capacity",
+          "thresholds": [
+            "None",
+            "0.1–500",
+            "501–1,000",
+            "1,001–2,500",
+            "2.501–5,000",
+            ">5,000"
+          ],
+          "normalisation": "Per 10,000 inhabitants",
+          "source": "v4"
+        },
+        {
+          "code": "ES_WA6",
+          "name": "Number of Reuse and Repair Centers",
+          "unit": "Number",
+          "method": "Public/private reuse and repair centers",
+          "thresholds": [
+            "None",
+            "1.0",
+            "0.2–0.3",
+            "0.4–0.6",
+            "0.7–1",
+            ">1"
+          ],
+          "normalisation": "Per 10,000 inhabitants",
+          "source": "v4"
+        },
+        {
+          "code": "ES_WA7",
+          "name": "Industrial Waste Recycling Rate",
+          "unit": "%",
+          "method": "Recycled industrial waste / total industrial waste",
+          "thresholds": [
+            "None",
+            "0.1–35",
+            "35.1–50",
+            "50.1–65",
+            "65.1–80",
+            ">80"
+          ],
+          "normalisation": "Ratio to industrial waste",
+          "source": "v4"
+        },
+        {
+          "code": "ES_WA8",
+          "name": "Number of Zero Waste Certified Institutions",
+          "unit": "Number",
+          "method": "Certified Zero Waste institutions",
+          "thresholds": [
+            "None",
+            "1–5",
+            "0.6–1.5",
+            "1.6-3",
+            "3.1-6",
+            ">6"
+          ],
+          "normalisation": "Per 10,000 inhabitants",
+          "source": "v4"
+        }
+      ]
+    },
+    "ES_DS": {
+      "code": "ES_DS",
+      "set": "ES",
+      "name": "Disaster",
+      "indicators": [
+        {
+          "code": "ES_DS1",
+          "name": "Disaster Assembly Area Capacity",
+          "unit": "%",
+          "method": "Capacity of designated assembly areas relative to total population",
+          "thresholds": [
+            "None",
+            "0.1–40",
+            "40.1–60",
+            "60.1–80",
+            "80.1–100",
+            ">100"
+          ],
+          "normalisation": "Ratio to population",
+          "source": "v4"
+        },
+        {
+          "code": "ES_DS3",
+          "name": "Number of Urban Flood Events",
+          "unit": "Events/year",
+          "method": "Recorded urban flood events per year",
+          "thresholds": [
+            "None",
+            ">20",
+            "16–20",
+            "11–15",
+            "6–10",
+            "1–5"
+          ],
+          "normalisation": "Annual",
+          "source": "v4"
+        },
+        {
+          "code": "ES_DS4",
+          "name": "Share of Built-up Area in Flood Zones",
+          "unit": "%",
+          "method": "Built-up area located within flood hazard zones",
+          "thresholds": [
+            "None",
+            ">40",
+            "30–40",
+            "20–30",
+            "10–20",
+            "<10"
+          ],
+          "normalisation": "Ratio to total built-up area",
+          "source": "v4"
+        },
+        {
+          "code": "ES_DS5",
+          "name": "Share of Built-up Area in Landslide Zones",
+          "unit": "%",
+          "method": "Built-up area located within landslide hazard zones",
+          "thresholds": [
+            "None",
+            ">30",
+            "20–30",
+            "15–20",
+            "5–15",
+            "<5"
+          ],
+          "normalisation": "Ratio to total built-up area",
+          "source": "v4"
+        },
+        {
+          "code": "ES_DS6",
+          "name": "Crisis Information Dissemination Time",
+          "unit": "Hours",
+          "method": "Average time required to disseminate official emergency information",
+          "thresholds": [
+            "None",
+            ">24",
+            "12–24",
+            "6–12",
+            "3–6",
+            "<3"
+          ],
+          "normalisation": "Average response time",
+          "source": "v4"
+        },
+        {
+          "code": "ES_DS9",
+          "name": "Area Affected by Coastal Erosion",
+          "unit": "%",
+          "method": "Coastal area affected by erosion",
+          "thresholds": [
+            "None",
+            ">40",
+            "30–40",
+            "20–30",
+            "10–20",
+            "<10"
+          ],
+          "normalisation": "Ratio to total coastline",
+          "source": "v4"
+        },
+        {
+          "code": "ES_DS10",
+          "name": "Coastal Flood Risk Area",
+          "unit": "%",
+          "method": "Area exposed to coastal flooding",
+          "thresholds": [
+            "None",
+            ">20",
+            "15–20",
+            "10–15",
+            "5–10",
+            "<5"
+          ],
+          "normalisation": "Ratio to municipal area",
+          "source": "v4"
+        },
+        {
+          "code": "ES_DS11",
+          "name": "Sea Level Rise Impact Area",
+          "unit": "%",
+          "method": "Projected area affected under sea level rise scenarios",
+          "thresholds": [
+            "None",
+            ">20",
+            "15–20",
+            "10–15",
+            "5–10",
+            "<5"
+          ],
+          "normalisation": "Ratio to municipal area",
+          "source": "v4"
+        }
+      ]
+    },
+    "ES_PO": {
+      "code": "ES_PO",
+      "set": "ES",
+      "name": "Population",
+      "indicators": [
+        {
+          "code": "ES_PO1",
+          "name": "Population Exposed to Poor Air Quality",
+          "unit": "%",
+          "method": "Population exposed to annual air quality exceeding WHO or national standards",
+          "thresholds": [
+            "None",
+            ">50",
+            "40–50",
+            "30–40",
+            "10–30",
+            "<10"
+          ],
+          "normalisation": "Ratio to total population",
+          "source": "v4"
+        },
+        {
+          "code": "ES_PO2",
+          "name": "Population Exposed to Disaster Risk",
+          "unit": "%",
+          "method": "Socially vulnerable population (elderly, children, disabled, low-income groups) living within designated disaster risk zones",
+          "thresholds": [
+            "None",
+            ">50",
+            "40–50",
+            "30–40",
+            "10–30",
+            "<10"
+          ],
+          "normalisation": "Ratio to socially vulnerable population",
+          "source": "v4"
+        },
+        {
+          "code": "ES_PO3",
+          "name": "Population Exposed to Heatwaves",
+          "unit": "%",
+          "method": "Vulnerable population living in areas with high heatwave exposure",
+          "thresholds": [
+            "None",
+            ">50",
+            "40–50",
+            "30–40",
+            "10–30",
+            "<10"
+          ],
+          "normalisation": "Ratio to vulnerable population",
+          "source": "v4"
+        },
+        {
+          "code": "ES_PO7",
+          "name": "Climate-Related Disease Rate",
+          "unit": "%",
+          "method": "Percentage of the population diagnosed with climate-related respiratory diseases (e.g., asthma, COPD exacerbations associated with air pollution, heat, or wildfire smoke)",
+          "thresholds": [
+            "None",
+            ">12",
+            "9–12",
+            "6–8.9",
+            "2–5.9",
+            "<2"
+          ],
+          "normalisation": "Percentage of total population",
+          "source": "v4"
+        }
+      ]
+    },
+    "ES_SI": {
+      "code": "ES_SI",
+      "set": "ES",
+      "name": "Smart Infrastructure",
+      "indicators": [
+        {
+          "code": "ES_SI1",
+          "name": "Number of Air Quality Monitoring Stations",
+          "unit": "Number",
+          "method": "Active air quality monitoring stations",
+          "thresholds": [
+            "None",
+            "0.1",
+            "0.2-0.3",
+            "0.4-0.6",
+            "0.7-1.2",
+            ">1.2"
+          ],
+          "normalisation": "Per 10,000 inhabitants",
+          "source": "v4"
+        },
+        {
+          "code": "ES_SI2",
+          "name": "Industrial Filtration Rate",
+          "unit": "%",
+          "method": "Industries equipped with certified filtration systems",
+          "thresholds": [
+            "None",
+            "0.1–40",
+            "40.1–60",
+            "60.1–75",
+            "75.1–90",
+            ">90"
+          ],
+          "normalisation": "Ratio to industrial facilities",
+          "source": "v4"
+        },
+        {
+          "code": "ES_SI3",
+          "name": "Carbon Monitoring System",
+          "unit": "Index",
+          "method": "Development and implementation level of municipal carbon monitoring system",
+          "thresholds": [
+            "No system",
+            "Planning stage",
+            "Pilot implementation",
+            "Partial implementation",
+            "Fully operational",
+            "Fully operational with real-time reporting and annual verification"
+          ],
+          "normalisation": "Maturity level",
+          "source": "v4"
+        },
+        {
+          "code": "ES_SI4",
+          "name": "Smart Water Meter Coverage",
+          "unit": "%",
+          "method": "Subscribers using smart water meters",
+          "thresholds": [
+            "None",
+            "0.1–25",
+            "25.1–45",
+            "45.1–65",
+            "65.1–85",
+            ">85"
+          ],
+          "normalisation": "Ratio to water subscribers",
+          "source": "v4"
+        },
+        {
+          "code": "ES_SI5",
+          "name": "Number of Water Data Monitoring Stations",
+          "unit": "Number",
+          "method": "Active hydrological monitoring stations",
+          "thresholds": [
+            "None",
+            "1.0",
+            "46083.0",
+            "46177.0",
+            "46363.0",
+            ">12"
+          ],
+          "normalisation": "Per 100 km² municipal area",
+          "source": "v4"
+        },
+        {
+          "code": "ES_SI6",
+          "name": "Existence of Digital Waste Monitoring System",
+          "unit": "Index",
+          "method": "Digital monitoring of municipal waste streams",
+          "thresholds": [
+            "No system",
+            "Planning stage",
+            "Pilot application",
+            "Partial implementation",
+            "Fully operational",
+            "Integrated with real-time monitoring and reporting"
+          ],
+          "normalisation": "Maturity level",
+          "source": "v4"
+        },
+        {
+          "code": "ES_SI7",
+          "name": "Number of Smart Climate Monitoring Sensors",
+          "unit": "Number",
+          "method": "IoT-based climate monitoring sensors",
+          "thresholds": [
+            "None",
+            "46143.0",
+            "46301.0",
+            "11-25",
+            "26-50",
+            ">50"
+          ],
+          "normalisation": "Per 100 km² municipal area",
+          "source": "v4"
+        },
+        {
+          "code": "ES_SI10",
+          "name": "Number of Coastal Monitoring Stations",
+          "unit": "Number",
+          "method": "Coastal environmental monitoring stations",
+          "thresholds": [
+            "None",
+            "1.0",
+            "46083.0",
+            "46177.0",
+            "46363.0",
+            ">12"
+          ],
+          "normalisation": "Per 100 km coastline",
+          "source": "v4"
+        }
+      ]
+    },
+    "SS_CA": {
+      "code": "SS_CA",
+      "set": "SS",
+      "name": "Climate Awareness",
+      "indicators": [
+        {
+          "code": "SS_CA_1",
+          "name": "Number of Climate and Environmental Awareness Campaigns",
+          "unit": "Campaigns per 10,000 population / year",
+          "method": "Total number of municipal climate and environmental awareness campaigns conducted annually, divided by population and multiplied by 10,000.",
+          "thresholds": [
+            "None",
+            "< 1",
+            "1–2",
+            "3–5",
+            "6–10",
+            "≥ 11"
+          ],
+          "normalisation": "Campaigns per 10,000 population per year",
+          "source": "v4"
+        },
+        {
+          "code": "SS_CA_2",
+          "name": "Rate of Municipal Staff Trained on Climate Adaptation",
+          "unit": "%",
+          "method": "(Number of municipal staff who have completed climate adaptation training ÷ Total number of municipal staff) × 100",
+          "thresholds": [
+            "None",
+            "0.1–10",
+            "10.1–25",
+            "25.1–50",
+            "50.1–75",
+            "> 75"
+          ],
+          "normalisation": "Percentage of total municipal staff (%)",
+          "source": "v4"
+        },
+        {
+          "code": "SS_CA_3",
+          "name": "Number of Climate Adaptation Training Programmes",
+          "unit": "Programmes per year",
+          "method": "Total number of distinct climate adaptation training programmes delivered annually to citizens and/or municipal staff.",
+          "thresholds": [
+            "None",
+            "1.0",
+            "2–3",
+            "4–6",
+            "7–10",
+            "≥ 11"
+          ],
+          "normalisation": "Number of programmes per year",
+          "source": "v4"
+        },
+        {
+          "code": "SS_CA_4",
+          "name": "Number of Participants in Circular Economy Training",
+          "unit": "Participants per 10,000 population / year",
+          "method": "Number of participants attending circular economy training programmes, divided by population and multiplied by 10,000.",
+          "thresholds": [
+            "None",
+            "< 5",
+            "5–10",
+            "11–20",
+            "21–40",
+            "> 40"
+          ],
+          "normalisation": "Participants per 10,000 population per year",
+          "source": "v4"
+        }
+      ]
+    },
+    "SS_EC": {
+      "code": "SS_EC",
+      "set": "SS",
+      "name": "Education & Capacity",
+      "indicators": [
+        {
+          "code": "SS_VE_1",
+          "name": "Citizen Participation Rate in Climate Action Planning",
+          "unit": "Participants per 10,000 population / year",
+          "method": "Number of citizens participating in formal municipal climate action planning activities annually, divided by population and multiplied by 10,000.",
+          "thresholds": [
+            "None",
+            "< 1",
+            "1–5",
+            "6–15",
+            "16–30",
+            "> 30"
+          ],
+          "normalisation": "Participants per 10,000 population per year",
+          "source": "v4"
+        },
+        {
+          "code": "SS_VE_2",
+          "name": "Participation Rate of Citizens in the Decision-Making Process",
+          "unit": "Participants per 10,000 population / year",
+          "method": "(Number of participating citizens ÷ total municipal populatiion) × 10,000",
+          "thresholds": [
+            "None",
+            "0.1–10",
+            "10.1–20",
+            "20.1–35",
+            "35.1–50",
+            "> 50"
+          ],
+          "normalisation": "Participants per 10,000 population per year",
+          "source": "v4"
+        },
+        {
+          "code": "SS_VE_3",
+          "name": "Participation Rate in Multi-Stakeholder Strategy Meetings",
+          "unit": "Participants per 10,000 population / year",
+          "method": "(Number of participating stakeholders ÷ total municipal stakeholders) × 10,000",
+          "thresholds": [
+            "None",
+            "< 20",
+            "20–35",
+            "36–50",
+            "51–70",
+            "> 70"
+          ],
+          "normalisation": "Participants stakeholders per 10,000 population per year",
+          "source": "v4"
+        },
+        {
+          "code": "SS_VE_4",
+          "name": "Number of Registered Disaster Volunteers",
+          "unit": "Volunteers per 10,000 population",
+          "method": "Number of citizens formally registered as disaster preparedness and response volunteers, divided by population and multiplied by 10,000.",
+          "thresholds": [
+            "None",
+            "< 1",
+            "1–5",
+            "6–15",
+            "16–30",
+            "> 30"
+          ],
+          "normalisation": "Volunteers per 10,000 population",
+          "source": "v4"
+        },
+        {
+          "code": "SS_VE_6",
+          "name": "Municipal Climate Adaptation Activities Targeting Refugees, Migrants and Linguistically Diverse Groups",
+          "unit": "Activities per 10,000 population / year",
+          "method": "Number of municipal climate adaptation activities or programmes specifically designed for refugees, migrants, and linguistically diverse groups annually, divided by population and multiplied by 10,000.",
+          "thresholds": [
+            "None",
+            "< 1",
+            "1–2",
+            "3–5",
+            "6–10",
+            "> 10"
+          ],
+          "normalisation": "Activities per 10,000 population per year",
+          "source": "v4"
+        },
+        {
+          "code": "SS_VE_7",
+          "name": "Number of Languages in Which Climate Risk Information is Officially Communicated",
+          "unit": "Number of languages",
+          "method": "Count of distinct languages in which the municipality officially disseminates climate risk information (e.g. early warnings, adaptation guides, evacuation plans).",
+          "thresholds": [
+            "1 (official only)",
+            "2.0",
+            "3.0",
+            "4–5",
+            "6–8",
+            "≥ 9"
+          ],
+          "normalisation": "Absolute count of languages",
+          "source": "v4"
+        },
+        {
+          "code": "SS_GJ_3",
+          "name": "Number of Urban Greening Projects in Climate-Vulnerable Districts",
+          "unit": "Projects per 100,000 population",
+          "method": "Number of completed or actively ongoing municipal urban greening projects (urban forests, green corridors, pocket parks, permeable surfaces) in officially designated climate-vulnerable or socially deprived districts, per 100,000 population.",
+          "thresholds": [
+            "None",
+            "< 1",
+            "1–2",
+            "3–5",
+            "6–10",
+            "> 10"
+          ],
+          "normalisation": "Projects per 100,000 population",
+          "source": "v4"
+        },
+        {
+          "code": "SS_GJ_2",
+          "name": "Share of Population Within 300 m of a Green or Cooling Space",
+          "unit": "%",
+          "method": "(Number of residents living within 300 m walking distance of any publicly accessible green or designated cooling space ÷ Total municipal population) × 100. Measured via GIS spatial analysis.",
+          "thresholds": [
+            "< 20",
+            "20–35",
+            "36–50",
+            "51–70",
+            "71–85",
+            "> 85"
+          ],
+          "normalisation": "% of municipal population",
+          "source": "v4"
+        }
+      ]
+    },
+    "SS_PV": {
+      "code": "SS_PV",
+      "set": "SS",
+      "name": "Participation",
+      "indicators": [
+        {
+          "code": "SS_PV_1",
+          "name": "Citizen Participation in Climate Action Planning",
+          "unit": "persons per year",
+          "method": "annual total",
+          "thresholds": [
+            "Municipality",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ],
+          "normalisation": "",
+          "source": "v2"
+        },
+        {
+          "code": "SS_PV_2",
+          "name": "Number of Participatory Planning Meetings",
+          "unit": "number per year",
+          "method": "annual total",
+          "thresholds": [
+            "Municipality",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ],
+          "normalisation": "",
+          "source": "v2"
+        },
+        {
+          "code": "SS_PV_3",
+          "name": "Participation Rate in the Planning Process",
+          "unit": "%",
+          "method": "share of stakeholders",
+          "thresholds": [
+            "Survey",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ],
+          "normalisation": "",
+          "source": "v2"
+        },
+        {
+          "code": "SS_PV_4",
+          "name": "Number of Multi-Stakeholder Strategy Meetings",
+          "unit": "number per year",
+          "method": "annual total",
+          "thresholds": [
+            "Directorate of Strategy",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ],
+          "normalisation": "",
+          "source": "v2"
+        },
+        {
+          "code": "SS_PV_5",
+          "name": "Number of Disaster Volunteers",
+          "unit": "persons",
+          "method": "total",
+          "thresholds": [
+            "AFAD (Disaster and Emergency Management Authority)",
+            "Municipal Data",
+            "",
+            "",
+            "",
+            ""
+          ],
+          "normalisation": "measurable",
+          "source": "v2"
+        },
+        {
+          "code": "SS_PV_6",
+          "name": "Number of Crisis Management Partnerships",
+          "unit": "number",
+          "method": "total",
+          "thresholds": [
+            "External Relations Unit",
+            "Municipal Data",
+            "",
+            "",
+            "",
+            ""
+          ],
+          "normalisation": "measurable",
+          "source": "v2"
+        }
+      ]
+    },
+    "SS_PP": {
+      "code": "SS_PP",
+      "set": "SS",
+      "name": "Plans & Programs",
+      "indicators": [
+        {
+          "code": "SS_GL_1",
+          "name": "Share of Municipal Support Programmes Targeting Climate-Affected Small Businesses",
+          "unit": "%",
+          "method": "(Number of municipal economic support programmes with explicit climate-affected small business eligibility ÷ Total number of municipal economic support programmes) × 100",
+          "thresholds": [
+            "None",
+            "< 5",
+            "5–15",
+            "16–30",
+            "31–50",
+            "> 50"
+          ],
+          "normalisation": "% of municipal economic support programmes",
+          "source": "v4"
+        },
+        {
+          "code": "SS_GL_2",
+          "name": "Number of Climate Adaptation Micro-Grants or Subsidies Distributed",
+          "unit": "Grants per 100,000 population",
+          "method": "Total number of individual micro-grants, subsidies, or vouchers disbursed by the municipality for climate adaptation purposes (e.g. insulation, flood protection, green roofs), per 100,000 population per year.",
+          "thresholds": [
+            "None",
+            "< 5",
+            "5–15",
+            "16–40",
+            "41–80",
+            "> 80"
+          ],
+          "normalisation": "Grants per 100,000 population per year",
+          "source": "v4"
+        },
+        {
+          "code": "SS_GL_3",
+          "name": "Number of Green Job Training Programmes",
+          "unit": "Numeric",
+          "method": "Count of Number of Green Job Training Programmes (annually)",
+          "thresholds": [
+            "None",
+            "1.0",
+            "2.0",
+            "3.0",
+            "4.0",
+            ">5"
+          ],
+          "normalisation": "numeric",
+          "source": "v4"
+        },
+        {
+          "code": "SS_PP_1",
+          "name": "Number of Climate Action Volunteering Programs",
+          "unit": "number per year",
+          "method": "annual total",
+          "thresholds": [
+            "Municipality / NGO",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ],
+          "normalisation": "",
+          "source": "v2"
+        },
+        {
+          "code": "SS_PP_2",
+          "name": "Number of Digital Literacy Programs for Climate Action",
+          "unit": "number per year",
+          "method": "annual total",
+          "thresholds": [
+            "Information Technology Department",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ],
+          "normalisation": "",
+          "source": "v2"
+        },
+        {
+          "code": "SS_PP_3",
+          "name": "Number of Sustainability Training Programs",
+          "unit": "number per year",
+          "method": "annual total",
+          "thresholds": [
+            "Department of Education",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ],
+          "normalisation": "",
+          "source": "v2"
+        },
+        {
+          "code": "SS_PP_4",
+          "name": "Number of Climate Adaptation Projects",
+          "unit": "number per year",
+          "method": "annual total",
+          "thresholds": [
+            "Project Office",
+            "Municipal Data",
+            "",
+            "",
+            "",
+            ""
+          ],
+          "normalisation": "measurable",
+          "source": "v2"
+        },
+        {
+          "code": "SS_PP_5",
+          "name": "Number of Social Resilience Projects",
+          "unit": "number per year",
+          "method": "annual total",
+          "thresholds": [
+            "Municipality / Migration Authority",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ],
+          "normalisation": "",
+          "source": "v2"
+        },
+        {
+          "code": "SS_PP_6",
+          "name": "Number of Social Cohesion Programs",
+          "unit": "number per year",
+          "method": "annual total",
+          "thresholds": [
+            "Energy Management",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ],
+          "normalisation": "",
+          "source": "v2"
+        },
+        {
+          "code": "SS_PP_7",
+          "name": "Number of Urban Heat Island Mitigation Projects",
+          "unit": "number per year",
+          "method": "annual total",
+          "thresholds": [
+            "Parks and Gardens",
+            "Municipal Data",
+            "",
+            "",
+            "",
+            ""
+          ],
+          "normalisation": "",
+          "source": "v2"
+        },
+        {
+          "code": "SS_PP_8",
+          "name": "Number of Residential Energy Retrofit Programs",
+          "unit": "number per year",
+          "method": "annual total",
+          "thresholds": [
+            "Public Works Department",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ],
+          "normalisation": "",
+          "source": "v2"
+        },
+        {
+          "code": "SS_PP_9",
+          "name": "Number of Microclimate Improvement Green Projects",
+          "unit": "number",
+          "method": "annual total",
+          "thresholds": [
+            "Parks and Gardens",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ],
+          "normalisation": "",
+          "source": "v2"
+        },
+        {
+          "code": "SS_PP_10",
+          "name": "Number of Habitat Restoration Projects",
+          "unit": "number per year",
+          "method": "annual total",
+          "thresholds": [
+            "Directorate of Environment",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ],
+          "normalisation": "",
+          "source": "v2"
+        },
+        {
+          "code": "SS_PP_11",
+          "name": "Number of Species Monitoring Programs",
+          "unit": "number",
+          "method": "annual total",
+          "thresholds": [
+            "Directorate of Environment",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ],
+          "normalisation": "",
+          "source": "v2"
+        },
+        {
+          "code": "SS_PP_12",
+          "name": "Number of Ecological Education Programs",
+          "unit": "number per year",
+          "method": "annual total",
+          "thresholds": [
+            "Department of Education",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ],
+          "normalisation": "",
+          "source": "v2"
+        },
+        {
+          "code": "SS_PP_13",
+          "name": "Existence of Water Management Plan",
+          "unit": "0–1",
+          "method": "yes/no",
+          "thresholds": [
+            "Water Administration",
+            "Municipal Water Supply and Sewerage Enterprise of Kavala (DEYAK)",
+            "",
+            "",
+            "",
+            ""
+          ],
+          "normalisation": "measurable",
+          "source": "v2"
+        },
+        {
+          "code": "SS_PP_14",
+          "name": "Existence of Drought Action Plan",
+          "unit": "0–1",
+          "method": "yes/no",
+          "thresholds": [
+            "Directorate of Strategy",
+            "Municipal Water Supply and Sewerage Enterprise of Kavala (DEYAK)",
+            "",
+            "",
+            "",
+            ""
+          ],
+          "normalisation": "measurable",
+          "source": "v2"
+        },
+        {
+          "code": "SS_PP_15",
+          "name": "Number of Water Innovative Technology Projects",
+          "unit": "number per year",
+          "method": "annual total",
+          "thresholds": [
+            "Water Administration",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ],
+          "normalisation": "",
+          "source": "v2"
+        },
+        {
+          "code": "SS_PP_16",
+          "name": "Number of Coastal Restoration Projects",
+          "unit": "number per year",
+          "method": "annual total",
+          "thresholds": [
+            "Directorate of Environment",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ],
+          "normalisation": "",
+          "source": "v2"
+        },
+        {
+          "code": "SS_PP_17",
+          "name": "Existence of Coastal Area Management Plan",
+          "unit": "0–1",
+          "method": "yes/no",
+          "thresholds": [
+            "Directorate of Strategy",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ],
+          "normalisation": "",
+          "source": "v2"
+        },
+        {
+          "code": "SS_PP_18",
+          "name": "Number of Nature-Based Coastal Solution Projects",
+          "unit": "number per year",
+          "method": "annual total",
+          "thresholds": [
+            "Parks and Gardens",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ],
+          "normalisation": "",
+          "source": "v2"
+        },
+        {
+          "code": "SS_PP_19",
+          "name": "Number of Ecological Footprint Reduction Projects",
+          "unit": "number per year",
+          "method": "annual total",
+          "thresholds": [
+            "Directorate of Environment",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ],
+          "normalisation": "",
+          "source": "v2"
+        },
+        {
+          "code": "SS_PP_20",
+          "name": "Community-Based Consumption Reduction Project",
+          "unit": "number",
+          "method": "total",
+          "thresholds": [
+            "NGO / Municipality",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ],
+          "normalisation": "",
+          "source": "v2"
+        },
+        {
+          "code": "SS_PP_21",
+          "name": "Number of Community-Based Circular Economy Projects",
+          "unit": "number per year",
+          "method": "annual total",
+          "thresholds": [
+            "Project Office",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ],
+          "normalisation": "",
+          "source": "v2"
+        },
+        {
+          "code": "SS_PP_22",
+          "name": "Number of Water Efficiency Projects",
+          "unit": "number per year",
+          "method": "annual total",
+          "thresholds": [
+            "Water Administration",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ],
+          "normalisation": "",
+          "source": "v2"
+        },
+        {
+          "code": "SS_PP_23",
+          "name": "Number of Smart Security Projects",
+          "unit": "number",
+          "method": "total",
+          "thresholds": [
+            "Smart City Unit",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ],
+          "normalisation": "",
+          "source": "v2"
+        },
+        {
+          "code": "SS_PP_24",
+          "name": "Number of Green Infrastructure Projects",
+          "unit": "number",
+          "method": "total",
+          "thresholds": [
+            "Parks and Gardens",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ],
+          "normalisation": "",
+          "source": "v2"
+        },
+        {
+          "code": "SS_PP_25",
+          "name": "Air Quality Management Plan",
+          "unit": "0–1",
+          "method": "yes/no",
+          "thresholds": [
+            "Directorate of Strategy",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ],
+          "normalisation": "",
+          "source": "v2"
+        },
+        {
+          "code": "SS_PP_26",
+          "name": "Energy Management Plan",
+          "unit": "0–1",
+          "method": "yes/no",
+          "thresholds": [
+            "Directorate of Strategy",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ],
+          "normalisation": "",
+          "source": "v2"
+        },
+        {
+          "code": "SS_PP_27",
+          "name": "Ecological Management Plan",
+          "unit": "0–1",
+          "method": "yes/no",
+          "thresholds": [
+            "Directorate of Strategy",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ],
+          "normalisation": "",
+          "source": "v2"
+        },
+        {
+          "code": "SS_PP_28",
+          "name": "Land Use Management Plan",
+          "unit": "0–1",
+          "method": "yes/no",
+          "thresholds": [
+            "Directorate of Strategy",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ],
+          "normalisation": "",
+          "source": "v2"
+        },
+        {
+          "code": "SS_PP_29",
+          "name": "Existence of Risk Management Plan",
+          "unit": "0–1",
+          "method": "yes/no",
+          "thresholds": [
+            "Strategy Unit",
+            "Municipal Data",
+            "",
+            "",
+            "",
+            ""
+          ],
+          "normalisation": "measurable",
+          "source": "v2"
+        },
+        {
+          "code": "SS_PP_30",
+          "name": "Disaster Risk Reduction Plan",
+          "unit": "0–1",
+          "method": "yes/no",
+          "thresholds": [
+            "AFAD (Disaster and Emergency Management Authority)",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ],
+          "normalisation": "",
+          "source": "v2"
+        },
+        {
+          "code": "SS_PP_31",
+          "name": "Number of Circular Economy Projects",
+          "unit": "number per year",
+          "method": "annual total",
+          "thresholds": [
+            "Project Office",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ],
+          "normalisation": "",
+          "source": "v2"
+        },
+        {
+          "code": "SS_PP_32",
+          "name": "Number of Climate Adaptation Training Programs",
+          "unit": "number per year",
+          "method": "annual total",
+          "thresholds": [
+            "Department of Education",
+            "Municipal Data",
+            "",
+            "",
+            "",
+            ""
+          ],
+          "normalisation": "measurable",
+          "source": "v2"
+        },
+        {
+          "code": "SS_PP_33",
+          "name": "Number of Circular Economy Projects",
+          "unit": "number",
+          "method": "number per year",
+          "thresholds": [
+            "Project Unit",
+            "Municipal Data",
+            "",
+            "",
+            "",
+            ""
+          ],
+          "normalisation": "measurable",
+          "source": "v2"
+        }
+      ]
+    },
+    "SS_SRM": {
+      "code": "SS_SRM",
+      "set": "SS",
+      "name": "Security & Risk",
+      "indicators": [
+        {
+          "code": "SS_SRM_1",
+          "name": "Coverage of Social Support During Crisis",
+          "unit": "%",
+          "method": "(Number of vulnerable persons receiving social support during declared crisis or disaster event ÷ Total number of identified vulnerable persons) × 100",
+          "thresholds": [
+            "< 10",
+            "10–25",
+            "26–50",
+            "51–75",
+            "76–90",
+            "> 90"
+          ],
+          "normalisation": "% of vulnerable population covered",
+          "source": "v4"
+        },
+        {
+          "code": "SS_SRM_4",
+          "name": "Disaster and Crisis Drill Intensity (Annual number of drills per 10,000 population)",
+          "unit": "number of drills per 10,000 people",
+          "method": "Annual number of disaster and crisis drills \n conducted by municipal units / Municipal \n population × 10,000",
+          "thresholds": [
+            "None",
+            "≤ 0,5",
+            "0,5-0,99",
+            "1-1,49",
+            "1,5-1,99",
+            ">2"
+          ],
+          "normalisation": "per 10,000 people",
+          "source": "v4"
+        },
+        {
+          "code": "SS_SRM_6",
+          "name": "Post-Crisis Psychosocial Support Capacity",
+          "unit": "Experts per 100,000 population",
+          "method": "Number of qualified psychosocial support experts (psychologists, social workers, counsellors) formally assigned or contracted for post-disaster response, per 100,000 population.",
+          "thresholds": [
+            "0.0",
+            "1–3",
+            "4–7",
+            "8–14",
+            "15–20",
+            "> 20"
+          ],
+          "normalisation": "Experts per 100,000 population",
+          "source": "v4"
+        },
+        {
+          "code": "SS_SRM_7",
+          "name": "Disaster-Affected Persons (Sendai Framework Target B)",
+          "unit": "Persons per 100,000 population / year (5-year avg)",
+          "method": "Five-year average of the annual number of persons directly affected by disasters (injured, displaced, requiring emergency assistance) per 100,000 population, following Sendai Framework indicator B-2 methodology.",
+          "thresholds": [
+            "No data",
+            "> 2,000",
+            "1,001–2,000",
+            "501–1,000",
+            "101–500",
+            "< 100"
+          ],
+          "normalisation": "Persons per 100,000 population per year (5-year rolling average)",
+          "source": "v4"
+        },
+        {
+          "code": "SS_SRM_8",
+          "name": "Number of Crisis Management Partnerships",
+          "unit": "Partnerships per 10,000 population",
+          "method": "Number of formal inter-institutional partnerships established for disaster and crisis management (MOUs, protocols, joint task forces), divided by population and multiplied by 10,000.",
+          "thresholds": [
+            "None",
+            "< 0.1",
+            "0.1–0.2",
+            "0.3–0.5",
+            "0.6–0.8",
+            "> 0.8"
+          ],
+          "normalisation": "Partnerships per 10,000 population",
+          "source": "v4"
+        }
+      ]
+    },
+    "MS_INC": {
+      "code": "MS_INC",
+      "set": "MS",
+      "name": "Institutional Capacity",
+      "indicators": [
+        {
+          "code": "MS_INC_1",
+          "name": "Municipal Staff Density (Number of Staff per 10,000 People)",
+          "unit": "persons per 10,000",
+          "method": "Number of Staff per 10,000 People",
+          "thresholds": [
+            "None",
+            "≤ 50",
+            "51-100",
+            "101-170",
+            "171-300",
+            "≥ 301"
+          ],
+          "normalisation": "per 10,000 people",
+          "source": "v4"
+        },
+        {
+          "code": "MS_INC_2",
+          "name": "Ratio of Technical/Expert Staff (Engineers, architects, urban planners, disaster specialists, etc.)",
+          "unit": "%",
+          "method": "Share of technical and expert staff \n(engineers, architects, urban \nplanners, disaster specialists, etc.) \nin total municipal workforce",
+          "thresholds": [
+            "None",
+            "≤ 10%",
+            "11-20%",
+            "21-35%",
+            "36-49%",
+            "≥ 50%"
+          ],
+          "normalisation": "%",
+          "source": "v4"
+        },
+        {
+          "code": "MS_INC_3",
+          "name": "Share of Staff Working in Critical Units (climate, disaster, planning, etc.)",
+          "unit": "%",
+          "method": "Number of staff in climate, disaster \nrisk, urban planning, and \nenvironmental units divided by total \nmunicipal staff × 100",
+          "thresholds": [
+            "None",
+            "≤ 2%",
+            "3-5%",
+            "6-10%",
+            "11-14%",
+            "≥ 15%"
+          ],
+          "normalisation": "%",
+          "source": "v4"
+        },
+        {
+          "code": "MS_INC_4",
+          "name": "Share of Personnel Assigned to Climate Change Mitigation",
+          "unit": "%",
+          "method": "Share of municipal staff working in \nclimate-related units or functions\n(environment, energy, green \ninfrastructure, waste management, \nurban planning with climate \nmandate, etc.) in total municipal \nworkforce",
+          "thresholds": [
+            "None",
+            "≤ 1",
+            "2-3%",
+            "4-6%",
+            "7-10%",
+            ">10%"
+          ],
+          "normalisation": "%",
+          "source": "v4"
+        },
+        {
+          "code": "MS_INC_5",
+          "name": "SDG Alignment Rate (Share of strategic plan and policy objectives aligned with Sustainable Development Goals in total objectives)",
+          "unit": "%",
+          "method": "Share of strategic plan and policy \nobjectives aligned with at least one \nSDG in total municipal strategic \nobjectives",
+          "thresholds": [
+            "None",
+            "≤ 25",
+            "26-49%",
+            "50-70%",
+            "71-85%",
+            ">85"
+          ],
+          "normalisation": "%",
+          "source": "v4"
+        }
+      ]
+    },
+    "MS_DM": {
+      "code": "MS_DM",
+      "set": "MS",
+      "name": "Digital Management",
+      "indicators": [
+        {
+          "code": "MS_DM_1",
+          "name": "Rate of Digital Service Delivery (Share of services provided online in total municipal services)",
+          "unit": "%",
+          "method": "Total number of municipal services delivered \nonline/total number of municipal\nservices x 100",
+          "thresholds": [
+            "None",
+            "≤20%",
+            "21-50%",
+            "51-80%",
+            "81-90%",
+            ">90%"
+          ],
+          "normalisation": "%",
+          "source": "v4"
+        },
+        {
+          "code": "MS_DM_2",
+          "name": "Digital Service Usage Rate (Share of internet users who \nused municipal e-government services)",
+          "unit": "%",
+          "method": "Share of internet users who \nused municipal e-government\n services in total internet\nusers.",
+          "thresholds": [
+            "None",
+            "≤30%",
+            "31-55%",
+            "56-75%",
+            "76-90%",
+            ">90%"
+          ],
+          "normalisation": "%",
+          "source": "v4"
+        },
+        {
+          "code": "MS_DM_3",
+          "name": "Open Data Rate (Number of open datasets / total number of municipal \ndatasets)",
+          "unit": "%",
+          "method": "Number of open datasets / \ntotal number of municipal \ndatasets x 100",
+          "thresholds": [
+            "None",
+            "≤20%",
+            "21-40%",
+            "41-70%",
+            "71-85%",
+            ">85%"
+          ],
+          "normalisation": "%",
+          "source": "v4"
+        },
+        {
+          "code": "MS_DM_4",
+          "name": "Data Update Frequency (Share of datasets updated at least once annually)",
+          "unit": "%",
+          "method": "Share of municipal datasets \nupdated at least once in a \ncalendar year in total \nmunicipal datasets",
+          "thresholds": [
+            "None",
+            "≤20%",
+            "21-40%",
+            "41-65%",
+            "66-85%",
+            ">85%"
+          ],
+          "normalisation": "%",
+          "source": "v4"
+        },
+        {
+          "code": "MS_DM_5",
+          "name": "Rate of Use of Data-Driven Decision Systems (Share of municipal units using data analytics, decision support systems, or management information systems in total units)",
+          "unit": "%",
+          "method": "Number of municipal units \nusing at least one operational \ndata analytics platform, \ndecision support system, or \nmanagement information \nsystem / Total number of \nmunicipal units × 100",
+          "thresholds": [
+            "None",
+            "≤15%",
+            "16-30%",
+            "31-55%",
+            "56-74%",
+            ">75%"
+          ],
+          "normalisation": "%",
+          "source": "v4"
+        },
+        {
+          "code": "MS_DM_6",
+          "name": "Rate of Real-Time Data Usage (Share of services monitored with real-time data in total services)",
+          "unit": "%",
+          "method": "Number of municipal services\nmonitored with real-time \ndata / Total number of \nmunicipal services × 100",
+          "thresholds": [
+            "None",
+            "≤5%",
+            "6-15%",
+            "16-30%",
+            "31-45%",
+            ">45%"
+          ],
+          "normalisation": "%",
+          "source": "v4"
+        },
+        {
+          "code": "MS_DM_7",
+          "name": "Rate of Digital Technology Use in Disaster and Crisis Management (Share of operations conducted with digital technologies in risk analysis, early warning, response, and recovery activities)",
+          "unit": "%",
+          "method": "Number of operations \nconducted with digital \ntechnologies in risk analysis, \nearly warning, response, and \nrecovery activities / Total \nnumber of disaster and crisis \nmanagement operations × 100",
+          "thresholds": [
+            "None",
+            "≤10%",
+            "11-24%",
+            "25-35%",
+            "36-49%",
+            ">50%"
+          ],
+          "normalisation": "%",
+          "source": "v4"
+        },
+        {
+          "code": "MS_DM_8",
+          "name": "Rate of Digital Monitoring of Critical Infrastructure Systems (Share of critical systems—water, energy, transportation, waste, communication, etc.—monitored digitally in total critical systems)",
+          "unit": "%",
+          "method": "Number of critical systems \nmonitored digitally / Total \nnumber of critical \nsystems × 100",
+          "thresholds": [
+            "None",
+            "≤10%",
+            "11-24%",
+            "25-35%",
+            "36-49%",
+            ">50%"
+          ],
+          "normalisation": "%",
+          "source": "v4"
+        },
+        {
+          "code": "MS_DM_9",
+          "name": "Rate of Climate Data Monitoring and Utilization (Share of climate-related data types -temperature, precipitation, air quality, water level, emissions etc.- monitored digitally and used in municipal plans/decisions)",
+          "unit": "%",
+          "method": "Number of climate-related \ndata types monitored digitally \nand used in municipal \nplans-decisions / Total number \nof relevant climate data \ntypes × 100",
+          "thresholds": [
+            "None",
+            "≤20%",
+            "21-39%",
+            "40-50%",
+            "51-74%",
+            ">75%"
+          ],
+          "normalisation": "%",
+          "source": "v4"
+        }
+      ]
+    },
+    "MS_PM": {
+      "code": "MS_PM",
+      "set": "MS",
+      "name": "Participatory Management",
+      "indicators": [
+        {
+          "code": "MS_PM_1",
+          "name": "Participation Rate (Share of individuals involved in participatory processes in total population)",
+          "unit": "%",
+          "method": "Number of individuals involved\nin participatory processes / Total \nmunicipal population × 100",
+          "thresholds": [
+            "None",
+            "≤2%",
+            "2,01-4%",
+            "4,01-8%",
+            "8,01-14,99%",
+            "≥ 15%"
+          ],
+          "normalisation": "%",
+          "source": "v4"
+        },
+        {
+          "code": "MS_PM_2",
+          "name": "Response Rate to Citizen Requests (Share of responses provided to citizen requests in total requests)",
+          "unit": "%",
+          "method": "Number of responses provided \nto citizen requests / Total number\n of citizen requests received × 100",
+          "thresholds": [
+            "None",
+            "≤20",
+            "20,1-40%",
+            "40,1-60%",
+            "60,1-80%",
+            ">80%"
+          ],
+          "normalisation": "%",
+          "source": "v4"
+        },
+        {
+          "code": "MS_PM_3",
+          "name": "Rate of Policy Integration of Decisions from Participatory Processes (Share of inputs obtained through participatory processes reflected in policies or decisions)",
+          "unit": "%",
+          "method": "Number of inputs obtained through\n participatory processes reflected in \nmunicipal policies or decisions / Total \nnumber of inputs obtained through \nparticipatory processes × 100",
+          "thresholds": [
+            "None",
+            "≤10",
+            "10,01-25%",
+            "25,01-40%",
+            "40,01-60%",
+            ">60%"
+          ],
+          "normalisation": "%",
+          "source": "v4"
+        },
+        {
+          "code": "MS_PM_4",
+          "name": "Transparency Rate (Share of publicly available information, documents, and datasets in total information, documents, and datasets)",
+          "unit": "%",
+          "method": "Number of publicly available \ninformation, documents, and \ndatasets / Total number of\ninformation, documents, and datasets \nheld by the municipality × 100",
+          "thresholds": [
+            "None",
+            "≤20",
+            "20,1-40%",
+            "40,1-60%",
+            "60,1-80%",
+            ">80%"
+          ],
+          "normalisation": "%",
+          "source": "v4"
+        }
+      ]
+    },
+    "MS_CG": {
+      "code": "MS_CG",
+      "set": "MS",
+      "name": "Climate Governance",
+      "indicators": [
+        {
+          "code": "MS_CG_1",
+          "name": "Climate Action Implementation Rate (Share of completed climate actions in total planned actions)",
+          "unit": "%",
+          "method": "Number of completed climate \nactions / Total number of planned \nclimate actions × 100",
+          "thresholds": [
+            "None",
+            "≤10",
+            "11-20%",
+            "21-35%",
+            "36-49%",
+            ">50%"
+          ],
+          "normalisation": "%",
+          "source": "v4"
+        },
+        {
+          "code": "MS_CG_2",
+          "name": "Number of Climate Actions per 10,000 People (Projects, services, policies, etc. per 10,000 population)",
+          "unit": "total actions per 10,000",
+          "method": "Total number of climate actions\n — including mitigation, adaptation, \nand energy transition measures\n — planned, underway, or completed / \nTotal municipal population × 10,000",
+          "thresholds": [
+            "None",
+            "≤2",
+            "2,01-5%",
+            "5,01-10%",
+            "10,1-14,99%",
+            ">15%"
+          ],
+          "normalisation": "per 10,000 people",
+          "source": "v4"
+        },
+        {
+          "code": "MS_CG_3",
+          "name": "Level of Climate Governance Collaboration (Total number of collaborations and networks such as C40, ICLEI, Covenant of Mayors, etc.)",
+          "unit": "numeric",
+          "method": "Count of formal memberships and \nactive participations in recognised \ninternational, national, or regional \nclimate governance networks, \ninitiatives, and collaboration \nframeworks.",
+          "thresholds": [
+            "None",
+            "1.0",
+            "2.0",
+            "3.0",
+            "4.0",
+            "≥ 5"
+          ],
+          "normalisation": "numeric",
+          "source": "v4"
+        },
+        {
+          "code": "MS_CG_4",
+          "name": "Existence of Institutional Carbon Inventory",
+          "unit": "Index",
+          "method": "Evaluation of the municipal carbon \ninventory based on five maturity \ncriteria: coverage, update frequency, \nverification, disclosure, and alignment\n with GPC/IPCC standards.",
+          "thresholds": [
+            "None",
+            "Partial inventory\n — limited sectors\n or one-time effort",
+            "Basic inventory \n— main sectors \ncovered, infrequently \nupdated",
+            "Regular inventory\n — comprehensive \nsectors, periodically \nupdated",
+            "Verified inventory\n — third-party \nvalidated, publicly \ndisclosed",
+            "Full inventory    \n— all sectors including\n Scope 1, 2 and 3 \nemissions, aligned with\n international standards\n (GPC/IPCC), publicly \naccessible and \nregularly updated"
+          ],
+          "normalisation": "Maturity level",
+          "source": "v4"
+        },
+        {
+          "code": "MS_CG_5",
+          "name": "Net Zero Target Progress Rate (Ratio of achieved emission reduction to targeted reduction based on baseline year emissions)",
+          "unit": "%",
+          "method": "chieved GHG emission reduction from\nbaseline year / Targeted GHG emission\n reduction from baseline year × 100",
+          "thresholds": [
+            "None",
+            "≤25",
+            "25,01-50%",
+            "50,01-75%",
+            "75- 89,99%",
+            ">90"
+          ],
+          "normalisation": "%",
+          "source": "v4"
+        }
+      ]
+    },
+    "MS_URB": {
+      "code": "MS_URB",
+      "set": "MS",
+      "name": "Urban Resilience",
+      "indicators": [
+        {
+          "code": "MS_URB_1",
+          "name": "Disaster and Crisis Management Staff per Capita (Number of personnel working in disaster management, fire services, and related units per 10,000 population)",
+          "unit": "relevant personnel per 10,000 people",
+          "method": "Total paid professional staff in \nmunicipal fire and civil protection \nservices / Municipal population × 10,000",
+          "thresholds": [
+            "None",
+            "≤3",
+            "3,01-6",
+            "6,01-10",
+            "10,01-14,99",
+            ">15"
+          ],
+          "normalisation": "per 10,000 people",
+          "source": "v4"
+        },
+        {
+          "code": "MS_URB_2",
+          "name": "Emergency Response Time (Average time required for initial response in disaster and crisis events)",
+          "unit": "minutes",
+          "method": "Average response time in minutes",
+          "thresholds": [
+            "None",
+            ">20",
+            "15-19",
+            "10-14",
+            "9-13",
+            "<8"
+          ],
+          "normalisation": "inverse relationship",
+          "source": "v4"
+        },
+        {
+          "code": "MS_URB_3",
+          "name": "Emergency Equipment Readiness Rate (Ratio of available equipment to required equipment)",
+          "unit": "%",
+          "method": "Number of available and operational \nemergency equipment items / Total \nnumber of equipment items required by \nthe municipal emergency plan × 100",
+          "thresholds": [
+            "None",
+            " ≤ 20",
+            "20,1-39,9%",
+            "40-59,99%",
+            "60-89,99%",
+            ">90"
+          ],
+          "normalisation": "%",
+          "source": "v4"
+        },
+        {
+          "code": "MS_URB_4",
+          "name": "Time to Restore Critical Services After Disaster and Crisis",
+          "unit": "hours",
+          "method": "Time elapsed from disaster/crisis event \ndetection to initiation of municipal response\n to critical service disruptions",
+          "thresholds": [
+            "None",
+            ">72",
+            "49-71",
+            "25-48",
+            "13-24",
+            "≤12"
+          ],
+          "normalisation": "inverse relationship",
+          "source": "v4"
+        },
+        {
+          "code": "MS_URB_5",
+          "name": "Risk-Based Planning Coverage Rate (Share of plans prepared based on risk analysis in total plans)",
+          "unit": "%",
+          "method": "(Number of municipal emergency/disaster \nmanagement plans based on formal risk analysis / \nTotal number of municipal emergency/disaster \nmanagement plans × 100",
+          "thresholds": [
+            "None",
+            "≤20",
+            "20,1-40%",
+            "40,1-60%",
+            "60,1-84,99%",
+            ">85%"
+          ],
+          "normalisation": "%",
+          "source": "v4"
+        },
+        {
+          "code": "MS_URB_6",
+          "name": "Climate Risk Analysis and Mapping Coverage Rate (Share of areas analyzed for climate risks such as floods, temperature increase, drought in total risk areas, share of mapped areas for risks)",
+          "unit": "square kilometers",
+          "method": "Total area covered by formal climate risk analysis\nand maps for identified climate hazard\ntypes / Total area identified as potentially at risk\n within municipal boundaries × 100",
+          "thresholds": [
+            "None",
+            "≤20",
+            "20,1-40%",
+            "40,1-60%",
+            "60,1-84,99%",
+            ">85%"
+          ],
+          "normalisation": "%",
+          "source": "v4"
+        },
+        {
+          "code": "MS_URB_7",
+          "name": "Disaster Data Inventory Recording Rate (Share of records containing event type, date, location, impact, and response information in total disaster records)",
+          "unit": "%",
+          "method": "Number of disaster records containing all five \nmandatory data fields: event type, date, location,\nimpact and response information / Total number of \ndisaster records in municipal inventory × 100",
+          "thresholds": [
+            "None",
+            "≤20",
+            "20,1-40%",
+            "40,1-60%",
+            "60,1-84,99%",
+            ">85%"
+          ],
+          "normalisation": "%",
+          "source": "v4"
+        },
+        {
+          "code": "MS_URB_8",
+          "name": "Existence of Crisis Management Center",
+          "unit": "Index",
+          "method": "Assessment based on documented evidence of \ncrisis management centre existence, operational \nhours, staffing levels, equipment integration, \nmulti-hazard capacity and drill/certification records",
+          "thresholds": [
+            "None",
+            "Planned or under \nestablishment — no\noperational capacity",
+            "Exists but basic level\n— not 24/7 active, \nlimited equipment",
+            "Exists, 24/7 active, \nbasic equipment and\ndesignated personnel",
+            "Exists, 24/7 active,\nintegrated \ncommunication systems,\n trained and certified\n personnel",
+            "Exists, 24/7 active,\nmulti-hazard capacity,\nintegrated systems, \ncertified personnel, \nregular drills and \ndocumented \nperformance reviews"
+          ],
+          "normalisation": "Maturity level",
+          "source": "v4"
+        },
+        {
+          "code": "MS_URB_9",
+          "name": "Digital Emergency Management System",
+          "unit": "Index",
+          "method": "Digital emergency management and coordination system",
+          "thresholds": [
+            "None",
+            "Planning stage",
+            "Pilot implementation",
+            "Operational for selected hazards",
+            "Fully operational",
+            "Real-time integrated emergency management system"
+          ],
+          "normalisation": "Maturity level",
+          "source": "v4"
+        }
+      ]
+    },
+    "ECS_CAP": {
+      "code": "ECS_CAP",
+      "set": "ECS",
+      "name": "Adaptation Financing",
+      "indicators": [
+        {
+          "code": "ECS_CAP_1",
+          "name": "Green Bond Utilization Rate",
+          "unit": "%",
+          "method": "Annual green bond issuance / Total municipal financing (loans + bonds) × 100",
+          "thresholds": [
+            "None",
+            "≤1",
+            "1.1–5",
+            "5.1–10",
+            "10.1–20",
+            ">20"
+          ],
+          "normalisation": "share of total financing (loans)",
+          "source": "v4"
+        },
+        {
+          "code": "ECS_CAP_2",
+          "name": "Share of Climate Adaptation Expenditures Covered by Own Revenues",
+          "unit": "%",
+          "method": "Own Revenues Allocated to Climate Adaptation / Total Climate Adaptation Expenditures × 100",
+          "thresholds": [
+            "None",
+            "≤10",
+            "10.1–25",
+            "25.1–50",
+            "50.1–75",
+            ">75"
+          ],
+          "normalisation": "share of climate adaptation expenditures",
+          "source": "v4"
+        },
+        {
+          "code": "ECS_CAP_3",
+          "name": "Domestic Financing Provided for Climate Adaptation Projects (grants + loans)",
+          "unit": "%",
+          "method": "Total domestic grants + loans for climate adaptation projects / Total project financing × 100",
+          "thresholds": [
+            "None",
+            "≤10",
+            "10.1–25",
+            "25.1–50",
+            "50.1–70",
+            ">70"
+          ],
+          "normalisation": "share of total financing (loans)",
+          "source": "v4"
+        },
+        {
+          "code": "ECS_CAP_4",
+          "name": "External Financing Provided for Climate Adaptation Projects (grants + loans)",
+          "unit": "%",
+          "method": "Total external grants + loans (EU, international) for climate adaptation / Total project financing × 100",
+          "thresholds": [
+            "None",
+            "≤10",
+            "10.1–25",
+            "25.1–50",
+            "50.1–70",
+            ">70"
+          ],
+          "normalisation": "share of total financing (loans)",
+          "source": "v4"
+        },
+        {
+          "code": "ECS_CAP_5",
+          "name": "Disaster Financing Fund",
+          "unit": "%",
+          "method": "Municipal disaster fund / Total annual budget revenues × 100",
+          "thresholds": [
+            "None",
+            "≤0.5",
+            "0.6–1",
+            "1.1–2",
+            "2.1–3",
+            ">3"
+          ],
+          "normalisation": "share of budget revenues",
+          "source": "v4"
+        }
+      ]
+    },
+    "ECS_WAC": {
+      "code": "ECS_WAC",
+      "set": "ECS",
+      "name": "Waste & Circularity",
+      "indicators": [
+        {
+          "code": "ECS_WAC_1",
+          "name": "Waste Reduction Expenditures",
+          "unit": "%",
+          "method": "Annual expenditures on waste prevention and reduction programs / Total municipal expenditure × 100",
+          "thresholds": [
+            "None",
+            "≤0.5",
+            "0.6–1",
+            "1.1–2",
+            "2.1–3",
+            ">3"
+          ],
+          "normalisation": "share of total expenditure",
+          "source": "v4"
+        },
+        {
+          "code": "ECS_WAC_2",
+          "name": "Circular economy projects",
+          "unit": "number",
+          "method": "Number of distinct circular economy projects initiated or active within the calendar year",
+          "thresholds": [
+            "None",
+            "1.0",
+            "46083.0",
+            "46177.0",
+            "46302.0",
+            ">10"
+          ],
+          "normalisation": "annual total number",
+          "source": "v4"
+        },
+        {
+          "code": "ECS_WAC_3",
+          "name": "Circular Economy Expenditures",
+          "unit": "%",
+          "method": "Annual expenditures on circular economy initiatives (repair, reuse, upcycling, industrial symbiosis) / Total municipal expenditure × 100",
+          "thresholds": [
+            "None",
+            "≤0.5",
+            "0.6–1",
+            "1.1–2",
+            "2.1–3.5",
+            ">3.5"
+          ],
+          "normalisation": "share of total expenditure",
+          "source": "v4"
+        },
+        {
+          "code": "ECS_WAC_4",
+          "name": "Procurements Including Circular Economy Criteria",
+          "unit": "%",
+          "method": "Number of procurement contracts including green/circular economy criteria / Total procurement contracts × 100",
+          "thresholds": [
+            "None",
+            "≤5",
+            "5.1–10",
+            "10.1–20",
+            "20.1–30",
+            ">30"
+          ],
+          "normalisation": "share of total number of procurements",
+          "source": "v4"
+        },
+        {
+          "code": "ECS_WAC_5",
+          "name": "Recycled material usage rate",
+          "unit": "%",
+          "method": "Weight of recycled or secondary materials used in municipal operations / Total materials consumed × 100",
+          "thresholds": [
+            "None",
+            "≤5",
+            "5.1–15",
+            "15.1–30",
+            "30.1–50",
+            ">50"
+          ],
+          "normalisation": "ratio of total materials used",
+          "source": "v4"
+        }
+      ]
+    },
+    "ECS_CRI": {
+      "code": "ECS_CRI",
+      "set": "ECS",
+      "name": "Resilient Infrastructure",
+      "indicators": [
+        {
+          "code": "ECS_CRI_1",
+          "name": "Total Expenditures for Natural Capital Protection",
+          "unit": "%",
+          "method": "Annual expenditures for ecosystem services, green/blue infrastructure, and natural capital / Total municipal expenditure × 100",
+          "thresholds": [
+            "None",
+            "≤0.5",
+            "0.6–1",
+            "1.1–2",
+            "2.1–3.5",
+            ">3.5"
+          ],
+          "normalisation": "share of total expenditure",
+          "source": "v4"
+        },
+        {
+          "code": "ECS_CRI_2",
+          "name": "Share of Smart City Investments in Total Investment Budget",
+          "unit": "%",
+          "method": "Annual budget for smart city / digital infrastructure (IoT, sensors, data platforms) / Total investment budget × 100",
+          "thresholds": [
+            "None",
+            "≤0.5",
+            "0.6–1",
+            "1.1–2",
+            "2.1–3.5",
+            ">3.5"
+          ],
+          "normalisation": "share of total investments",
+          "source": "v4"
+        },
+        {
+          "code": "ECS_CRI_3",
+          "name": "Sustainable Transportation Investment Budget",
+          "unit": "%",
+          "method": "Annual budget for sustainable/low-carbon transport (cycling, pedestrian, EV, public transit) / Total investment budget × 100",
+          "thresholds": [
+            "None",
+            "≤0.5",
+            "0.6–1",
+            "1.1–2",
+            "2.1–3.5",
+            ">3.5"
+          ],
+          "normalisation": "share of total investments",
+          "source": "v4"
+        },
+        {
+          "code": "ECS_CRI_4",
+          "name": "R&D Expenditures Focused on Environment and Circular Economy",
+          "unit": "%",
+          "method": "Municipal R&D expenditures in environmental protection and circular economy / Total municipal R&D expenditure × 100",
+          "thresholds": [
+            "None",
+            "≤5",
+            "5.1–15",
+            "15.1–30",
+            "30.1–50",
+            ">50"
+          ],
+          "normalisation": "share of total R&D expenditure",
+          "source": "v4"
+        },
+        {
+          "code": "ECS_CRI_5",
+          "name": "Preventive Investment Rate for Climate Risks (Share of investments aimed at reducing climate risks in total investments)",
+          "unit": "%",
+          "method": "Total annual municipal expenditure on climate \nrisk prevention and reduction investments / Total \nannual municipal investment budget × 100",
+          "thresholds": [
+            "None",
+            "≤ 1",
+            "1.1-3",
+            "3.1-6",
+            "6.1-10",
+            ">10"
+          ],
+          "normalisation": "%",
+          "source": "v4"
+        }
+      ]
+    },
+    "ECS_REE": {
+      "code": "ECS_REE",
+      "set": "ECS",
+      "name": "Resource Efficiency",
+      "indicators": [
+        {
+          "code": "ECS_REE_2",
+          "name": "Share of Renewable Energy in Total Energy Consumption",
+          "unit": "%",
+          "method": "Energy from renewable sources in municipal facilities / Total municipal energy consumption × 100",
+          "thresholds": [
+            "no data",
+            "≤10",
+            "11–25",
+            "26–50",
+            "51–75",
+            ">75"
+          ],
+          "normalisation": "share of total energy consumption",
+          "source": "v4"
+        },
+        {
+          "code": "ECS_REE_1",
+          "name": "Expenditures on Energy Efficiency",
+          "unit": "%",
+          "method": "Annual expenditures on energy efficiency upgrades (buildings, street lighting, equipment) / Total municipal expenditure × 100",
+          "thresholds": [
+            "None",
+            "≤0.5",
+            "0.6–1",
+            "1.1–2",
+            "2.1–3.5",
+            ">3.5"
+          ],
+          "normalisation": "share of total expenditure",
+          "source": "v4"
+        },
+        {
+          "code": "ECS_REE_3",
+          "name": "Municipal Energy Expenditures per capita",
+          "unit": "per 10,000 people",
+          "method": "Total annual energy expenditure (electricity, heat, fuel) / 10.000 inhabitant",
+          "thresholds": [
+            "None",
+            ">15",
+            "10.1–15",
+            "6.1–10",
+            "3.1–6",
+            "≤3"
+          ],
+          "normalisation": "share of total expenditure",
+          "source": "v4"
+        },
+        {
+          "code": "ECS_REE_4",
+          "name": "Investment Budget for Water Reuse",
+          "unit": "%",
+          "method": "Annual investment budget for water reuse and recycling infrastructure / Total municipal investment budget × 100",
+          "thresholds": [
+            "None",
+            "≤0.5",
+            "0.6–1",
+            "1.1–2",
+            "2.1–3.5",
+            ">3.5"
+          ],
+          "normalisation": "share of total investment budget",
+          "source": "v4"
+        },
+        {
+          "code": "ECS_REE_5",
+          "name": "Share of Energy Generated from Waste in Total Municipal Energy Consumption",
+          "unit": "%",
+          "method": "Annual energy generated from waste-to-energy and biogas systems / Total annual municipal energy consumption × 100",
+          "thresholds": [
+            "None",
+            "≤1",
+            "1.1–3",
+            "3.1–6",
+            "6.1–10",
+            ">10"
+          ],
+          "normalisation": "total capacity",
+          "source": "v4"
+        }
+      ]
+    },
+    "ECS_GB": {
+      "code": "ECS_GB",
+      "set": "ECS",
+      "name": "Green Budgeting",
+      "indicators": [
+        {
+          "code": "ECS_GB_1",
+          "name": "Is Green Budgeting Implemented?",
+          "unit": "score",
+          "method": "Is a green budgeting methodology applied to classify/tag budget lines by environmental impact?",
+          "thresholds": [
+            "None",
+            "Planning",
+            "Piloting",
+            "Partial tagging (<50 budget)",
+            "Systematic tagging (≥50 )",
+            "Full green budget + published report"
+          ],
+          "normalisation": "Maturity level",
+          "source": "v4"
+        },
+        {
+          "code": "ECS_GB_2",
+          "name": "Is participatory budgeting implemented?",
+          "unit": "score",
+          "method": "Is participatory budgeting implemented allowing citizens to vote on municipal spending priorities?",
+          "thresholds": [
+            "None",
+            "Planning",
+            "Pilot in 1–2 districts/Neighborhood",
+            "City-wide, irregular",
+            "City-wide, annual systematic",
+            "implemented and reported throughout the city-wide"
+          ],
+          "normalisation": "Maturity level",
+          "source": "v4"
+        },
+        {
+          "code": "ECS_GB_3",
+          "name": "Share of Budget Allocated to Climate Adaptation",
+          "unit": "%",
+          "method": "Budget allocated for climate adaptation activities / Total annual municipal budget × 100",
+          "thresholds": [
+            "None",
+            "≤0.5",
+            "0.6–1",
+            "1.1–3",
+            "3.1–5",
+            ">5"
+          ],
+          "normalisation": "share of total municipal budget",
+          "source": "v4"
+        },
+        {
+          "code": "ECS_GB_4",
+          "name": "Environmental Revenues in the Municipal Budget (taxes, fees, etc.)",
+          "unit": "%",
+          "method": "Environmental taxes + fees (pollution charges, waste levies, congestion pricing) / Total municipal revenues × 100",
+          "thresholds": [
+            "None",
+            "≤1",
+            "1.1–3",
+            "3.1–5",
+            "5.1–8",
+            ">8"
+          ],
+          "normalisation": "share of total revenues",
+          "source": "v4"
+        },
+        {
+          "code": "ECS_GB_5",
+          "name": "Green Budget Transparency",
+          "unit": "score",
+          "method": "Is the green budget publicly accessible online with environmental tagging methodology disclosed?",
+          "thresholds": [
+            "None",
+            "No disclosure",
+            "Internal only",
+            "Summary published",
+            "Full budget published",
+            "Full budget + methodology + audit trail"
+          ],
+          "normalisation": "Maturity level",
+          "source": "v4"
+        },
+        {
+          "code": "ECS_GB_6",
+          "name": "Financial support provided for climate-aligned private sector investments",
+          "unit": "%",
+          "method": "Annual municipal financial support (grants, subsidies, guarantees, soft loans) for private climate projects / Total financial support × 100",
+          "thresholds": [
+            "None",
+            "≤5",
+            "5.1–15",
+            "15.1–25",
+            "25.1–40",
+            ">40"
+          ],
+          "normalisation": "share of total financial support",
+          "source": "v4"
+        }
+      ]
+    }
+  }
+}

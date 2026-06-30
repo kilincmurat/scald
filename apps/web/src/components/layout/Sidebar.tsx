@@ -14,6 +14,7 @@ import {
   Sprout,
   PanelLeftClose,
   PanelLeftOpen,
+  ClipboardList,
 } from 'lucide-react';
 import { clsx } from 'clsx';
 
@@ -28,6 +29,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
 
   const navItems = [
     { href: '/', label: t('overview'), icon: LayoutDashboard, exact: true },
+    { href: '/data-entry', label: t('dataEntry'), icon: ClipboardList },
     { href: '/efct', label: t('efct'), icon: Leaf },
     { href: '/ai-dss', label: t('aiDss'), icon: BrainCircuit },
     { href: '/ai-rt', label: t('aiRt'), icon: FileBarChart2 },
