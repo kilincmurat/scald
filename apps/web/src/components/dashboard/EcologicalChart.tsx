@@ -2,16 +2,9 @@
 
 import ReactECharts from 'echarts-for-react';
 
-interface EcologicalChartProps {
-  locale: string;
-}
+const INDICATORS = ['Energy', 'Water', 'Waste', 'Transport', 'Green Space', 'Biodiversity', 'Air'];
 
-const INDICATORS_TR = ['Enerji', 'Su', 'Atık', 'Ulaşım', 'Yeşil Alan', 'Biyoçeşitlilik', 'Hava'];
-const INDICATORS_EN = ['Energy', 'Water', 'Waste', 'Transport', 'Green Space', 'Biodiversity', 'Air'];
-
-export function EcologicalRadarChart({ locale }: EcologicalChartProps) {
-  const labels = locale === 'tr' ? INDICATORS_TR : INDICATORS_EN;
-
+export function EcologicalRadarChart() {
   const option = {
     tooltip: { trigger: 'item' },
     legend: {
@@ -19,7 +12,7 @@ export function EcologicalRadarChart({ locale }: EcologicalChartProps) {
       textStyle: { color: '#64748b', fontSize: 11 },
     },
     radar: {
-      indicator: labels.map((name) => ({ name, max: 100 })),
+      indicator: INDICATORS.map((name) => ({ name, max: 100 })),
       radius: '65%',
       splitNumber: 4,
       axisName: { color: '#475569', fontSize: 11 },
@@ -29,19 +22,19 @@ export function EcologicalRadarChart({ locale }: EcologicalChartProps) {
     },
     series: [
       {
-        name: locale === 'tr' ? 'Mevcut Durum' : 'Current State',
+        name: 'Current State',
         type: 'radar',
         data: [
           {
             value: [62, 71, 45, 38, 58, 42, 66],
-            name: locale === 'tr' ? 'Mevcut Durum' : 'Current State',
+            name: 'Current State',
             areaStyle: { color: 'rgba(16, 185, 129, 0.15)' },
             lineStyle: { color: '#10b981', width: 2 },
             itemStyle: { color: '#10b981' },
           },
           {
             value: [80, 80, 70, 70, 80, 70, 80],
-            name: locale === 'tr' ? 'Hedef (2030)' : 'Target (2030)',
+            name: 'Target (2030)',
             areaStyle: { color: 'rgba(59, 130, 246, 0.08)' },
             lineStyle: { color: '#3b82f6', width: 1.5, type: 'dashed' },
             itemStyle: { color: '#3b82f6' },
@@ -60,7 +53,7 @@ export function EcologicalRadarChart({ locale }: EcologicalChartProps) {
   );
 }
 
-export function FootprintTrendChart({ locale }: EcologicalChartProps) {
+export function FootprintTrendChart() {
   const years = ['2019', '2020', '2021', '2022', '2023', '2024'];
 
   const option = {
@@ -81,14 +74,14 @@ export function FootprintTrendChart({ locale }: EcologicalChartProps) {
     },
     yAxis: {
       type: 'value',
-      name: 'gHa/kişi',
+      name: 'gHa/capita',
       nameTextStyle: { color: '#64748b', fontSize: 10 },
       axisLabel: { color: '#64748b', fontSize: 10 },
       splitLine: { lineStyle: { color: '#f1f5f9' } },
     },
     series: [
       {
-        name: locale === 'tr' ? 'Ekolojik Ayak İzi' : 'Ecological Footprint',
+        name: 'Ecological Footprint',
         type: 'line',
         data: [4.8, 4.3, 4.6, 4.2, 3.9, 3.7],
         smooth: true,
@@ -106,7 +99,7 @@ export function FootprintTrendChart({ locale }: EcologicalChartProps) {
         },
       },
       {
-        name: locale === 'tr' ? 'Küresel Ortalama' : 'Global Average',
+        name: 'Global Average',
         type: 'line',
         data: [2.8, 2.8, 2.9, 2.9, 2.8, 2.9],
         smooth: true,
@@ -125,10 +118,8 @@ export function FootprintTrendChart({ locale }: EcologicalChartProps) {
   );
 }
 
-export function IndicatorBarChart({ locale }: EcologicalChartProps) {
-  const categories = locale === 'tr'
-    ? ['Enerji', 'Su', 'Atık', 'Ulaşım', 'Yeşil Alan', 'Biyoçeşitlilik', 'Hava Kalitesi']
-    : ['Energy', 'Water', 'Waste', 'Transport', 'Green Space', 'Biodiversity', 'Air Quality'];
+export function IndicatorBarChart() {
+  const categories = ['Energy', 'Water', 'Waste', 'Transport', 'Green Space', 'Biodiversity', 'Air Quality'];
 
   const option = {
     tooltip: { trigger: 'axis' },
@@ -147,7 +138,7 @@ export function IndicatorBarChart({ locale }: EcologicalChartProps) {
     },
     series: [
       {
-        name: locale === 'tr' ? 'Performans Skoru' : 'Performance Score',
+        name: 'Performance Score',
         type: 'bar',
         data: [62, 71, 45, 38, 58, 42, 66],
         barMaxWidth: 20,

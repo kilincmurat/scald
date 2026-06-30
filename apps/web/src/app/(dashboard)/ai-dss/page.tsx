@@ -4,10 +4,6 @@ import { ClimateAdaptationChart } from '@/components/dashboard/ClimateChart';
 import { ArrowUpRight, Zap, Droplets, Trees, Wind, Bus, Recycle } from 'lucide-react';
 import { clsx } from 'clsx';
 
-interface PageProps {
-  params: Promise<{ locale: string }>;
-}
-
 const strategies = [
   { id: 1, titleKey: 'strategy1Title', descKey: 'strategy1Desc', category: 'energy', priority: 'high', impact: 88, feasibility: 72, costKey: 'costHigh', timeframeKey: 'longTermYears', risk: 'medium', icon: Zap, iconColor: 'text-yellow-600 bg-yellow-50' },
   { id: 2, titleKey: 'strategy2Title', descKey: 'strategy2Desc', category: 'water', priority: 'high', impact: 75, feasibility: 85, costKey: 'costMedium', timeframeKey: 'mediumTermYears', risk: 'low', icon: Droplets, iconColor: 'text-blue-600 bg-blue-50' },
@@ -17,9 +13,8 @@ const strategies = [
   { id: 6, titleKey: 'strategy6Title', descKey: 'strategy6Desc', category: 'waste', priority: 'medium', impact: 60, feasibility: 80, costKey: 'costLow', timeframeKey: 'shortTermYears', risk: 'low', icon: Recycle, iconColor: 'text-green-600 bg-green-50' },
 ];
 
-export default async function AiDssPage({ params }: PageProps) {
-  const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: 'aiDss' });
+export default async function AiDssPage() {
+  const t = await getTranslations('aiDss');
 
   const priorityConfig = {
     high: { label: t('highPriority'), color: 'bg-red-100 text-red-700' },
@@ -29,7 +24,7 @@ export default async function AiDssPage({ params }: PageProps) {
 
   return (
     <main id="main-content" className="flex-1">
-      <Header locale={locale} title={t('title')} subtitle={t('subtitle')} />
+      <Header title={t('title')} subtitle={t('subtitle')} />
 
       <div className="p-6 space-y-6">
         {/* Summary + Chart */}
@@ -67,7 +62,7 @@ export default async function AiDssPage({ params }: PageProps) {
               <h2 className="text-sm font-semibold text-slate-900">{t('projectionTitle')}</h2>
               <p className="text-xs text-slate-500 mt-0.5">{t('projectionSubtitle')}</p>
             </div>
-            <ClimateAdaptationChart locale={locale} />
+            <ClimateAdaptationChart />
           </div>
         </div>
 

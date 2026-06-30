@@ -15,13 +15,8 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 
-interface PageProps {
-  params: Promise<{ locale: string }>;
-}
-
-export default async function DashboardPage({ params }: PageProps) {
-  const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: 'dashboard' });
+export default async function DashboardPage() {
+  const t = await getTranslations('dashboard');
 
   const recentActivities = [
     { type: 'success', label: t('activity1'), time: t('activity1Time') },
@@ -33,7 +28,7 @@ export default async function DashboardPage({ params }: PageProps) {
 
   return (
     <main id="main-content" className="flex-1">
-      <Header locale={locale} title={t('title')} subtitle={t('subtitle')} />
+      <Header title={t('title')} subtitle={t('subtitle')} />
 
       <div className="p-6 space-y-6">
         {/* KPI Cards */}
@@ -92,16 +87,14 @@ export default async function DashboardPage({ params }: PageProps) {
 
         {/* Charts Row */}
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
-          {/* Radar Chart */}
           <div className="lg:col-span-2 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
             <div className="mb-4">
               <h2 className="text-sm font-semibold text-slate-900">{t('indicatorPerformance')}</h2>
               <p className="text-xs text-slate-500 mt-0.5">{t('currentVsTarget')}</p>
             </div>
-            <EcologicalRadarChart locale={locale} />
+            <EcologicalRadarChart />
           </div>
 
-          {/* Trend Chart */}
           <div className="lg:col-span-3 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
             <div className="mb-4 flex items-start justify-between">
               <div>
@@ -112,13 +105,12 @@ export default async function DashboardPage({ params }: PageProps) {
                 ↓ {t('improving')}
               </span>
             </div>
-            <FootprintTrendChart locale={locale} />
+            <FootprintTrendChart />
           </div>
         </div>
 
         {/* Bottom Row */}
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-          {/* Recent Activity */}
           <div className="lg:col-span-2 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
             <div className="mb-4 flex items-center justify-between">
               <h2 className="text-sm font-semibold text-slate-900">{t('recentActivity')}</h2>
@@ -147,26 +139,25 @@ export default async function DashboardPage({ params }: PageProps) {
             </ul>
           </div>
 
-          {/* Quick Actions */}
           <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
             <h2 className="mb-4 text-sm font-semibold text-slate-900">{t('quickActions')}</h2>
             <div className="space-y-2">
               <Link
-                href={`/${locale}/efct`}
+                href="/efct"
                 className="flex items-center justify-between rounded-lg border border-slate-100 p-3 text-sm text-slate-700 transition hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-700"
               >
                 <span className="font-medium">{t('addData')}</span>
                 <ArrowRight className="h-4 w-4" />
               </Link>
               <Link
-                href={`/${locale}/ai-dss`}
+                href="/ai-dss"
                 className="flex items-center justify-between rounded-lg border border-slate-100 p-3 text-sm text-slate-700 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
               >
                 <span className="font-medium">{t('viewStrategies')}</span>
                 <ArrowRight className="h-4 w-4" />
               </Link>
               <Link
-                href={`/${locale}/ai-rt`}
+                href="/ai-rt"
                 className="flex items-center justify-between rounded-lg border border-slate-100 p-3 text-sm text-slate-700 transition hover:border-purple-200 hover:bg-purple-50 hover:text-purple-700"
               >
                 <span className="font-medium">{t('generateReport')}</span>
@@ -174,7 +165,6 @@ export default async function DashboardPage({ params }: PageProps) {
               </Link>
             </div>
 
-            {/* Summary Stats */}
             <div className="mt-4 space-y-3 border-t border-slate-100 pt-4">
               <div className="flex items-center justify-between text-xs">
                 <span className="text-slate-500">{t('activeMunicipalities')}</span>

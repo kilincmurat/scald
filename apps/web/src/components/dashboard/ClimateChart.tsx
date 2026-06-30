@@ -2,11 +2,7 @@
 
 import ReactECharts from 'echarts-for-react';
 
-interface Props {
-  locale: string;
-}
-
-export function ClimateAdaptationChart({ locale }: Props) {
+export function ClimateAdaptationChart() {
   const years = ['2024', '2025', '2026', '2027', '2028', '2029', '2030'];
 
   const option = {
@@ -26,14 +22,14 @@ export function ClimateAdaptationChart({ locale }: Props) {
       type: 'value',
       min: 40,
       max: 100,
-      name: locale === 'tr' ? 'Skor' : 'Score',
+      name: 'Score',
       nameTextStyle: { color: '#64748b', fontSize: 10 },
       axisLabel: { color: '#64748b', fontSize: 10 },
       splitLine: { lineStyle: { color: '#f1f5f9' } },
     },
     series: [
       {
-        name: locale === 'tr' ? 'Mevcut Politika' : 'Current Policy',
+        name: 'Current Policy',
         type: 'line',
         data: [64, 66, 67, 68, 69, 70, 71],
         smooth: true,
@@ -41,7 +37,7 @@ export function ClimateAdaptationChart({ locale }: Props) {
         itemStyle: { color: '#94a3b8' },
       },
       {
-        name: locale === 'tr' ? 'Önerilen Stratejiler' : 'Recommended Strategies',
+        name: 'Recommended Strategies',
         type: 'line',
         data: [64, 69, 74, 78, 82, 86, 90],
         smooth: true,
@@ -58,7 +54,7 @@ export function ClimateAdaptationChart({ locale }: Props) {
         },
       },
       {
-        name: locale === 'tr' ? 'AB Hedefi' : 'EU Target',
+        name: 'EU Target',
         type: 'line',
         data: [72, 74, 76, 78, 80, 82, 85],
         smooth: true,

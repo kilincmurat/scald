@@ -1,43 +1,26 @@
 import { type NextRequest, NextResponse } from 'next/server';
-import createIntlMiddleware from 'next-intl/middleware';
 import { createServerClient } from '@supabase/ssr';
-import { locales, defaultLocale } from '@/lib/i18n/config';
 
-const intlMiddleware = createIntlMiddleware({
-  locales,
-  defaultLocale,
-  localePrefix: 'always',
-});
-
-// Login, register ve public sayfalar — auth gerekmez
 const PUBLIC_PATHS = ['/login', '/register'];
 
 function isPublicPath(pathname: string): boolean {
-  return locales.some((locale) =>
-    PUBLIC_PATHS.some((p) => pathname === `/${locale}${p}` || pathname.startsWith(`/${locale}${p}/`))
-  );
+  return PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`));
 }
 
 export async function middleware(request: NextRequest) {
-  // Supabase env varları yoksa (build aşaması), sadece intl middleware çalışsın
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-  if (!supabaseUrl || !supabaseKey) {
-    return intlMiddleware(request);
-  }
-
-  // Önce intl middleware ile locale routing'i çözümle
-  const intlResponse = intlMiddleware(request);
   const { pathname } = request.nextUrl;
 
-  // Public path ise auth kontrolü yapma
-  if (isPublicPath(pathname)) {
-    return intlResponse;
+  if (!supabaseUrl || !supabaseKey) {
+    return NextResponse.next();
   }
 
-  // Supabase session kontrolü
-  let response = intlResponse ?? NextResponse.next({ request });
+  if (isPublicPath(pathname)) {
+    return NextResponse.next();
+  }
+
+  const response = NextResponse.next({ request });
 
   const supabase = createServerClient(supabaseUrl, supabaseKey, {
     cookies: {
@@ -55,12 +38,8 @@ export async function middleware(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser();
 
-  // Giriş yapılmamışsa login'e yönlendir
   if (!user) {
-    // Zaten locale'li pathname'den locale'i çıkar
-    const localeMatch = locales.find((l) => pathname.startsWith(`/${l}`));
-    const locale = localeMatch ?? defaultLocale;
-    const loginUrl = new URL(`/${locale}/login`, request.url);
+    const loginUrl = new URL('/login', request.url);
     return NextResponse.redirect(loginUrl);
   }
 

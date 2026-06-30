@@ -5,16 +5,14 @@ import { Sidebar } from './Sidebar';
 
 interface DashboardShellProps {
   children: React.ReactNode;
-  locale: string;
 }
 
-export function DashboardShell({ children, locale }: DashboardShellProps) {
+export function DashboardShell({ children }: DashboardShellProps) {
   const [collapsed, setCollapsed] = useState(false);
 
   return (
     <div className="flex min-h-screen bg-slate-50">
       <Sidebar
-        locale={locale}
         collapsed={collapsed}
         onToggle={() => setCollapsed(c => !c)}
       />

@@ -4,26 +4,21 @@ import { IndicatorBarChart } from '@/components/dashboard/EcologicalChart';
 import { CheckCircle2, Circle, AlertCircle, ChevronRight } from 'lucide-react';
 import { clsx } from 'clsx';
 
-interface PageProps {
-  params: Promise<{ locale: string }>;
-}
-
 const mainIndicators = [
-  { id: 1, nameKey: 'indicatorEnergy', layer: 1, status: 'validated', score: 62, unit: 'kWh/kişi/yıl', value: '3.850', subCount: 8 },
-  { id: 2, nameKey: 'indicatorWater', layer: 1, status: 'validated', score: 71, unit: 'L/kişi/gün', value: '145', subCount: 6 },
-  { id: 3, nameKey: 'indicatorWaste', layer: 1, status: 'estimated', score: 45, unit: 'kg/kişi/yıl', value: '412', subCount: 7 },
-  { id: 4, nameKey: 'indicatorTransport', layer: 1, status: 'estimated', score: 38, unit: 'km/kişi/yıl', value: '8.200', subCount: 9 },
-  { id: 5, nameKey: 'indicatorGreenSpace', layer: 1, status: 'validated', score: 58, unit: 'm²/kişi', value: '12,4', subCount: 5 },
-  { id: 6, nameKey: 'indicatorPopulation', layer: 1, status: 'validated', score: 100, unit: 'kişi', value: '284.000', subCount: 4 },
+  { id: 1, nameKey: 'indicatorEnergy', layer: 1, status: 'validated', score: 62, unit: 'kWh/person/year', value: '3,850', subCount: 8 },
+  { id: 2, nameKey: 'indicatorWater', layer: 1, status: 'validated', score: 71, unit: 'L/person/day', value: '145', subCount: 6 },
+  { id: 3, nameKey: 'indicatorWaste', layer: 1, status: 'estimated', score: 45, unit: 'kg/person/year', value: '412', subCount: 7 },
+  { id: 4, nameKey: 'indicatorTransport', layer: 1, status: 'estimated', score: 38, unit: 'km/person/year', value: '8,200', subCount: 9 },
+  { id: 5, nameKey: 'indicatorGreenSpace', layer: 1, status: 'validated', score: 58, unit: 'm²/person', value: '12.4', subCount: 5 },
+  { id: 6, nameKey: 'indicatorPopulation', layer: 1, status: 'validated', score: 100, unit: 'people', value: '284,000', subCount: 4 },
   { id: 7, nameKey: 'indicatorClimate', layer: 1, status: 'validated', score: 100, unit: '°C / mm', value: 'automatic', subCount: 6 },
-  { id: 8, nameKey: 'indicatorAirQuality', layer: 2, status: 'estimated', score: 66, unit: 'µg/m³ PM2.5', value: '18,4', subCount: 5 },
+  { id: 8, nameKey: 'indicatorAirQuality', layer: 2, status: 'estimated', score: 66, unit: 'µg/m³ PM2.5', value: '18.4', subCount: 5 },
   { id: 9, nameKey: 'indicatorFloodRisk', layer: 2, status: 'pilot', score: 0, unit: 'riskIndex', value: '—', subCount: 7 },
-  { id: 10, nameKey: 'indicatorBiodiversity', layer: 2, status: 'pilot', score: 42, unit: 'tür/km²', value: '124', subCount: 8 },
+  { id: 10, nameKey: 'indicatorBiodiversity', layer: 2, status: 'pilot', score: 42, unit: 'species/km²', value: '124', subCount: 8 },
 ];
 
-export default async function EfctPage({ params }: PageProps) {
-  const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: 'efct' });
+export default async function EfctPage() {
+  const t = await getTranslations('efct');
 
   const statusConfig = {
     validated: { label: t('validated'), color: 'text-emerald-700 bg-emerald-100', icon: CheckCircle2 },
@@ -45,7 +40,7 @@ export default async function EfctPage({ params }: PageProps) {
 
   return (
     <main id="main-content" className="flex-1">
-      <Header locale={locale} title={t('title')} subtitle={t('subtitle')} />
+      <Header title={t('title')} subtitle={t('subtitle')} />
 
       <div className="p-6 space-y-6">
         {/* Summary Cards */}
@@ -155,7 +150,7 @@ export default async function EfctPage({ params }: PageProps) {
               <h2 className="text-sm font-semibold text-slate-900">{t('performanceScore')}</h2>
               <p className="text-xs text-slate-500 mt-0.5">{t('performanceDesc')}</p>
             </div>
-            <IndicatorBarChart locale={locale} />
+            <IndicatorBarChart />
 
             {/* Legend */}
             <div className="mt-4 flex items-center justify-center gap-4 border-t border-slate-100 pt-3">

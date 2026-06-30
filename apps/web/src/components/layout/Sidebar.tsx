@@ -18,21 +18,20 @@ import {
 import { clsx } from 'clsx';
 
 interface SidebarProps {
-  locale: string;
   collapsed: boolean;
   onToggle: () => void;
 }
 
-export function Sidebar({ locale, collapsed, onToggle }: SidebarProps) {
+export function Sidebar({ collapsed, onToggle }: SidebarProps) {
   const t = useTranslations('navigation');
   const pathname = usePathname();
 
   const navItems = [
-    { href: `/${locale}`, label: t('overview'), icon: LayoutDashboard, exact: true },
-    { href: `/${locale}/efct`, label: t('efct'), icon: Leaf },
-    { href: `/${locale}/ai-dss`, label: t('aiDss'), icon: BrainCircuit },
-    { href: `/${locale}/ai-rt`, label: t('aiRt'), icon: FileBarChart2 },
-    { href: `/${locale}/map`, label: t('map'), icon: Map },
+    { href: '/', label: t('overview'), icon: LayoutDashboard, exact: true },
+    { href: '/efct', label: t('efct'), icon: Leaf },
+    { href: '/ai-dss', label: t('aiDss'), icon: BrainCircuit },
+    { href: '/ai-rt', label: t('aiRt'), icon: FileBarChart2 },
+    { href: '/map', label: t('map'), icon: Map },
   ];
 
   const isActive = (href: string, exact?: boolean) => {
@@ -47,10 +46,9 @@ export function Sidebar({ locale, collapsed, onToggle }: SidebarProps) {
         collapsed ? 'w-16' : 'w-64'
       )}
     >
-      {/* Logo + Toggle */}
       <div className="flex items-center justify-between flex-shrink-0 px-3 py-4">
         {!collapsed && (
-          <Link href={`/${locale}`} className="flex items-center gap-3">
+          <Link href="/" className="flex items-center gap-3">
             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-500/20">
               <Sprout className="h-5 w-5 text-emerald-400" />
             </div>
@@ -62,7 +60,7 @@ export function Sidebar({ locale, collapsed, onToggle }: SidebarProps) {
         )}
 
         {collapsed && (
-          <Link href={`/${locale}`} className="flex h-9 w-9 mx-auto items-center justify-center rounded-xl bg-emerald-500/20">
+          <Link href="/" className="flex h-9 w-9 mx-auto items-center justify-center rounded-xl bg-emerald-500/20">
             <Sprout className="h-5 w-5 text-emerald-400" />
           </Link>
         )}
@@ -80,7 +78,6 @@ export function Sidebar({ locale, collapsed, onToggle }: SidebarProps) {
 
       <div className="mx-3 border-t border-slate-700/60" />
 
-      {/* Navigation */}
       <nav className="flex-1 overflow-y-auto px-2 py-3">
         <ul className="space-y-1">
           {navItems.map((item) => {
@@ -118,7 +115,7 @@ export function Sidebar({ locale, collapsed, onToggle }: SidebarProps) {
             </p>
           )}
           <Link
-            href={`/${locale}/settings`}
+            href="/settings"
             title={collapsed ? t('settings') : undefined}
             className={clsx(
               'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-400 transition-all hover:bg-slate-800 hover:text-white',
@@ -131,7 +128,6 @@ export function Sidebar({ locale, collapsed, onToggle }: SidebarProps) {
         </div>
       </nav>
 
-      {/* Footer / Toggle açma butonu */}
       <div className="border-t border-slate-700/50 p-3">
         {collapsed ? (
           <button

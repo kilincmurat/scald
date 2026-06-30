@@ -11,67 +11,61 @@ import { clsx } from 'clsx';
 const features = [
   {
     icon: Leaf,
-    title: 'Ekolojik Ayak İzi',
-    desc: '15 ana gösterge ile belediyenizin çevresel performansını ölçün',
+    title: 'Ecological Footprint',
+    desc: 'Measure your municipality’s environmental performance with 15 core indicators',
   },
   {
     icon: Cpu,
-    title: 'AI Karar Desteği',
-    desc: 'Yapay zeka ile 30+ strateji üretin, iklim adaptasyon skorunuzu artırın',
+    title: 'AI Decision Support',
+    desc: 'Generate 30+ strategies with AI and improve your climate adaptation score',
   },
   {
     icon: BarChart3,
-    title: 'Otomatik Raporlama',
-    desc: 'Şeffaf ve veri odaklı stratejik raporları tek tıkla oluşturun',
+    title: 'Automated Reporting',
+    desc: 'Create transparent, data-driven strategic reports with a single click',
   },
   {
     icon: Globe2,
-    title: '5 Dil Desteği',
-    desc: 'TR · EN · EL · RO · MK — tüm ortaklık ülkelerinde kullanılabilir',
+    title: 'EU Partnership',
+    desc: 'Built for the 4-country partnership across Turkey, Greece, Romania, and North Macedonia',
   },
 ];
 
-interface PageProps {
-  params: Promise<{ locale: string }>;
-}
-
-export default function LoginPage({ params: _params }: PageProps) {
+export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
-  const supabase = createClient();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
 
+    const supabase = createClient();
     const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
 
     if (signInError) {
       setError(
         signInError.message === 'Invalid login credentials'
-          ? 'E-posta veya şifre hatalı.'
-          : 'Giriş yapılırken bir hata oluştu.'
+          ? 'Incorrect email or password.'
+          : 'An error occurred while signing in.'
       );
       setLoading(false);
       return;
     }
 
-    router.push('/tr');
+    router.push('/');
     router.refresh();
   };
 
   return (
     <div className="flex min-h-screen">
 
-      {/* ── Sol Panel ── */}
       <div className="relative hidden lg:flex lg:w-[55%] xl:w-[58%] flex-col overflow-hidden bg-gradient-to-br from-[#0d3b6e] via-[#1056a0] to-[#0d7a4e]">
 
-        {/* Arka plan desen */}
         <div className="absolute inset-0 opacity-10"
           style={{
             backgroundImage: `radial-gradient(circle at 20% 30%, #38bdf8 0%, transparent 45%),
@@ -79,7 +73,6 @@ export default function LoginPage({ params: _params }: PageProps) {
                               radial-gradient(circle at 55% 15%, #facc15 0%, transparent 30%)`,
           }}
         />
-        {/* Grid pattern */}
         <div className="absolute inset-0 opacity-[0.04]"
           style={{
             backgroundImage: `linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)`,
@@ -89,19 +82,17 @@ export default function LoginPage({ params: _params }: PageProps) {
 
         <div className="relative z-10 flex flex-1 flex-col px-12 py-10">
 
-          {/* Başlık + Logo */}
           <div className="mt-6">
             <h1 className="text-3xl font-bold text-white leading-snug">
-              Yerel Yönetimler için<br />
-              <span className="text-emerald-300">İklim Uyum Platformu</span>
+              Climate Adaptation Platform<br />
+              <span className="text-emerald-300">for Local Governments</span>
             </h1>
             <p className="mt-3 text-base text-blue-100/80 leading-relaxed max-w-sm">
-              Veriye dayalı kararlar alın, ekolojik performansınızı artırın
-              ve sürdürülebilir bir gelecek için stratejiler geliştirin.
+              Make data-driven decisions, improve your ecological performance,
+              and develop strategies for a sustainable future.
             </p>
           </div>
 
-          {/* Özellik listesi */}
           <div className="mt-10 grid grid-cols-1 gap-4 max-w-md">
             {features.map((f) => {
               const Icon = f.icon;
@@ -119,7 +110,6 @@ export default function LoginPage({ params: _params }: PageProps) {
             })}
           </div>
 
-          {/* Alt bilgi */}
           <div className="mt-auto pt-10">
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
@@ -130,7 +120,7 @@ export default function LoginPage({ params: _params }: PageProps) {
                     </span>
                   ))}
                 </div>
-                <span className="text-xs text-blue-100/60">4 ülke ortaklığı</span>
+                <span className="text-xs text-blue-100/60">4-country partnership</span>
               </div>
               <span className="text-white/20">·</span>
               <span className="text-xs text-blue-100/60">EU Funded - KA220-ADU</span>
@@ -145,11 +135,9 @@ export default function LoginPage({ params: _params }: PageProps) {
         </div>
       </div>
 
-      {/* ── Sağ Panel — Form ── */}
       <div className="flex flex-1 flex-col items-center justify-center bg-white px-8 py-12">
 
         <div className="w-full max-w-[360px]">
-          {/* Logo */}
           <div className="mb-8 flex justify-center">
             <Image
               src="/images/logo.jpeg"
@@ -162,14 +150,14 @@ export default function LoginPage({ params: _params }: PageProps) {
           </div>
 
           <div className="mb-7">
-            <h2 className="text-2xl font-bold text-slate-900">Hoş Geldiniz</h2>
-            <p className="mt-1 text-sm text-slate-500">Sisteme erişmek için giriş yapın</p>
+            <h2 className="text-2xl font-bold text-slate-900">Welcome</h2>
+            <p className="mt-1 text-sm text-slate-500">Sign in to access the platform</p>
           </div>
 
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
               <label className="mb-1.5 block text-xs font-semibold text-slate-600">
-                E-posta
+                Email
               </label>
               <input
                 type="email"
@@ -177,14 +165,14 @@ export default function LoginPage({ params: _params }: PageProps) {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 autoComplete="email"
-                placeholder="ornek@belediye.gov.tr"
+                placeholder="you@municipality.gov"
                 className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-sm text-slate-900 placeholder-slate-400 outline-none transition focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-500/15"
               />
             </div>
 
             <div>
               <label className="mb-1.5 block text-xs font-semibold text-slate-600">
-                Şifre
+                Password
               </label>
               <div className="relative">
                 <input
@@ -229,16 +217,16 @@ export default function LoginPage({ params: _params }: PageProps) {
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                   </svg>
-                  Giriş yapılıyor...
+                  Signing in…
                 </span>
-              ) : 'Giriş Yap'}
+              ) : 'Sign In'}
             </button>
           </form>
 
           <p className="mt-5 text-center text-sm text-slate-500">
-            Hesabınız yok mu?{' '}
-            <Link href="register" className="font-semibold text-[#1056a0] hover:text-[#0d3b6e] transition">
-              Kayıt Olun
+            Don&apos;t have an account?{' '}
+            <Link href="/register" className="font-semibold text-[#1056a0] hover:text-[#0d3b6e] transition">
+              Sign Up
             </Link>
           </p>
 

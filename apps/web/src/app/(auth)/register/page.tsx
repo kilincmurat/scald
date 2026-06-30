@@ -8,11 +8,7 @@ import { createClient } from '@/lib/supabase/client';
 import { Eye, EyeOff, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { clsx } from 'clsx';
 
-interface PageProps {
-  params: Promise<{ locale: string }>;
-}
-
-export default function RegisterPage({ params: _params }: PageProps) {
+export default function RegisterPage() {
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -23,7 +19,6 @@ export default function RegisterPage({ params: _params }: PageProps) {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const router = useRouter();
-  const supabase = createClient();
 
   const passwordStrength = (pw: string) => {
     if (pw.length === 0) return 0;
@@ -36,7 +31,7 @@ export default function RegisterPage({ params: _params }: PageProps) {
   };
 
   const strength = passwordStrength(password);
-  const strengthLabel = ['', 'Zayıf', 'Orta', 'İyi', 'Güçlü'][strength];
+  const strengthLabel = ['', 'Weak', 'Fair', 'Good', 'Strong'][strength];
   const strengthColor = ['', 'bg-red-400', 'bg-amber-400', 'bg-emerald-400', 'bg-emerald-600'][strength];
 
   const handleRegister = async (e: React.FormEvent) => {
@@ -44,16 +39,17 @@ export default function RegisterPage({ params: _params }: PageProps) {
     setError(null);
 
     if (password !== passwordConfirm) {
-      setError('Şifreler eşleşmiyor.');
+      setError('Passwords do not match.');
       return;
     }
     if (password.length < 8) {
-      setError('Şifre en az 8 karakter olmalıdır.');
+      setError('Password must be at least 8 characters.');
       return;
     }
 
     setLoading(true);
 
+    const supabase = createClient();
     const { error: signUpError } = await supabase.auth.signUp({
       email,
       password,
@@ -64,7 +60,7 @@ export default function RegisterPage({ params: _params }: PageProps) {
 
     if (signUpError) {
       if (signUpError.message.includes('already registered') || signUpError.message.includes('already been registered')) {
-        setError('Bu e-posta adresi zaten kayıtlı.');
+        setError('This email address is already registered.');
       } else {
         setError(signUpError.message);
       }
@@ -86,15 +82,15 @@ export default function RegisterPage({ params: _params }: PageProps) {
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-emerald-100">
             <CheckCircle2 className="h-7 w-7 text-emerald-600" />
           </div>
-          <h2 className="text-xl font-bold text-slate-900">Kayıt Başarılı!</h2>
+          <h2 className="text-xl font-bold text-slate-900">Registration Successful!</h2>
           <p className="mt-2 text-sm text-slate-500">
-            E-posta adresinize bir doğrulama bağlantısı gönderdik. Lütfen e-postanızı kontrol edin.
+            We&apos;ve sent a verification link to your email address. Please check your inbox.
           </p>
           <button
-            onClick={() => router.push('login')}
+            onClick={() => router.push('/login')}
             className="mt-6 w-full rounded-lg bg-emerald-600 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700"
           >
-            Giriş Sayfasına Dön
+            Back to Sign In
           </button>
         </div>
       </div>
@@ -104,7 +100,6 @@ export default function RegisterPage({ params: _params }: PageProps) {
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-emerald-50 via-white to-sky-50 px-6 py-12">
       <div className="w-full max-w-[400px]">
-        {/* Logo */}
         <div className="mb-8 flex justify-center">
           <Image
             src="/images/logo.jpeg"
@@ -116,45 +111,41 @@ export default function RegisterPage({ params: _params }: PageProps) {
         </div>
 
         <div className="rounded-2xl border border-slate-100 bg-white p-8 shadow-sm">
-          {/* Başlık */}
           <div className="mb-6">
-            <h1 className="text-xl font-bold text-slate-900">Hesap Oluştur</h1>
+            <h1 className="text-xl font-bold text-slate-900">Create Account</h1>
             <p className="mt-1 text-sm text-slate-500">
-              Vatandaş olarak sisteme kaydolun
+              Sign up as a citizen to access the platform
             </p>
           </div>
 
-          {/* Vatandaş rolü bilgisi */}
           <div className="mb-5 flex items-start gap-2.5 rounded-lg border border-slate-100 bg-slate-50 px-3.5 py-3">
             <div className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-slate-200">
               <span className="text-[10px] font-bold text-slate-600">i</span>
             </div>
             <p className="text-xs text-slate-500 leading-relaxed">
-              Vatandaş hesabı ile ekolojik göstergeleri ve raporları görüntüleyebilirsiniz.
-              Belediye yetkilisi iseniz sistem yöneticinize başvurun.
+              With a citizen account you can view ecological indicators and reports.
+              If you are a municipal official, please contact your system administrator.
             </p>
           </div>
 
           <form onSubmit={handleRegister} className="space-y-4">
-            {/* Ad Soyad */}
             <div>
               <label className="mb-1.5 block text-xs font-semibold text-slate-600">
-                Ad Soyad
+                Full Name
               </label>
               <input
                 type="text"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 required
-                placeholder="Adınız Soyadınız"
+                placeholder="Your Full Name"
                 className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-sm text-slate-900 placeholder-slate-400 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/15"
               />
             </div>
 
-            {/* E-posta */}
             <div>
               <label className="mb-1.5 block text-xs font-semibold text-slate-600">
-                E-posta
+                Email
               </label>
               <input
                 type="email"
@@ -162,15 +153,14 @@ export default function RegisterPage({ params: _params }: PageProps) {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 autoComplete="email"
-                placeholder="ornek@mail.com"
+                placeholder="you@mail.com"
                 className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-sm text-slate-900 placeholder-slate-400 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/15"
               />
             </div>
 
-            {/* Şifre */}
             <div>
               <label className="mb-1.5 block text-xs font-semibold text-slate-600">
-                Şifre
+                Password
               </label>
               <div className="relative">
                 <input
@@ -179,7 +169,7 @@ export default function RegisterPage({ params: _params }: PageProps) {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   autoComplete="new-password"
-                  placeholder="En az 8 karakter"
+                  placeholder="At least 8 characters"
                   className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3.5 py-2.5 pr-10 text-sm text-slate-900 placeholder-slate-400 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/15"
                 />
                 <button
@@ -190,7 +180,6 @@ export default function RegisterPage({ params: _params }: PageProps) {
                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
               </div>
-              {/* Şifre güç göstergesi */}
               {password.length > 0 && (
                 <div className="mt-2">
                   <div className="flex gap-1">
@@ -215,10 +204,9 @@ export default function RegisterPage({ params: _params }: PageProps) {
               )}
             </div>
 
-            {/* Şifre tekrar */}
             <div>
               <label className="mb-1.5 block text-xs font-semibold text-slate-600">
-                Şifre Tekrar
+                Confirm Password
               </label>
               <div className="relative">
                 <input
@@ -227,7 +215,7 @@ export default function RegisterPage({ params: _params }: PageProps) {
                   onChange={(e) => setPasswordConfirm(e.target.value)}
                   required
                   autoComplete="new-password"
-                  placeholder="Şifrenizi tekrar girin"
+                  placeholder="Re-enter your password"
                   className={clsx(
                     'w-full rounded-lg border bg-slate-50 px-3.5 py-2.5 pr-10 text-sm text-slate-900 placeholder-slate-400 outline-none transition focus:bg-white focus:ring-2',
                     passwordConfirm.length > 0 && password !== passwordConfirm
@@ -244,11 +232,10 @@ export default function RegisterPage({ params: _params }: PageProps) {
                 </button>
               </div>
               {passwordConfirm.length > 0 && password !== passwordConfirm && (
-                <p className="mt-1 text-[10px] text-red-500">Şifreler eşleşmiyor.</p>
+                <p className="mt-1 text-[10px] text-red-500">Passwords do not match.</p>
               )}
             </div>
 
-            {/* Hata */}
             {error && (
               <div className="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2.5 text-sm text-red-600">
                 <AlertCircle className="h-4 w-4 shrink-0" />
@@ -256,7 +243,6 @@ export default function RegisterPage({ params: _params }: PageProps) {
               </div>
             )}
 
-            {/* Kayıt ol butonu */}
             <button
               type="submit"
               disabled={loading}
@@ -273,19 +259,19 @@ export default function RegisterPage({ params: _params }: PageProps) {
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                   </svg>
-                  Kaydediliyor...
+                  Creating account…
                 </span>
-              ) : 'Kayıt Ol'}
+              ) : 'Sign Up'}
             </button>
           </form>
 
           <p className="mt-5 text-center text-sm text-slate-500">
-            Zaten hesabınız var mı?{' '}
+            Already have an account?{' '}
             <Link
-              href="login"
+              href="/login"
               className="font-semibold text-emerald-600 hover:text-emerald-700 transition"
             >
-              Giriş Yapın
+              Sign In
             </Link>
           </p>
         </div>

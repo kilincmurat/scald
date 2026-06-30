@@ -13,10 +13,6 @@ import {
 } from 'lucide-react';
 import { clsx } from 'clsx';
 
-interface PageProps {
-  params: Promise<{ locale: string }>;
-}
-
 const reportTemplates = [
   { id: 1, nameKey: 'template1Name', descKey: 'template1Desc', icon: FileBarChart2, color: 'text-emerald-600 bg-emerald-50', pages: '24–32', format: 'PDF / DOCX' },
   { id: 2, nameKey: 'template2Name', descKey: 'template2Desc', icon: CalendarDays, color: 'text-blue-600 bg-blue-50', pages: '12–16', format: 'PDF' },
@@ -30,13 +26,12 @@ const recentReports = [
   { nameKey: 'report4Name', dateKey: 'report4Date', status: 'draft', size: '1.5 MB', type: 'PDF' },
 ];
 
-export default async function AiRtPage({ params }: PageProps) {
-  const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: 'aiRt' });
+export default async function AiRtPage() {
+  const t = await getTranslations('aiRt');
 
   return (
     <main id="main-content" className="flex-1">
-      <Header locale={locale} title={t('title')} subtitle={t('subtitle')} />
+      <Header title={t('title')} subtitle={t('subtitle')} />
 
       <div className="p-6 space-y-6">
         {/* Stats */}
@@ -53,8 +48,8 @@ export default async function AiRtPage({ params }: PageProps) {
           </div>
           <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
             <p className="text-xs font-medium text-slate-500">{t('supportedLanguages')}</p>
-            <p className="mt-1 text-3xl font-bold text-slate-900">5</p>
-            <p className="mt-0.5 text-xs text-slate-400">TR · EN · EL · RO · MK</p>
+            <p className="mt-1 text-3xl font-bold text-slate-900">1</p>
+            <p className="mt-0.5 text-xs text-slate-400">EN</p>
           </div>
           <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
             <p className="text-xs font-medium text-slate-500">{t('avgGenerationTime')}</p>
@@ -165,11 +160,7 @@ export default async function AiRtPage({ params }: PageProps) {
                     {t('language')}
                   </label>
                   <select className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/20">
-                    <option value="tr">Türkçe</option>
                     <option value="en">English</option>
-                    <option value="el">Ελληνικά</option>
-                    <option value="ro">Română</option>
-                    <option value="mk">Македонски</option>
                   </select>
                 </div>
                 <div className="flex items-center justify-between">
