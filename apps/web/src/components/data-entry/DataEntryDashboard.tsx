@@ -4,10 +4,22 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { INDICATORS, TOTAL_INDICATORS, type SetCode } from '@/lib/scald-indicators';
 import { useDataEntry } from '@/stores/data-entry';
-import { Lock, CheckCircle2, ChevronRight, Trophy, Sparkles, Flame, Award } from 'lucide-react';
+import {
+  Lock,
+  CheckCircle2,
+  ChevronRight,
+  Trophy,
+  Sparkles,
+  Award,
+  Calculator,
+  ArrowRight,
+} from 'lucide-react';
 import { clsx } from 'clsx';
 
-const SET_THEME: Record<SetCode, { border: string; chip: string; ring: string; iconBg: string; iconText: string; gradient: string }> = {
+const SET_THEME: Record<
+  SetCode,
+  { border: string; chip: string; ring: string; iconBg: string; iconText: string; gradient: string }
+> = {
   ES: {
     border: 'border-emerald-200',
     chip: 'bg-emerald-100 text-emerald-700',
@@ -48,21 +60,20 @@ export function DataEntryDashboard() {
 
   const overall = useDataEntry((s) => s.overallProgress());
   const level = useDataEntry((s) => s.level());
-  const xp = useDataEntry((s) => s.xp);
   const badges = useDataEntry((s) => s.badges);
   const completed = useDataEntry((s) => s.completed);
   const categoryProgress = useDataEntry((s) => s.categoryProgress);
   const isUnlocked = useDataEntry((s) => s.isCategoryUnlocked);
 
-  // Compute earned vs available badges
   const setCodes: SetCode[] = ['ES', 'SS', 'MS', 'ECS'];
 
-  // Group categories by set
   const grouped = setCodes.map((sc) => ({
     set: sc,
     meta: INDICATORS.sets[sc],
     categories: INDICATORS.order.filter((c) => INDICATORS.categories[c].set === sc),
   }));
+
+  const allComplete = overall.total > 0 && overall.done === overall.total;
 
   if (!mounted) {
     return (
@@ -74,9 +85,8 @@ export function DataEntryDashboard() {
 
   return (
     <div className="p-6 space-y-6">
-      {/* Player HUD */}
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-4">
-        {/* Level */}
+      {/* HUD: Level · Overall Progress · Badges (no Total XP) */}
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         <div className="rounded-xl border border-slate-200 bg-gradient-to-br from-indigo-500 to-purple-600 p-5 text-white shadow-sm">
           <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider opacity-80">
             <Sparkles className="h-3.5 w-3.5" /> Level
@@ -95,16 +105,6 @@ export function DataEntryDashboard() {
           </div>
         </div>
 
-        {/* XP */}
-        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-500">
-            <Flame className="h-3.5 w-3.5 text-orange-500" /> Total XP
-          </div>
-          <p className="mt-2 text-4xl font-bold text-slate-900">{xp.toLocaleString()}</p>
-          <p className="mt-1 text-xs text-slate-400">+10 per indicator · +50 per category · +200 per set</p>
-        </div>
-
-        {/* Overall progress */}
         <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
           <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-500">
             <Trophy className="h-3.5 w-3.5 text-emerald-500" /> Overall Progress
@@ -121,7 +121,6 @@ export function DataEntryDashboard() {
           </p>
         </div>
 
-        {/* Badges */}
         <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
           <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-500">
             <Award className="h-3.5 w-3.5 text-amber-500" /> Set Badges
@@ -151,6 +150,13 @@ export function DataEntryDashboard() {
           </div>
         </div>
       </div>
+
+      {/* Ecological Footprint calculator — locked until all indicators entered */}
+      <EcologicalFootprintCard
+        allComplete={allComplete}
+        done={overall.done}
+        total={overall.total}
+      />
 
       {/* Sets and categories */}
       {grouped.map((group) => {
@@ -212,6 +218,91 @@ export function DataEntryDashboard() {
           </section>
         );
       })}
+    </div>
+  );
+}
+
+function EcologicalFootprintCard({
+  allComplete,
+  done,
+  total,
+}: {
+  allComplete: boolean;
+  done: number;
+  total: number;
+}) {
+  return (
+    <div
+      className={clsx(
+        'relative overflow-hidden rounded-2xl border p-6 shadow-sm transition',
+        allComplete
+          ? 'border-emerald-200 bg-gradient-to-br from-emerald-50 via-white to-teal-50'
+          : 'border-slate-200 bg-slate-50/50',
+      )}
+    >
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex items-start gap-4">
+          <div
+            className={clsx(
+              'flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl transition',
+              allComplete
+                ? 'bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-500/30'
+                : 'bg-slate-200 text-slate-400',
+            )}
+          >
+            {allComplete ? <Calculator className="h-7 w-7" /> : <Lock className="h-6 w-6" />}
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <h3 className="text-lg font-bold text-slate-900">Calculate Ecological Footprint</h3>
+              {allComplete && (
+                <span className="rounded-full bg-emerald-500 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white">
+                  Ready
+                </span>
+              )}
+            </div>
+            <p className="mt-1 text-sm text-slate-600">
+              {allComplete
+                ? 'All indicators are filled. Run the calculation to see your municipality’s overall score, set breakdown, and 2030 projection.'
+                : 'Complete all indicators across every category to unlock the calculation.'}
+            </p>
+            <div className="mt-3 flex items-center gap-3">
+              <div className="h-1.5 w-40 overflow-hidden rounded-full bg-slate-200">
+                <div
+                  className={clsx(
+                    'h-full rounded-full transition-all',
+                    allComplete
+                      ? 'bg-gradient-to-r from-emerald-400 to-emerald-600'
+                      : 'bg-slate-400',
+                  )}
+                  style={{ width: `${total > 0 ? (done / total) * 100 : 0}%` }}
+                />
+              </div>
+              <span className="text-xs font-medium text-slate-500">
+                {done} / {total} indicators
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {allComplete ? (
+          <Link
+            href="/data-entry/calculate"
+            className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-600 px-5 py-2.5 text-sm font-semibold text-white shadow-md transition hover:opacity-90 hover:shadow-lg"
+          >
+            Calculate now
+            <ArrowRight className="h-4 w-4" />
+          </Link>
+        ) : (
+          <button
+            disabled
+            className="inline-flex items-center gap-2 rounded-lg bg-slate-200 px-5 py-2.5 text-sm font-semibold text-slate-400 cursor-not-allowed"
+          >
+            <Lock className="h-4 w-4" />
+            Locked
+          </button>
+        )}
+      </div>
     </div>
   );
 }
