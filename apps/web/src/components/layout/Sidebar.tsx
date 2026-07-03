@@ -15,15 +15,18 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   ClipboardList,
+  X,
 } from 'lucide-react';
 import { clsx } from 'clsx';
 
 interface SidebarProps {
   collapsed: boolean;
+  mobileOpen: boolean;
   onToggle: () => void;
+  onMobileClose: () => void;
 }
 
-export function Sidebar({ collapsed, onToggle }: SidebarProps) {
+export function Sidebar({ collapsed, mobileOpen, onToggle, onMobileClose }: SidebarProps) {
   const t = useTranslations('navigation');
   const pathname = usePathname();
 
@@ -45,9 +48,15 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
     <aside
       className={clsx(
         'fixed inset-y-0 left-0 z-50 flex flex-col bg-slate-900 transition-all duration-300',
-        collapsed ? 'w-16' : 'w-64'
+        // desktop widths
+        'lg:translate-x-0',
+        collapsed ? 'lg:w-16' : 'lg:w-64',
+        // mobile: slide over, always 260px
+        'w-64',
+        mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0',
       )}
     >
+      {/* Logo + Toggle */}
       <div className="flex items-center justify-between flex-shrink-0 px-3 py-4">
         {!collapsed && (
           <Link href="/" className="flex items-center gap-3">
@@ -62,24 +71,38 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
         )}
 
         {collapsed && (
-          <Link href="/" className="flex h-9 w-9 mx-auto items-center justify-center rounded-xl bg-emerald-500/20">
+          <Link
+            href="/"
+            className="hidden lg:flex h-9 w-9 mx-auto items-center justify-center rounded-xl bg-emerald-500/20"
+          >
             <Sprout className="h-5 w-5 text-emerald-400" />
           </Link>
         )}
 
+        {/* Desktop collapse toggle */}
         {!collapsed && (
           <button
             onClick={onToggle}
-            className="ml-auto flex h-7 w-7 items-center justify-center rounded-lg text-slate-500 transition hover:bg-slate-800 hover:text-white"
+            className="hidden lg:flex ml-auto h-7 w-7 items-center justify-center rounded-lg text-slate-500 transition hover:bg-slate-800 hover:text-white"
             title={t('closeMenuTitle')}
           >
             <PanelLeftClose className="h-4 w-4" />
           </button>
         )}
+
+        {/* Mobile close button */}
+        <button
+          onClick={onMobileClose}
+          className="lg:hidden ml-auto flex h-7 w-7 items-center justify-center rounded-lg text-slate-400 transition hover:bg-slate-800 hover:text-white"
+          aria-label="Close menu"
+        >
+          <X className="h-4 w-4" />
+        </button>
       </div>
 
       <div className="mx-3 border-t border-slate-700/60" />
 
+      {/* Navigation */}
       <nav className="flex-1 overflow-y-auto px-2 py-3">
         <ul className="space-y-1">
           {navItems.map((item) => {
@@ -91,17 +114,21 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
                   title={collapsed ? item.label : undefined}
                   className={clsx(
                     'group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all',
-                    collapsed && 'justify-center px-0',
+                    collapsed && 'lg:justify-center lg:px-0',
                     active
                       ? 'bg-emerald-600 text-white'
-                      : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+                      : 'text-slate-400 hover:bg-slate-800 hover:text-white',
                   )}
                 >
                   <item.icon className="h-4 w-4 shrink-0" />
-                  {!collapsed && (
+                  {(!collapsed || mobileOpen) && (
                     <>
-                      <span className="flex-1">{item.label}</span>
-                      {active && <ChevronRight className="h-3 w-3 opacity-60" />}
+                      <span className={clsx('flex-1', collapsed && 'lg:hidden')}>{item.label}</span>
+                      {active && (
+                        <ChevronRight
+                          className={clsx('h-3 w-3 opacity-60', collapsed && 'lg:hidden')}
+                        />
+                      )}
                     </>
                   )}
                 </Link>
@@ -121,20 +148,23 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
             title={collapsed ? t('settings') : undefined}
             className={clsx(
               'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-400 transition-all hover:bg-slate-800 hover:text-white',
-              collapsed && 'justify-center px-0'
+              collapsed && 'lg:justify-center lg:px-0',
             )}
           >
             <Settings className="h-4 w-4" />
-            {!collapsed && <span>{t('settings')}</span>}
+            {(!collapsed || mobileOpen) && (
+              <span className={clsx(collapsed && 'lg:hidden')}>{t('settings')}</span>
+            )}
           </Link>
         </div>
       </nav>
 
+      {/* Footer / Toggle açma butonu */}
       <div className="border-t border-slate-700/50 p-3">
         {collapsed ? (
           <button
             onClick={onToggle}
-            className="flex w-full items-center justify-center rounded-lg py-2 text-slate-500 transition hover:bg-slate-800 hover:text-white"
+            className="hidden lg:flex w-full items-center justify-center rounded-lg py-2 text-slate-500 transition hover:bg-slate-800 hover:text-white"
             title={t('openMenuTitle')}
           >
             <PanelLeftOpen className="h-4 w-4" />
