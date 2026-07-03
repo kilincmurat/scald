@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { INDICATORS, getNextCategoryCode, type Indicator, type SetCode } from '@/lib/scald-indicators';
+import { autoScore, isNumericIndicator } from '@/lib/auto-score';
 import { useDataEntry } from '@/stores/data-entry';
 import { clsx } from 'clsx';
 import {
@@ -13,6 +14,8 @@ import {
   Sparkles,
   Trophy,
   Info,
+  Zap,
+  AlertCircle,
 } from 'lucide-react';
 
 const SET_GRADIENT: Record<SetCode, string> = {
@@ -105,17 +108,26 @@ export function CategoryWizard({ categoryCode }: { categoryCode: string }) {
   const allScored = cat.indicators.every((ind) => isIndicatorComplete(ind.code));
   const nextCatCode = getNextCategoryCode(categoryCode);
 
-  const handleScore = (indicatorCode: string, score: number) => {
+  // Manual score selection is only used for non-numeric (categorical) indicators
+  const handleManualScore = (indicatorCode: string, score: number) => {
     const raw = rawValues[indicatorCode]?.trim();
-    if (!raw) return; // Guard: raw value is required
+    if (!raw) return;
     saveEntry(indicatorCode, score, raw);
   };
 
   const handleRawChange = (indicatorCode: string, value: string) => {
     setRawValues((prev) => ({ ...prev, [indicatorCode]: value }));
-    // if score already set, re-save with new raw value
-    if (entries[indicatorCode] !== undefined) {
-      saveEntry(indicatorCode, entries[indicatorCode].score, value.trim() || undefined);
+    const trimmed = value.trim();
+    const indicator = cat.indicators.find((i) => i.code === indicatorCode);
+    if (!indicator) return;
+    if (!trimmed) return;
+    // Auto-scoring: system picks the matching threshold
+    const score = autoScore(trimmed, indicator.thresholds);
+    if (score !== null) {
+      saveEntry(indicatorCode, score, trimmed);
+    } else if (entries[indicatorCode] !== undefined) {
+      // Keep existing score, just update raw value
+      saveEntry(indicatorCode, entries[indicatorCode].score, trimmed);
     }
   };
 
@@ -186,7 +198,7 @@ export function CategoryWizard({ categoryCode }: { categoryCode: string }) {
               rawValue={rawValues[ind.code] ?? ''}
               currentScore={entries[ind.code]?.score}
               onRawChange={(v) => handleRawChange(ind.code, v)}
-              onScore={(s) => handleScore(ind.code, s)}
+              onManualScore={(s) => handleManualScore(ind.code, s)}
             />
           ))}
         </div>
@@ -252,7 +264,7 @@ function IndicatorRow({
   rawValue,
   currentScore,
   onRawChange,
-  onScore,
+  onManualScore,
 }: {
   indicator: Indicator;
   index: number;
@@ -260,12 +272,15 @@ function IndicatorRow({
   rawValue: string;
   currentScore?: number;
   onRawChange: (v: string) => void;
-  onScore: (score: number) => void;
+  onManualScore: (score: number) => void;
 }) {
   const accent = SET_ACCENT[setCode];
   const [expanded, setExpanded] = useState(true);
   const hasRaw = rawValue.trim().length > 0;
   const isComplete = currentScore !== undefined && hasRaw;
+  const isNumeric = isNumericIndicator(indicator.thresholds);
+  const autoUnresolved =
+    isNumeric && hasRaw && currentScore === undefined;
 
   return (
     <div
@@ -340,37 +355,52 @@ function IndicatorRow({
               />
               {!hasRaw && (
                 <p className="mt-1 text-[10px] text-slate-400">
-                  Required · your municipality's value in <span className="font-medium">{indicator.unit}</span>
+                  Required · in <span className="font-medium">{indicator.unit}</span>
+                </p>
+              )}
+              {hasRaw && isComplete && isNumeric && (
+                <p className="mt-1 flex items-center gap-1 text-[10px] text-emerald-600">
+                  <Zap className="h-3 w-3" />
+                  Auto-scored: <span className="font-semibold">{currentScore}</span>
+                </p>
+              )}
+              {autoUnresolved && (
+                <p className="mt-1 flex items-start gap-1 text-[10px] text-amber-600">
+                  <AlertCircle className="mt-0.5 h-3 w-3 shrink-0" />
+                  Value doesn't match any threshold. Check the number.
+                </p>
+              )}
+              {hasRaw && !isNumeric && (
+                <p className="mt-1 flex items-start gap-1 text-[10px] text-slate-500">
+                  <Info className="mt-0.5 h-3 w-3 shrink-0" />
+                  Descriptive indicator — click the matching level on the right.
                 </p>
               )}
             </div>
 
             <div className="lg:col-span-9">
               <label className="block text-[11px] font-semibold text-slate-600">
-                Select score (0 = no data, 5 = best)
+                {isNumeric ? '0–5 score' : 'Select level (0 = none, 5 = best)'}
                 {!hasRaw && (
                   <span className="ml-2 text-[10px] font-normal text-slate-400">
                     — enter raw value first
+                  </span>
+                )}
+                {hasRaw && isNumeric && (
+                  <span className="ml-2 inline-flex items-center gap-1 text-[10px] font-normal text-emerald-600">
+                    <Zap className="h-3 w-3" /> auto-calculated
                   </span>
                 )}
               </label>
               <div className="mt-1 grid grid-cols-6 gap-1.5">
                 {indicator.thresholds.map((thr, score) => {
                   const selected = currentScore === score;
-                  return (
-                    <button
-                      key={score}
-                      onClick={() => onScore(score)}
-                      disabled={!hasRaw}
-                      className={clsx(
-                        'group flex flex-col items-stretch overflow-hidden rounded-lg border bg-white text-left transition',
-                        !hasRaw && 'cursor-not-allowed opacity-40',
-                        hasRaw &&
-                          (selected
-                            ? 'border-transparent shadow-md ring-2 ring-emerald-500/40'
-                            : 'border-slate-200 hover:border-slate-300 hover:shadow-sm'),
-                      )}
-                    >
+                  // Read-only for numeric indicators, clickable for descriptive ones
+                  const clickable = hasRaw && !isNumeric;
+                  const dimmed = !hasRaw || (isNumeric && !selected && currentScore !== undefined);
+
+                  const inner = (
+                    <>
                       <div
                         className={clsx(
                           'flex items-center justify-between px-2 py-1 text-[10px] font-bold text-white',
@@ -388,7 +418,30 @@ function IndicatorRow({
                           {thr || '—'}
                         </p>
                       </div>
-                    </button>
+                    </>
+                  );
+
+                  const cls = clsx(
+                    'flex flex-col items-stretch overflow-hidden rounded-lg border bg-white text-left transition',
+                    selected
+                      ? 'border-transparent shadow-md ring-2 ring-emerald-500/40'
+                      : 'border-slate-200',
+                    !clickable && !selected && dimmed && 'opacity-40',
+                    clickable && 'hover:border-slate-300 hover:shadow-sm cursor-pointer',
+                    !clickable && !selected && 'cursor-default',
+                  );
+
+                  if (clickable) {
+                    return (
+                      <button key={score} type="button" onClick={() => onManualScore(score)} className={cls}>
+                        {inner}
+                      </button>
+                    );
+                  }
+                  return (
+                    <div key={score} className={cls} aria-live="polite">
+                      {inner}
+                    </div>
                   );
                 })}
               </div>
