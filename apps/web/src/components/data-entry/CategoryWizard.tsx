@@ -96,11 +96,19 @@ export function CategoryWizard({ categoryCode }: { categoryCode: string }) {
     );
   }
 
-  const allScored = cat.indicators.every((ind) => entries[ind.code] !== undefined);
+  const isIndicatorComplete = (code: string) => {
+    const e = entries[code];
+    if (!e) return false;
+    return !!(e.rawValue && e.rawValue.trim().length > 0);
+  };
+
+  const allScored = cat.indicators.every((ind) => isIndicatorComplete(ind.code));
   const nextCatCode = getNextCategoryCode(categoryCode);
 
   const handleScore = (indicatorCode: string, score: number) => {
-    saveEntry(indicatorCode, score, rawValues[indicatorCode]?.trim() || undefined);
+    const raw = rawValues[indicatorCode]?.trim();
+    if (!raw) return; // Guard: raw value is required
+    saveEntry(indicatorCode, score, raw);
   };
 
   const handleRawChange = (indicatorCode: string, value: string) => {
@@ -256,12 +264,14 @@ function IndicatorRow({
 }) {
   const accent = SET_ACCENT[setCode];
   const [expanded, setExpanded] = useState(true);
+  const hasRaw = rawValue.trim().length > 0;
+  const isComplete = currentScore !== undefined && hasRaw;
 
   return (
     <div
       className={clsx(
         'rounded-xl border bg-white shadow-sm transition',
-        currentScore !== undefined ? 'border-emerald-200' : 'border-slate-200',
+        isComplete ? 'border-emerald-200' : 'border-slate-200',
       )}
     >
       <div className="flex items-start gap-3 border-b border-slate-100 p-4">
@@ -269,12 +279,10 @@ function IndicatorRow({
         <div
           className={clsx(
             'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-xs font-bold',
-            currentScore !== undefined
-              ? 'bg-emerald-500 text-white'
-              : `${accent.bg} ${accent.text}`,
+            isComplete ? 'bg-emerald-500 text-white' : `${accent.bg} ${accent.text}`,
           )}
         >
-          {currentScore !== undefined ? <CheckCircle2 className="h-4 w-4" /> : index + 1}
+          {isComplete ? <CheckCircle2 className="h-4 w-4" /> : index + 1}
         </div>
 
         <div className="flex-1 min-w-0">
@@ -315,20 +323,36 @@ function IndicatorRow({
           <div className="grid grid-cols-1 gap-3 lg:grid-cols-12">
             <div className="lg:col-span-3">
               <label className="block text-[11px] font-semibold text-slate-600">
-                Raw value <span className="font-normal text-slate-400">(optional)</span>
+                Raw value <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
                 value={rawValue}
                 onChange={(e) => onRawChange(e.target.value)}
-                placeholder={indicator.thresholds[3] || '—'}
-                className="mt-1 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 placeholder-slate-400 outline-none transition focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-200"
+                placeholder={indicator.unit}
+                required
+                className={clsx(
+                  'mt-1 w-full rounded-lg border bg-slate-50 px-3 py-2 text-sm text-slate-900 placeholder-slate-400 outline-none transition focus:bg-white focus:ring-2',
+                  hasRaw
+                    ? 'border-slate-200 focus:border-slate-400 focus:ring-slate-200'
+                    : 'border-slate-200 focus:border-emerald-500 focus:ring-emerald-500/20',
+                )}
               />
+              {!hasRaw && (
+                <p className="mt-1 text-[10px] text-slate-400">
+                  Required · your municipality's value in <span className="font-medium">{indicator.unit}</span>
+                </p>
+              )}
             </div>
 
             <div className="lg:col-span-9">
               <label className="block text-[11px] font-semibold text-slate-600">
                 Select score (0 = no data, 5 = best)
+                {!hasRaw && (
+                  <span className="ml-2 text-[10px] font-normal text-slate-400">
+                    — enter raw value first
+                  </span>
+                )}
               </label>
               <div className="mt-1 grid grid-cols-6 gap-1.5">
                 {indicator.thresholds.map((thr, score) => {
@@ -337,11 +361,14 @@ function IndicatorRow({
                     <button
                       key={score}
                       onClick={() => onScore(score)}
+                      disabled={!hasRaw}
                       className={clsx(
                         'group flex flex-col items-stretch overflow-hidden rounded-lg border bg-white text-left transition',
-                        selected
-                          ? 'border-transparent shadow-md ring-2 ring-emerald-500/40'
-                          : 'border-slate-200 hover:border-slate-300 hover:shadow-sm',
+                        !hasRaw && 'cursor-not-allowed opacity-40',
+                        hasRaw &&
+                          (selected
+                            ? 'border-transparent shadow-md ring-2 ring-emerald-500/40'
+                            : 'border-slate-200 hover:border-slate-300 hover:shadow-sm'),
                       )}
                     >
                       <div

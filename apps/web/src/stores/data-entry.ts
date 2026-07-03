@@ -108,12 +108,18 @@ export const useDataEntry = create<DataEntryState>()(
         if (!cat) return { done: 0, total: 0, pct: 0 };
         const total = cat.indicators.length;
         const entries = get().entries;
-        const done = cat.indicators.filter((i) => entries[i.code] !== undefined).length;
+        const done = cat.indicators.filter((i) => {
+          const e = entries[i.code];
+          return !!(e && e.rawValue && e.rawValue.trim().length > 0);
+        }).length;
         return { done, total, pct: total === 0 ? 0 : Math.round((done / total) * 100) };
       },
 
       overallProgress: () => {
-        const done = Object.keys(get().entries).length;
+        const entries = get().entries;
+        const done = Object.values(entries).filter(
+          (e) => !!(e.rawValue && e.rawValue.trim().length > 0),
+        ).length;
         return {
           done,
           total: TOTAL_INDICATORS,

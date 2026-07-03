@@ -9,7 +9,6 @@ import {
   CheckCircle2,
   ChevronRight,
   Trophy,
-  Sparkles,
   Award,
   Calculator,
   ArrowRight,
@@ -59,7 +58,6 @@ export function DataEntryDashboard() {
   useEffect(() => setMounted(true), []);
 
   const overall = useDataEntry((s) => s.overallProgress());
-  const level = useDataEntry((s) => s.level());
   const badges = useDataEntry((s) => s.badges);
   const completed = useDataEntry((s) => s.completed);
   const categoryProgress = useDataEntry((s) => s.categoryProgress);
@@ -85,26 +83,8 @@ export function DataEntryDashboard() {
 
   return (
     <div className="p-6 space-y-6">
-      {/* HUD: Level · Overall Progress · Badges (no Total XP) */}
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-        <div className="rounded-xl border border-slate-200 bg-gradient-to-br from-indigo-500 to-purple-600 p-5 text-white shadow-sm">
-          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider opacity-80">
-            <Sparkles className="h-3.5 w-3.5" /> Level
-          </div>
-          <p className="mt-2 text-4xl font-bold">{level.level}</p>
-          <div className="mt-3">
-            <div className="h-2 overflow-hidden rounded-full bg-white/20">
-              <div
-                className="h-full rounded-full bg-white transition-all"
-                style={{ width: `${(level.xpInLevel / level.xpForNext) * 100}%` }}
-              />
-            </div>
-            <p className="mt-1.5 text-xs opacity-80">
-              {level.xpInLevel} / {level.xpForNext} XP to next level
-            </p>
-          </div>
-        </div>
-
+      {/* HUD: Overall Progress · Badges */}
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
           <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-500">
             <Trophy className="h-3.5 w-3.5 text-emerald-500" /> Overall Progress

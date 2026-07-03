@@ -32,6 +32,10 @@ export type CategoryScore = {
 
 const setCodes: SetCode[] = ['ES', 'SS', 'MS', 'ECS'];
 
+function isEntryComplete(e: IndicatorEntry | undefined): e is IndicatorEntry {
+  return !!(e && e.rawValue && e.rawValue.trim().length > 0);
+}
+
 export function computeCategoryScores(
   entries: Record<string, IndicatorEntry>,
 ): CategoryScore[] {
@@ -41,7 +45,7 @@ export function computeCategoryScores(
     let n = 0;
     for (const ind of cat.indicators) {
       const e = entries[ind.code];
-      if (e) {
+      if (isEntryComplete(e)) {
         sum += e.score;
         n++;
       }
@@ -74,7 +78,7 @@ export function computeSetScores(
     acc[cat.set].total += cat.indicators.length;
     for (const ind of cat.indicators) {
       const e = entries[ind.code];
-      if (e) {
+      if (isEntryComplete(e)) {
         acc[cat.set].sum += e.score;
         acc[cat.set].n += 1;
       }
@@ -100,7 +104,9 @@ export function computeOverallScore(
   let sum = 0;
   let n = 0;
   for (const code of Object.keys(entries)) {
-    sum += entries[code].score;
+    const e = entries[code];
+    if (!isEntryComplete(e)) continue;
+    sum += e.score;
     n++;
   }
   const score = n === 0 ? 0 : Math.round((sum / (n * 5)) * 100);
@@ -117,7 +123,7 @@ export function getScoredEntries(
     const cat = INDICATORS.categories[code];
     for (const ind of cat.indicators) {
       const e = entries[ind.code];
-      if (e) {
+      if (isEntryComplete(e)) {
         out.push({
           indicator: ind,
           categoryCode: code,
