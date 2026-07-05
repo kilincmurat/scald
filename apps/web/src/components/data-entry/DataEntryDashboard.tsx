@@ -12,6 +12,10 @@ import {
   Award,
   Calculator,
   ArrowRight,
+  Loader2,
+  Cloud,
+  CloudOff,
+  RotateCcw,
 } from 'lucide-react';
 import { clsx } from 'clsx';
 
@@ -55,6 +59,7 @@ const SET_THEME: Record<
 
 export function DataEntryDashboard() {
   const [mounted, setMounted] = useState(false);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
   useEffect(() => setMounted(true), []);
 
   const overall = useDataEntry((s) => s.overallProgress());
@@ -62,6 +67,17 @@ export function DataEntryDashboard() {
   const completed = useDataEntry((s) => s.completed);
   const categoryProgress = useDataEntry((s) => s.categoryProgress);
   const isUnlocked = useDataEntry((s) => s.isCategoryUnlocked);
+  const initFromServer = useDataEntry((s) => s.initFromServer);
+  const syncStatus = useDataEntry((s) => s.syncStatus);
+  const serverInitialized = useDataEntry((s) => s.serverInitialized);
+  const resetAll = useDataEntry((s) => s.reset);
+
+  // Load server state on mount
+  useEffect(() => {
+    if (mounted && !serverInitialized) {
+      void initFromServer();
+    }
+  }, [mounted, serverInitialized, initFromServer]);
 
   const setCodes: SetCode[] = ['ES', 'SS', 'MS', 'ECS'];
 
@@ -82,7 +98,21 @@ export function DataEntryDashboard() {
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 lg:p-6 space-y-5 lg:space-y-6">
+      {/* Sync status + Reset */}
+      <div className="flex items-center justify-between gap-3">
+        <SyncStatusPill status={syncStatus} initialized={serverInitialized} />
+        {(overall.done > 0 || Object.keys(completed).length > 0) && (
+          <button
+            onClick={() => setShowResetConfirm(true)}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-[11px] font-medium text-slate-500 shadow-sm transition hover:border-red-200 hover:text-red-600"
+          >
+            <RotateCcw className="h-3 w-3" />
+            <span className="hidden sm:inline">Reset all</span>
+          </button>
+        )}
+      </div>
+
       {/* HUD: Overall Progress · Badges */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
@@ -198,7 +228,82 @@ export function DataEntryDashboard() {
           </section>
         );
       })}
+
+      {/* Reset confirm modal */}
+      {showResetConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+          <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-red-50 text-red-600">
+                <RotateCcw className="h-5 w-5" />
+              </div>
+              <h3 className="text-lg font-bold text-slate-900">Reset all data?</h3>
+            </div>
+            <p className="mt-3 text-sm text-slate-600">
+              This will permanently delete all your indicator entries, category
+              completions and badges — both locally and on the server. This
+              action cannot be undone.
+            </p>
+            <div className="mt-5 flex justify-end gap-2">
+              <button
+                onClick={() => setShowResetConfirm(false)}
+                className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  resetAll();
+                  setShowResetConfirm(false);
+                }}
+                className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700"
+              >
+                Yes, delete everything
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
+  );
+}
+
+function SyncStatusPill({
+  status,
+  initialized,
+}: {
+  status: 'idle' | 'loading' | 'syncing' | 'error';
+  initialized: boolean;
+}) {
+  if (status === 'loading' || !initialized) {
+    return (
+      <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[10px] font-medium text-slate-500">
+        <Loader2 className="h-3 w-3 animate-spin" />
+        Loading from server…
+      </span>
+    );
+  }
+  if (status === 'syncing') {
+    return (
+      <span className="inline-flex items-center gap-1.5 rounded-full border border-blue-200 bg-blue-50 px-2.5 py-1 text-[10px] font-medium text-blue-700">
+        <Loader2 className="h-3 w-3 animate-spin" />
+        Syncing…
+      </span>
+    );
+  }
+  if (status === 'error') {
+    return (
+      <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-[10px] font-medium text-amber-700">
+        <CloudOff className="h-3 w-3" />
+        Offline — changes saved locally
+      </span>
+    );
+  }
+  return (
+    <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[10px] font-medium text-emerald-700">
+      <Cloud className="h-3 w-3" />
+      Synced with server
+    </span>
   );
 }
 

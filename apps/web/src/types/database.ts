@@ -210,6 +210,64 @@ export interface Database {
         Insert: Omit<Database['public']['Tables']['audit_logs']['Row'], 'id' | 'created_at'> & { id?: string };
         Update: never;
       };
+      scald_indicator_entries: {
+        Row: {
+          id: string;
+          user_id: string;
+          indicator_code: string;
+          category_code: string;
+          set_code: string;
+          score: number;
+          raw_value: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          indicator_code: string;
+          category_code: string;
+          set_code: string;
+          score: number;
+          raw_value: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database['public']['Tables']['scald_indicator_entries']['Insert']>;
+        Relationships: [];
+      };
+      scald_category_completions: {
+        Row: {
+          id: string;
+          user_id: string;
+          category_code: string;
+          completed_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          category_code: string;
+          completed_at?: string;
+        };
+        Update: Partial<Database['public']['Tables']['scald_category_completions']['Insert']>;
+        Relationships: [];
+      };
+      scald_set_badges: {
+        Row: {
+          id: string;
+          user_id: string;
+          set_code: string;
+          earned_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          set_code: string;
+          earned_at?: string;
+        };
+        Update: Partial<Database['public']['Tables']['scald_set_badges']['Insert']>;
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: {

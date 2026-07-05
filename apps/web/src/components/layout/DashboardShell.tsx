@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import { Sidebar } from './Sidebar';
+import { createClient } from '@/lib/supabase/client';
+import { useDataEntry } from '@/stores/data-entry';
 
 interface DashboardShellProps {
   children: React.ReactNode;
@@ -12,11 +14,30 @@ export function DashboardShell({ children }: DashboardShellProps) {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname();
+  const clearLocal = useDataEntry((s) => s.clearLocal);
 
   // Close mobile drawer on route change
   useEffect(() => {
     setMobileOpen(false);
   }, [pathname]);
+
+  // Wire up auth listener: on sign-out, wipe local data-entry cache so a
+  // different user doesn't see the previous session's data.
+  useEffect(() => {
+    let unsub: (() => void) | undefined;
+    try {
+      const supabase = createClient();
+      const { data } = supabase.auth.onAuthStateChange((event) => {
+        if (event === 'SIGNED_OUT') {
+          clearLocal();
+        }
+      });
+      unsub = () => data.subscription.unsubscribe();
+    } catch {
+      // Supabase not configured — nothing to wire up.
+    }
+    return () => unsub?.();
+  }, [clearLocal]);
 
   return (
     <div className="flex min-h-screen bg-slate-50">
