@@ -6,6 +6,8 @@ import { useRouter } from 'next/navigation';
 import { INDICATORS, getNextCategoryCode, type Indicator, type SetCode } from '@/lib/scald-indicators';
 import { autoScore, isNumericIndicator } from '@/lib/auto-score';
 import { useDataEntry } from '@/stores/data-entry';
+import { useProfile } from '@/hooks/useProfile';
+import { canWriteDataEntry } from '@/lib/roles';
 import { clsx } from 'clsx';
 import {
   ArrowLeft,
@@ -16,6 +18,7 @@ import {
   Info,
   Zap,
   AlertCircle,
+  Eye,
 } from 'lucide-react';
 
 const SET_GRADIENT: Record<SetCode, string> = {
@@ -57,6 +60,9 @@ export function CategoryWizard({ categoryCode }: { categoryCode: string }) {
   const isUnlocked = useDataEntry((s) => s.isCategoryUnlocked(categoryCode));
   const categoryProgress = useDataEntry((s) => s.categoryProgress(categoryCode));
   const isComplete = useDataEntry((s) => s.isCategoryComplete(categoryCode));
+
+  const { profile } = useProfile();
+  const canWrite = profile ? canWriteDataEntry(profile.role) : true;
 
   const [showCelebration, setShowCelebration] = useState(false);
 

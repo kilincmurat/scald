@@ -16,8 +16,16 @@ import {
   PanelLeftOpen,
   ClipboardList,
   X,
+  ShieldCheck,
+  Users2,
+  MessageSquare,
+  Home,
+  Building2,
 } from 'lucide-react';
 import { clsx } from 'clsx';
+import type { LucideIcon } from 'lucide-react';
+import { useProfile } from '@/hooks/useProfile';
+import { ROLE_BADGE_COLOR, ROLE_LABELS, type Role } from '@/lib/roles';
 
 interface SidebarProps {
   collapsed: boolean;
@@ -26,18 +34,60 @@ interface SidebarProps {
   onMobileClose: () => void;
 }
 
+type NavItem = {
+  href: string;
+  label: string;
+  icon: LucideIcon;
+  exact?: boolean;
+  badge?: string;
+};
+
+function buildNav(role: Role, t: (k: string) => string): NavItem[] {
+  switch (role) {
+    case 'admin':
+      return [
+        { href: '/admin', label: 'Admin Panel', icon: ShieldCheck, exact: true },
+        { href: '/', label: t('overview'), icon: LayoutDashboard, exact: true },
+        { href: '/data-entry', label: t('dataEntry'), icon: ClipboardList },
+        { href: '/efct', label: t('efct'), icon: Leaf },
+        { href: '/ai-dss', label: t('aiDss'), icon: BrainCircuit },
+        { href: '/ai-rt', label: t('aiRt'), icon: FileBarChart2 },
+        { href: '/map', label: t('map'), icon: Map },
+        { href: '/feedback', label: 'Feedback', icon: MessageSquare },
+      ];
+    case 'data_entry':
+      return [
+        { href: '/data-entry', label: t('dataEntry'), icon: ClipboardList },
+        { href: '/efct', label: t('efct'), icon: Leaf, badge: 'read' },
+        { href: '/map', label: t('map'), icon: Map },
+      ];
+    case 'decision_maker':
+      return [
+        { href: '/', label: t('overview'), icon: LayoutDashboard, exact: true },
+        { href: '/data-entry', label: t('dataEntry'), icon: ClipboardList, badge: 'read' },
+        { href: '/efct', label: t('efct'), icon: Leaf },
+        { href: '/ai-dss', label: t('aiDss'), icon: BrainCircuit },
+        { href: '/ai-rt', label: t('aiRt'), icon: FileBarChart2 },
+        { href: '/map', label: t('map'), icon: Map },
+        { href: '/feedback', label: 'Feedback', icon: MessageSquare },
+      ];
+    case 'citizen':
+      return [
+        { href: '/public', label: 'Home', icon: Home, exact: true },
+        { href: '/my-municipality', label: 'My Municipality', icon: Building2 },
+        { href: '/map', label: t('map'), icon: Map },
+        { href: '/feedback', label: 'Feedback', icon: MessageSquare },
+      ];
+  }
+}
+
 export function Sidebar({ collapsed, mobileOpen, onToggle, onMobileClose }: SidebarProps) {
   const t = useTranslations('navigation');
   const pathname = usePathname();
-
-  const navItems = [
-    { href: '/', label: t('overview'), icon: LayoutDashboard, exact: true },
-    { href: '/data-entry', label: t('dataEntry'), icon: ClipboardList },
-    { href: '/efct', label: t('efct'), icon: Leaf },
-    { href: '/ai-dss', label: t('aiDss'), icon: BrainCircuit },
-    { href: '/ai-rt', label: t('aiRt'), icon: FileBarChart2 },
-    { href: '/map', label: t('map'), icon: Map },
-  ];
+  const { profile } = useProfile();
+  const role: Role = profile?.role ?? 'data_entry';
+  const municipality = profile?.municipality;
+  const navItems = buildNav(role, t);
 
   const isActive = (href: string, exact?: boolean) => {
     if (exact) return pathname === href;
@@ -48,15 +98,12 @@ export function Sidebar({ collapsed, mobileOpen, onToggle, onMobileClose }: Side
     <aside
       className={clsx(
         'fixed inset-y-0 left-0 z-50 flex flex-col bg-slate-900 transition-all duration-300',
-        // desktop widths
         'lg:translate-x-0',
         collapsed ? 'lg:w-16' : 'lg:w-64',
-        // mobile: slide over, always 260px
         'w-64',
         mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0',
       )}
     >
-      {/* Logo + Toggle */}
       <div className="flex items-center justify-between flex-shrink-0 px-3 py-4">
         {!collapsed && (
           <Link href="/" className="flex items-center gap-3">
@@ -79,7 +126,6 @@ export function Sidebar({ collapsed, mobileOpen, onToggle, onMobileClose }: Side
           </Link>
         )}
 
-        {/* Desktop collapse toggle */}
         {!collapsed && (
           <button
             onClick={onToggle}
@@ -90,7 +136,6 @@ export function Sidebar({ collapsed, mobileOpen, onToggle, onMobileClose }: Side
           </button>
         )}
 
-        {/* Mobile close button */}
         <button
           onClick={onMobileClose}
           className="lg:hidden ml-auto flex h-7 w-7 items-center justify-center rounded-lg text-slate-400 transition hover:bg-slate-800 hover:text-white"
@@ -100,9 +145,28 @@ export function Sidebar({ collapsed, mobileOpen, onToggle, onMobileClose }: Side
         </button>
       </div>
 
+      {/* Role + municipality badge */}
+      {!collapsed && profile && (
+        <div className="mx-3 mb-2 flex flex-col gap-1.5">
+          <span
+            className={clsx(
+              'inline-flex w-fit items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold ring-1 ring-inset',
+              ROLE_BADGE_COLOR[role],
+            )}
+          >
+            {ROLE_LABELS[role]}
+          </span>
+          {municipality && (
+            <span className="inline-flex items-center gap-1.5 text-[11px] text-slate-400">
+              <span className="text-base leading-none">{municipality.flag}</span>
+              <span>{municipality.name}</span>
+            </span>
+          )}
+        </div>
+      )}
+
       <div className="mx-3 border-t border-slate-700/60" />
 
-      {/* Navigation */}
       <nav className="flex-1 overflow-y-auto px-2 py-3">
         <ul className="space-y-1">
           {navItems.map((item) => {
@@ -124,7 +188,12 @@ export function Sidebar({ collapsed, mobileOpen, onToggle, onMobileClose }: Side
                   {(!collapsed || mobileOpen) && (
                     <>
                       <span className={clsx('flex-1', collapsed && 'lg:hidden')}>{item.label}</span>
-                      {active && (
+                      {item.badge && !collapsed && (
+                        <span className="rounded bg-slate-800 px-1.5 py-0.5 text-[9px] font-bold uppercase text-slate-400">
+                          {item.badge}
+                        </span>
+                      )}
+                      {active && !item.badge && (
                         <ChevronRight
                           className={clsx('h-3 w-3 opacity-60', collapsed && 'lg:hidden')}
                         />
@@ -159,7 +228,6 @@ export function Sidebar({ collapsed, mobileOpen, onToggle, onMobileClose }: Side
         </div>
       </nav>
 
-      {/* Footer / Toggle açma butonu */}
       <div className="border-t border-slate-700/50 p-3">
         {collapsed ? (
           <button
@@ -171,8 +239,12 @@ export function Sidebar({ collapsed, mobileOpen, onToggle, onMobileClose }: Side
           </button>
         ) : (
           <div className="rounded-lg bg-slate-800 p-3">
-            <p className="text-xs font-medium text-white">{t('demoMunicipality')}</p>
-            <p className="mt-0.5 text-[10px] text-slate-400">{t('countryPopulation')}</p>
+            <p className="text-xs font-medium text-white">
+              {profile?.fullName || profile?.email?.split('@')[0] || t('demoMunicipality')}
+            </p>
+            <p className="mt-0.5 truncate text-[10px] text-slate-400">
+              {profile?.email || t('countryPopulation')}
+            </p>
             <div className="mt-2 flex items-center gap-1.5">
               <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-400" />
               <span className="text-[10px] text-emerald-400">{t('connected')}</span>

@@ -1,4 +1,5 @@
-export type UserRole = 'admin' | 'municipality' | 'citizen';
+export type UserRole = 'admin' | 'municipality' | 'data_entry' | 'decision_maker' | 'citizen';
+export type FeedbackStatus = 'new' | 'seen' | 'in_progress' | 'resolved' | 'dismissed';
 export type QualityLabel = 'validated' | 'estimated' | 'pilot';
 export type StrategyPriority = 'high' | 'medium' | 'low';
 export type StrategyStatus = 'proposed' | 'approved' | 'in_progress' | 'completed' | 'rejected';
@@ -23,6 +24,7 @@ export interface Database {
           latitude: number | null;
           longitude: number | null;
           is_active: boolean;
+          is_pilot: boolean;
           created_at: string;
           updated_at: string;
         };
@@ -213,7 +215,8 @@ export interface Database {
       scald_indicator_entries: {
         Row: {
           id: string;
-          user_id: string;
+          municipality_id: string;
+          entered_by: string | null;
           indicator_code: string;
           category_code: string;
           set_code: string;
@@ -224,7 +227,8 @@ export interface Database {
         };
         Insert: {
           id?: string;
-          user_id: string;
+          municipality_id: string;
+          entered_by?: string | null;
           indicator_code: string;
           category_code: string;
           set_code: string;
@@ -239,13 +243,15 @@ export interface Database {
       scald_category_completions: {
         Row: {
           id: string;
-          user_id: string;
+          municipality_id: string;
+          completed_by: string | null;
           category_code: string;
           completed_at: string;
         };
         Insert: {
           id?: string;
-          user_id: string;
+          municipality_id: string;
+          completed_by?: string | null;
           category_code: string;
           completed_at?: string;
         };
@@ -255,17 +261,79 @@ export interface Database {
       scald_set_badges: {
         Row: {
           id: string;
-          user_id: string;
+          municipality_id: string;
+          earned_by: string | null;
           set_code: string;
           earned_at: string;
         };
         Insert: {
           id?: string;
-          user_id: string;
+          municipality_id: string;
+          earned_by?: string | null;
           set_code: string;
           earned_at?: string;
         };
         Update: Partial<Database['public']['Tables']['scald_set_badges']['Insert']>;
+        Relationships: [];
+      };
+      feedback: {
+        Row: {
+          id: string;
+          user_id: string | null;
+          municipality_id: string;
+          subject: string;
+          message: string;
+          category: string | null;
+          status: FeedbackStatus;
+          response: string | null;
+          responded_by: string | null;
+          responded_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id?: string | null;
+          municipality_id: string;
+          subject: string;
+          message: string;
+          category?: string | null;
+          status?: FeedbackStatus;
+          response?: string | null;
+          responded_by?: string | null;
+          responded_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database['public']['Tables']['feedback']['Insert']>;
+        Relationships: [];
+      };
+      indicator_threshold_overrides: {
+        Row: {
+          id: string;
+          indicator_code: string;
+          threshold_0: string;
+          threshold_1: string;
+          threshold_2: string;
+          threshold_3: string;
+          threshold_4: string;
+          threshold_5: string;
+          updated_by: string | null;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          indicator_code: string;
+          threshold_0?: string;
+          threshold_1: string;
+          threshold_2: string;
+          threshold_3: string;
+          threshold_4: string;
+          threshold_5: string;
+          updated_by?: string | null;
+          updated_at?: string;
+        };
+        Update: Partial<Database['public']['Tables']['indicator_threshold_overrides']['Insert']>;
         Relationships: [];
       };
     };

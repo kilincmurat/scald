@@ -3,16 +3,6 @@
 import { createBrowserClient } from '@supabase/ssr';
 import { INDICATORS } from '@/lib/scald-indicators';
 
-// Untyped client for the SCALD data-entry tables. The runtime shape is
-// enforced by the SQL migration + RLS policies; TypeScript types would just
-// duplicate that with worse ergonomics for upsert calls.
-function scaldClient() {
-  return createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-  );
-}
-
 export type ServerEntry = {
   indicator_code: string;
   category_code: string;
@@ -38,6 +28,14 @@ export type ServerSnapshot = {
   badges: ServerBadge[];
 };
 
+// Untyped client for the SCALD data-entry tables. RLS enforces access.
+function scaldClient() {
+  return createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+  );
+}
+
 function isConfigured(): boolean {
   return (
     typeof process.env.NEXT_PUBLIC_SUPABASE_URL === 'string' &&
@@ -62,10 +60,6 @@ export function isServerConfigured(): boolean {
   return isConfigured();
 }
 
-/**
- * Look up which category a given indicator code belongs to.
- * Returns { category, set } or null if unknown.
- */
 export function lookupIndicatorCategory(
   indicatorCode: string,
 ): { category: string; set: string } | null {
@@ -79,12 +73,11 @@ export function lookupIndicatorCategory(
 }
 
 /**
- * Fetch all server-side state for the current user.
- * Returns null if Supabase is not configured or the user is not signed in.
+ * Fetch all data-entry state for a given municipality. Returns null when
+ * Supabase is not configured or the caller has no municipality.
  */
-export async function fetchServerSnapshot(): Promise<ServerSnapshot | null> {
-  const userId = await getUserId();
-  if (!userId) return null;
+export async function fetchServerSnapshot(municipalityId: string): Promise<ServerSnapshot | null> {
+  if (!isConfigured() || !municipalityId) return null;
 
   const supabase = scaldClient();
   try {
@@ -92,15 +85,15 @@ export async function fetchServerSnapshot(): Promise<ServerSnapshot | null> {
       supabase
         .from('scald_indicator_entries')
         .select('indicator_code, category_code, set_code, score, raw_value, updated_at')
-        .eq('user_id', userId),
+        .eq('municipality_id', municipalityId),
       supabase
         .from('scald_category_completions')
         .select('category_code, completed_at')
-        .eq('user_id', userId),
+        .eq('municipality_id', municipalityId),
       supabase
         .from('scald_set_badges')
         .select('set_code, earned_at')
-        .eq('user_id', userId),
+        .eq('municipality_id', municipalityId),
     ]);
 
     return {
@@ -115,12 +108,13 @@ export async function fetchServerSnapshot(): Promise<ServerSnapshot | null> {
 }
 
 export async function upsertEntry(
+  municipalityId: string,
   indicatorCode: string,
   score: number,
   rawValue: string,
 ): Promise<void> {
   const userId = await getUserId();
-  if (!userId) return;
+  if (!userId || !municipalityId) return;
   const lookup = lookupIndicatorCategory(indicatorCode);
   if (!lookup) return;
   try {
@@ -129,63 +123,73 @@ export async function upsertEntry(
       .from('scald_indicator_entries')
       .upsert(
         {
-          user_id: userId,
+          municipality_id: municipalityId,
+          entered_by: userId,
           indicator_code: indicatorCode,
           category_code: lookup.category,
           set_code: lookup.set,
           score,
           raw_value: rawValue,
         },
-        { onConflict: 'user_id,indicator_code' },
+        { onConflict: 'municipality_id,indicator_code' },
       );
   } catch (err) {
     console.warn('[SCALD] upsertEntry failed:', err);
   }
 }
 
-export async function upsertCategoryCompletion(categoryCode: string): Promise<void> {
+export async function upsertCategoryCompletion(
+  municipalityId: string,
+  categoryCode: string,
+): Promise<void> {
   const userId = await getUserId();
-  if (!userId) return;
+  if (!userId || !municipalityId) return;
   try {
     const supabase = scaldClient();
     await supabase
       .from('scald_category_completions')
       .upsert(
-        { user_id: userId, category_code: categoryCode },
-        { onConflict: 'user_id,category_code' },
+        {
+          municipality_id: municipalityId,
+          completed_by: userId,
+          category_code: categoryCode,
+        },
+        { onConflict: 'municipality_id,category_code' },
       );
   } catch (err) {
     console.warn('[SCALD] upsertCategoryCompletion failed:', err);
   }
 }
 
-export async function upsertBadge(setCode: string): Promise<void> {
-  const userId = await getUserId();
-  if (!userId) return;
+export async function upsertBadge(
+  municipalityId: string,
+  setCode: string,
+): Promise<void> {
+  if (!municipalityId) return;
   try {
     const supabase = scaldClient();
     await supabase
       .from('scald_set_badges')
       .upsert(
-        { user_id: userId, set_code: setCode },
-        { onConflict: 'user_id,set_code' },
+        { municipality_id: municipalityId, set_code: setCode },
+        { onConflict: 'municipality_id,set_code' },
       );
   } catch (err) {
     console.warn('[SCALD] upsertBadge failed:', err);
   }
 }
 
-export async function deleteAllUserData(): Promise<void> {
-  const userId = await getUserId();
-  if (!userId) return;
+/** Admin-only wipe of a municipality's data-entry state. */
+export async function deleteAllMunicipalityData(municipalityId: string): Promise<void> {
+  if (!municipalityId) return;
   try {
     const supabase = scaldClient();
     await Promise.all([
-      supabase.from('scald_indicator_entries').delete().eq('user_id', userId),
-      supabase.from('scald_category_completions').delete().eq('user_id', userId),
-      supabase.from('scald_set_badges').delete().eq('user_id', userId),
+      supabase.from('scald_indicator_entries').delete().eq('municipality_id', municipalityId),
+      supabase.from('scald_category_completions').delete().eq('municipality_id', municipalityId),
+      supabase.from('scald_set_badges').delete().eq('municipality_id', municipalityId),
     ]);
   } catch (err) {
-    console.warn('[SCALD] deleteAllUserData failed:', err);
+    console.warn('[SCALD] deleteAllMunicipalityData failed:', err);
   }
 }

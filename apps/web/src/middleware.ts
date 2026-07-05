@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
+import { canAccess, HOME_PATH, normaliseRole, type Role } from '@/lib/roles';
 
 const PUBLIC_PATHS = ['/login', '/register'];
 
@@ -41,6 +42,24 @@ export async function middleware(request: NextRequest) {
   if (!user) {
     const loginUrl = new URL('/login', request.url);
     return NextResponse.redirect(loginUrl);
+  }
+
+  // Fetch role from profiles for role-based gating.
+  let role: Role = 'data_entry';
+  try {
+    const { data } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .maybeSingle();
+    role = normaliseRole((data as { role?: string } | null)?.role ?? null);
+  } catch {
+    // Fall back to default role; the RoleGate client wrapper will re-check.
+  }
+
+  if (!canAccess(role, pathname)) {
+    const home = new URL(HOME_PATH[role], request.url);
+    return NextResponse.redirect(home);
   }
 
   return response;

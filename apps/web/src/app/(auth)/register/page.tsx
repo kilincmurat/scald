@@ -7,12 +7,14 @@ import Image from 'next/image';
 import { createClient } from '@/lib/supabase/client';
 import { Eye, EyeOff, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { clsx } from 'clsx';
+import { PILOT_MUNICIPALITIES } from '@/lib/pilot-municipalities';
 
 export default function RegisterPage() {
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [passwordConfirm, setPasswordConfirm] = useState('');
+  const [municipalityId, setMunicipalityId] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -46,6 +48,10 @@ export default function RegisterPage() {
       setError('Password must be at least 8 characters.');
       return;
     }
+    if (!municipalityId) {
+      setError('Please select your municipality.');
+      return;
+    }
 
     setLoading(true);
 
@@ -54,7 +60,11 @@ export default function RegisterPage() {
       email,
       password,
       options: {
-        data: { full_name: fullName, role: 'citizen' },
+        data: {
+          full_name: fullName,
+          role: 'citizen',
+          municipality_id: municipalityId,
+        },
       },
     });
 
@@ -234,6 +244,28 @@ export default function RegisterPage() {
               {passwordConfirm.length > 0 && password !== passwordConfirm && (
                 <p className="mt-1 text-[10px] text-red-500">Passwords do not match.</p>
               )}
+            </div>
+
+            <div>
+              <label className="mb-1.5 block text-xs font-semibold text-slate-600">
+                Your Municipality <span className="text-red-500">*</span>
+              </label>
+              <select
+                value={municipalityId}
+                onChange={(e) => setMunicipalityId(e.target.value)}
+                required
+                className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-sm text-slate-900 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/15"
+              >
+                <option value="">Select your municipality…</option>
+                {PILOT_MUNICIPALITIES.map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {m.flag} {m.name} · {m.country}
+                  </option>
+                ))}
+              </select>
+              <p className="mt-1 text-[10px] text-slate-400">
+                Only the 4 KA220-ADU pilot cities are available.
+              </p>
             </div>
 
             {error && (

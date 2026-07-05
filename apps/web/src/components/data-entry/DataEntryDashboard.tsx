@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { INDICATORS, TOTAL_INDICATORS, type SetCode } from '@/lib/scald-indicators';
 import { useDataEntry } from '@/stores/data-entry';
+import { useProfile } from '@/hooks/useProfile';
+import { canWriteDataEntry } from '@/lib/roles';
 import {
   Lock,
   CheckCircle2,
@@ -16,6 +18,7 @@ import {
   Cloud,
   CloudOff,
   RotateCcw,
+  Eye,
 } from 'lucide-react';
 import { clsx } from 'clsx';
 
@@ -67,17 +70,23 @@ export function DataEntryDashboard() {
   const completed = useDataEntry((s) => s.completed);
   const categoryProgress = useDataEntry((s) => s.categoryProgress);
   const isUnlocked = useDataEntry((s) => s.isCategoryUnlocked);
-  const initFromServer = useDataEntry((s) => s.initFromServer);
+  const loadMunicipality = useDataEntry((s) => s.loadMunicipality);
+  const currentMunicipalityId = useDataEntry((s) => s.municipalityId);
   const syncStatus = useDataEntry((s) => s.syncStatus);
-  const serverInitialized = useDataEntry((s) => s.serverInitialized);
   const resetAll = useDataEntry((s) => s.reset);
 
-  // Load server state on mount
+  const { profile, loading: profileLoading } = useProfile();
+  const canWrite = profile ? canWriteDataEntry(profile.role) : false;
+  const isReadOnly = !canWrite;
+
+  // Sync store to profile's municipality on mount / profile change
   useEffect(() => {
-    if (mounted && !serverInitialized) {
-      void initFromServer();
+    if (!mounted || profileLoading) return;
+    const target = profile?.municipalityId;
+    if (target && target !== currentMunicipalityId) {
+      void loadMunicipality(target);
     }
-  }, [mounted, serverInitialized, initFromServer]);
+  }, [mounted, profileLoading, profile?.municipalityId, currentMunicipalityId, loadMunicipality]);
 
   const setCodes: SetCode[] = ['ES', 'SS', 'MS', 'ECS'];
 
@@ -99,10 +108,23 @@ export function DataEntryDashboard() {
 
   return (
     <div className="p-4 lg:p-6 space-y-5 lg:space-y-6">
+      {isReadOnly && (
+        <div className="flex items-start gap-2.5 rounded-lg border border-blue-100 bg-blue-50 px-3.5 py-3 text-xs text-blue-800">
+          <Eye className="mt-0.5 h-4 w-4 shrink-0 text-blue-500" />
+          <div>
+            <p className="font-semibold">Read-only view</p>
+            <p className="mt-0.5 text-blue-700">
+              You can see progress but not enter or edit values. Data entry is
+              performed by the municipality's data entry team.
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Sync status + Reset */}
       <div className="flex items-center justify-between gap-3">
-        <SyncStatusPill status={syncStatus} initialized={serverInitialized} />
-        {(overall.done > 0 || Object.keys(completed).length > 0) && (
+        <SyncStatusPill status={syncStatus} initialized={!!currentMunicipalityId} />
+        {canWrite && (overall.done > 0 || Object.keys(completed).length > 0) && (
           <button
             onClick={() => setShowResetConfirm(true)}
             className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-[11px] font-medium text-slate-500 shadow-sm transition hover:border-red-200 hover:text-red-600"

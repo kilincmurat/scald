@@ -8,26 +8,27 @@ import {
   upsertEntry,
   upsertCategoryCompletion,
   upsertBadge,
-  deleteAllUserData,
+  deleteAllMunicipalityData,
 } from '@/lib/data-entry-service';
 
 export type IndicatorEntry = {
   score: number; // 0..5
-  rawValue?: string; // user's raw input
+  rawValue?: string;
   enteredAt: number;
 };
 
 type SyncStatus = 'idle' | 'loading' | 'syncing' | 'error';
 
 export type DataEntryState = {
+  // Which municipality's data is loaded. Null = anonymous / not initialised.
+  municipalityId: string | null;
+
   entries: Record<string, IndicatorEntry>;
   completed: Record<string, boolean>;
   badges: string[];
   xp: number;
   hydrated: boolean;
 
-  // Server sync
-  serverInitialized: boolean;
   syncStatus: SyncStatus;
   lastSyncedAt: number | null;
 
@@ -42,7 +43,7 @@ export type DataEntryState = {
   reset: () => void;
 
   // Server integration
-  initFromServer: () => Promise<void>;
+  loadMunicipality: (municipalityId: string) => Promise<void>;
   clearLocal: () => void;
 };
 
@@ -60,7 +61,7 @@ function xpToLevel(xp: number) {
   return { level, xpInLevel: xp - acc, xpForNext: 100 * level };
 }
 
-const initialState = {
+const emptyState = {
   entries: {} as Record<string, IndicatorEntry>,
   completed: {} as Record<string, boolean>,
   badges: [] as string[],
@@ -70,13 +71,14 @@ const initialState = {
 export const useDataEntry = create<DataEntryState>()(
   persist(
     (set, get) => ({
-      ...initialState,
+      ...emptyState,
+      municipalityId: null,
       hydrated: false,
-      serverInitialized: false,
       syncStatus: 'idle',
       lastSyncedAt: null,
 
       saveEntry: (indicatorCode, score, rawValue) => {
+        const municipalityId = get().municipalityId;
         const prev = get().entries[indicatorCode];
         const trimmed = rawValue?.trim() || undefined;
         set((s) => ({
@@ -87,16 +89,16 @@ export const useDataEntry = create<DataEntryState>()(
           xp: prev ? s.xp : s.xp + XP_PER_INDICATOR,
         }));
 
-        // Server sync (fire and forget) — only save entries with a raw value
-        if (trimmed) {
+        if (trimmed && municipalityId) {
           set({ syncStatus: 'syncing' });
-          upsertEntry(indicatorCode, score, trimmed)
+          upsertEntry(municipalityId, indicatorCode, score, trimmed)
             .then(() => set({ syncStatus: 'idle', lastSyncedAt: Date.now() }))
             .catch(() => set({ syncStatus: 'error' }));
         }
       },
 
       completeCategory: (categoryCode) => {
+        const municipalityId = get().municipalityId;
         const wasCompleted = get().completed[categoryCode];
         if (wasCompleted) return;
 
@@ -105,10 +107,10 @@ export const useDataEntry = create<DataEntryState>()(
           xp: s.xp + XP_PER_CATEGORY_BONUS,
         }));
 
-        // Server sync
-        upsertCategoryCompletion(categoryCode).catch(() => {});
+        if (municipalityId) {
+          upsertCategoryCompletion(municipalityId, categoryCode).catch(() => {});
+        }
 
-        // Check if all categories of this set are done → award set badge
         const setCode = INDICATORS.categories[categoryCode]?.set;
         if (!setCode) return;
         const setCats = INDICATORS.order.filter(
@@ -120,7 +122,7 @@ export const useDataEntry = create<DataEntryState>()(
             badges: [...s.badges, setCode],
             xp: s.xp + XP_PER_SET_BONUS,
           }));
-          upsertBadge(setCode).catch(() => {});
+          if (municipalityId) upsertBadge(municipalityId, setCode).catch(() => {});
         }
       },
 
@@ -163,27 +165,25 @@ export const useDataEntry = create<DataEntryState>()(
       level: () => xpToLevel(get().xp),
 
       reset: () => {
-        set({ ...initialState, serverInitialized: get().serverInitialized });
-        deleteAllUserData().catch(() => {});
+        const municipalityId = get().municipalityId;
+        set({ ...emptyState });
+        if (municipalityId) deleteAllMunicipalityData(municipalityId).catch(() => {});
       },
 
       /**
-       * Load state from the server on mount. Server data wins over local cache.
-       * Falls back to local cache if the server is unreachable or the user is
-       * anonymous / Supabase env vars are missing.
+       * Load state for the given municipality. Overwrites local cache with
+       * server truth. Also flips the store's municipality context so
+       * subsequent saves target the same municipality.
        */
-      initFromServer: async () => {
-        if (get().serverInitialized) return;
-        set({ syncStatus: 'loading' });
-
-        const snapshot = await fetchServerSnapshot();
+      loadMunicipality: async (municipalityId) => {
+        if (!municipalityId) return;
+        set({ municipalityId, syncStatus: 'loading' });
+        const snapshot = await fetchServerSnapshot(municipalityId);
         if (!snapshot) {
-          // No server available — remain on local-only mode.
-          set({ serverInitialized: true, syncStatus: 'idle' });
+          set({ syncStatus: 'idle' });
           return;
         }
 
-        // Convert server rows into local shape.
         const entries: Record<string, IndicatorEntry> = {};
         for (const row of snapshot.entries) {
           entries[row.indicator_code] = {
@@ -198,7 +198,6 @@ export const useDataEntry = create<DataEntryState>()(
         }
         const badges = snapshot.badges.map((b) => b.set_code);
 
-        // Recompute XP from server-truth so it stays consistent across devices.
         const entryCount = Object.keys(entries).length;
         const catCount = Object.keys(completed).length;
         const badgeCount = badges.length;
@@ -212,20 +211,15 @@ export const useDataEntry = create<DataEntryState>()(
           completed,
           badges,
           xp,
-          serverInitialized: true,
           syncStatus: 'idle',
           lastSyncedAt: Date.now(),
         });
       },
 
-      /**
-       * Wipe local cache without touching the server. Used on sign-out so a
-       * different user's data isn't accidentally shown from localStorage.
-       */
       clearLocal: () => {
         set({
-          ...initialState,
-          serverInitialized: false,
+          ...emptyState,
+          municipalityId: null,
           syncStatus: 'idle',
           lastSyncedAt: null,
         });
@@ -237,6 +231,7 @@ export const useDataEntry = create<DataEntryState>()(
         if (state) state.hydrated = true;
       },
       partialize: (state) => ({
+        municipalityId: state.municipalityId,
         entries: state.entries,
         completed: state.completed,
         badges: state.badges,
