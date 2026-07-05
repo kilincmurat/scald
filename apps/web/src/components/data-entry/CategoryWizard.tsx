@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { INDICATORS, getNextCategoryCode, type Indicator, type SetCode } from '@/lib/scald-indicators';
 import { autoScore, isNumericIndicator } from '@/lib/auto-score';
 import { useDataEntry } from '@/stores/data-entry';
+import { useThresholds, getEffectiveThresholds } from '@/stores/thresholds';
 import { useProfile } from '@/hooks/useProfile';
 import { canWriteDataEntry } from '@/lib/roles';
 import { clsx } from 'clsx';
@@ -63,6 +64,9 @@ export function CategoryWizard({ categoryCode }: { categoryCode: string }) {
 
   const { profile } = useProfile();
   const canWrite = profile ? canWriteDataEntry(profile.role) : true;
+  const thresholdOverrides = useThresholds((s) => s.overrides);
+  const effectiveThresholdsFor = (indicatorCode: string) =>
+    getEffectiveThresholds(indicatorCode, thresholdOverrides);
 
   const [showCelebration, setShowCelebration] = useState(false);
 
@@ -116,19 +120,22 @@ export function CategoryWizard({ categoryCode }: { categoryCode: string }) {
 
   // Manual score selection is only used for non-numeric (categorical) indicators
   const handleManualScore = (indicatorCode: string, score: number) => {
+    if (!canWrite) return;
     const raw = rawValues[indicatorCode]?.trim();
     if (!raw) return;
     saveEntry(indicatorCode, score, raw);
   };
 
   const handleRawChange = (indicatorCode: string, value: string) => {
+    if (!canWrite) return;
     setRawValues((prev) => ({ ...prev, [indicatorCode]: value }));
     const trimmed = value.trim();
     const indicator = cat.indicators.find((i) => i.code === indicatorCode);
     if (!indicator) return;
     if (!trimmed) return;
-    // Auto-scoring: system picks the matching threshold
-    const score = autoScore(trimmed, indicator.thresholds);
+    // Auto-scoring: system picks the matching threshold (with admin overrides)
+    const thresholds = effectiveThresholdsFor(indicatorCode);
+    const score = autoScore(trimmed, thresholds);
     if (score !== null) {
       saveEntry(indicatorCode, score, trimmed);
     } else if (entries[indicatorCode] !== undefined) {
@@ -193,16 +200,30 @@ export function CategoryWizard({ categoryCode }: { categoryCode: string }) {
           </div>
         </div>
 
+        {!canWrite && (
+          <div className="mt-4 flex items-start gap-2.5 rounded-lg border border-blue-100 bg-blue-50 px-3.5 py-3 text-xs text-blue-800">
+            <Eye className="mt-0.5 h-4 w-4 shrink-0 text-blue-500" />
+            <div>
+              <p className="font-semibold">Read-only view</p>
+              <p className="mt-0.5 text-blue-700">
+                Data entry personnel of this municipality own the values; you can see progress
+                and scores but not change them.
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Indicator list — all visible on one screen */}
         <div className="mt-5 space-y-4">
           {cat.indicators.map((ind, idx) => (
             <IndicatorRow
               key={ind.code}
-              indicator={ind}
+              indicator={{ ...ind, thresholds: effectiveThresholdsFor(ind.code) as Indicator['thresholds'] }}
               index={idx}
               setCode={setCode}
               rawValue={rawValues[ind.code] ?? ''}
               currentScore={entries[ind.code]?.score}
+              readOnly={!canWrite}
               onRawChange={(v) => handleRawChange(ind.code, v)}
               onManualScore={(s) => handleManualScore(ind.code, s)}
             />
@@ -225,16 +246,18 @@ export function CategoryWizard({ categoryCode }: { categoryCode: string }) {
               </span>
             )}
           </div>
-          <button
-            onClick={handleFinish}
-            disabled={!allScored}
-            className={clsx(
-              'inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold text-white transition disabled:opacity-40 disabled:cursor-not-allowed',
-              `bg-gradient-to-r ${SET_GRADIENT[setCode]} hover:opacity-90`,
-            )}
-          >
-            Finish category <Sparkles className="h-4 w-4" />
-          </button>
+          {canWrite && (
+            <button
+              onClick={handleFinish}
+              disabled={!allScored}
+              className={clsx(
+                'inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold text-white transition disabled:opacity-40 disabled:cursor-not-allowed',
+                `bg-gradient-to-r ${SET_GRADIENT[setCode]} hover:opacity-90`,
+              )}
+            >
+              Finish category <Sparkles className="h-4 w-4" />
+            </button>
+          )}
         </div>
       </div>
 
@@ -269,6 +292,7 @@ function IndicatorRow({
   setCode,
   rawValue,
   currentScore,
+  readOnly = false,
   onRawChange,
   onManualScore,
 }: {
@@ -277,6 +301,7 @@ function IndicatorRow({
   setCode: SetCode;
   rawValue: string;
   currentScore?: number;
+  readOnly?: boolean;
   onRawChange: (v: string) => void;
   onManualScore: (score: number) => void;
 }) {
@@ -352,8 +377,10 @@ function IndicatorRow({
                 onChange={(e) => onRawChange(e.target.value)}
                 placeholder={indicator.unit}
                 required
+                disabled={readOnly}
                 className={clsx(
                   'mt-1 w-full rounded-lg border bg-slate-50 px-3 py-2 text-sm text-slate-900 placeholder-slate-400 outline-none transition focus:bg-white focus:ring-2',
+                  readOnly && 'cursor-not-allowed opacity-60',
                   hasRaw
                     ? 'border-slate-200 focus:border-slate-400 focus:ring-slate-200'
                     : 'border-slate-200 focus:border-emerald-500 focus:ring-emerald-500/20',
@@ -401,8 +428,8 @@ function IndicatorRow({
               <div className="mt-1 grid grid-cols-6 gap-1.5">
                 {indicator.thresholds.map((thr, score) => {
                   const selected = currentScore === score;
-                  // Read-only for numeric indicators, clickable for descriptive ones
-                  const clickable = hasRaw && !isNumeric;
+                  // Clickable only for categorical indicators, when we can write, and after raw is entered.
+                  const clickable = hasRaw && !isNumeric && !readOnly;
                   const dimmed = !hasRaw || (isNumeric && !selected && currentScore !== undefined);
 
                   const inner = (

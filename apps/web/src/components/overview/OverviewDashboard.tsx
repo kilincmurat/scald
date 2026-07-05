@@ -4,6 +4,8 @@ import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { useDataEntry } from '@/stores/data-entry';
+import { useProfile } from '@/hooks/useProfile';
+import { PILOT_MUNICIPALITIES } from '@/lib/pilot-municipalities';
 import {
   computeCategoryScores,
   computeSetScores,
@@ -27,6 +29,7 @@ import {
   CheckCircle2,
   Trees,
   Clock,
+  Building2,
 } from 'lucide-react';
 import { clsx } from 'clsx';
 
@@ -36,9 +39,32 @@ export function OverviewDashboard() {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
+  const { profile } = useProfile();
   const entries = useDataEntry((s) => s.entries);
   const completed = useDataEntry((s) => s.completed);
   const badges = useDataEntry((s) => s.badges);
+  const currentMunicipalityId = useDataEntry((s) => s.municipalityId);
+  const loadMunicipality = useDataEntry((s) => s.loadMunicipality);
+
+  const isAdmin = profile?.role === 'admin';
+
+  // For admin: allow browsing any pilot city. For everyone else the profile's
+  // municipality is the source of truth.
+  const [adminMuniId, setAdminMuniId] = useState<string>('');
+
+  useEffect(() => {
+    if (!mounted) return;
+    const target = isAdmin
+      ? adminMuniId || PILOT_MUNICIPALITIES[0]?.id
+      : profile?.municipalityId;
+    if (target && target !== currentMunicipalityId) {
+      void loadMunicipality(target);
+    }
+  }, [mounted, isAdmin, adminMuniId, profile?.municipalityId, currentMunicipalityId, loadMunicipality]);
+
+  const viewingMunicipality = isAdmin
+    ? PILOT_MUNICIPALITIES.find((m) => m.id === (adminMuniId || currentMunicipalityId)) ?? PILOT_MUNICIPALITIES[0]
+    : profile?.municipality;
 
   const setScores = useMemo(() => computeSetScores(entries), [entries]);
   const catScores = useMemo(() => computeCategoryScores(entries), [entries]);
@@ -68,6 +94,34 @@ export function OverviewDashboard() {
 
   return (
     <div className="p-4 lg:p-6 space-y-5 lg:space-y-6">
+      {/* Municipality context + admin selector */}
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs shadow-sm">
+          <Building2 className="h-3.5 w-3.5 text-slate-400" />
+          <span className="text-slate-500">Viewing:</span>
+          {viewingMunicipality ? (
+            <span className="font-semibold text-slate-800">
+              {viewingMunicipality.flag} {viewingMunicipality.name}
+            </span>
+          ) : (
+            <span className="text-slate-400">No municipality</span>
+          )}
+        </div>
+        {isAdmin && (
+          <select
+            value={adminMuniId || (currentMunicipalityId ?? '')}
+            onChange={(e) => setAdminMuniId(e.target.value)}
+            className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 shadow-sm outline-none focus:border-slate-400 focus:ring-2 focus:ring-slate-200"
+          >
+            {PILOT_MUNICIPALITIES.map((m) => (
+              <option key={m.id} value={m.id}>
+                {m.flag} {m.name} · {m.country}
+              </option>
+            ))}
+          </select>
+        )}
+      </div>
+
       {/* Overall Score Hero */}
       <section
         className={clsx(
