@@ -19,11 +19,46 @@
 const NON_NUMERIC_KEYWORDS =
   /^(none|no\s|maturity|excellent|good|moderate|weak|critical|planned|partial|basic|regular|verified|full|fully|planning|pilot|approved|prepared|comprehensive|integrated|operational|inventory|standardi|preliminary|primary|secondary|tertiary|untreated)/i;
 
-function normalizeNumber(s: string): number | null {
-  const cleaned = s.replace(/,/g, '').replace(/\s/g, '');
+/**
+ * Parse a number string.
+ *
+ * Comma handling (applies always — ambiguity is resolvable via digit count):
+ *   - "1,000"     → 1000     English thousands separator (exactly 3 digits after)
+ *   - "1,234,567" → 1234567  Multi-group English thousands
+ *   - "0,5"       → 0.5      European decimal separator
+ *   - "10,01"     → 10.01    European decimal
+ *
+ * Period handling: standard by default (e.g. "1.245" → 1.245). Only when
+ * parsing THRESHOLD strings from the xlsx do we apply the additional heuristic
+ * that "N.NNN" (non-zero leading digit + exactly 3 digits after) is a European
+ * thousands separator — so "15.000" → 15000 and "2.501" → 2501 in threshold
+ * context, but "1.245" typed by the user stays 1.245.
+ */
+function normalizeNumber(s: string, opts: { threshold?: boolean } = {}): number | null {
+  let cleaned = s.trim().replace(/\s/g, '');
   if (cleaned === '') return null;
+  const negative = cleaned.startsWith('-');
+  if (negative) cleaned = cleaned.slice(1);
+
+  // Comma pass: repeatedly strip English thousands groups. Everything else
+  // is treated as European decimal comma.
+  while (cleaned.includes(',')) {
+    const engMatch = cleaned.match(/^(\d+),(\d{3})(?!\d)(.*)$/);
+    if (engMatch) {
+      cleaned = engMatch[1] + engMatch[2] + engMatch[3];
+    } else {
+      cleaned = cleaned.replace(',', '.');
+    }
+  }
+
+  if (opts.threshold) {
+    const euroPeriod = cleaned.match(/^([1-9]\d*)\.(\d{3})$/);
+    if (euroPeriod) cleaned = euroPeriod[1] + euroPeriod[2];
+  }
+
   const n = parseFloat(cleaned);
-  return Number.isFinite(n) ? n : null;
+  if (!Number.isFinite(n)) return null;
+  return negative ? -n : n;
 }
 
 type Rule = { test: (v: number) => boolean };
@@ -38,8 +73,8 @@ function parseThreshold(raw: string): Rule | null {
     /^(-?\d[\d,\.]*)\s*[-–—]\s*(-?\d[\d,\.]*)$/,
   );
   if (rangeMatch) {
-    const low = normalizeNumber(rangeMatch[1]);
-    const high = normalizeNumber(rangeMatch[2]);
+    const low = normalizeNumber(rangeMatch[1], { threshold: true });
+    const high = normalizeNumber(rangeMatch[2], { threshold: true });
     if (low !== null && high !== null) {
       const lo = Math.min(low, high);
       const hi = Math.max(low, high);
@@ -51,7 +86,7 @@ function parseThreshold(raw: string): Rule | null {
   const compMatch = s.match(/^([><]=?)\s*(-?\d[\d,\.]*)$/);
   if (compMatch) {
     const op = compMatch[1];
-    const n = normalizeNumber(compMatch[2]);
+    const n = normalizeNumber(compMatch[2], { threshold: true });
     if (n !== null) {
       if (op === '>') return { test: (v) => v > n };
       if (op === '>=') return { test: (v) => v >= n };
@@ -61,7 +96,7 @@ function parseThreshold(raw: string): Rule | null {
   }
 
   // Exact number
-  const num = normalizeNumber(s);
+  const num = normalizeNumber(s, { threshold: true });
   if (num !== null) {
     return { test: (v) => v === num };
   }
