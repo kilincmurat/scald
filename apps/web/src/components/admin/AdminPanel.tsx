@@ -10,6 +10,7 @@ import {
   ShieldAlert,
   Database,
   Activity,
+  Scale,
   ArrowRight,
 } from 'lucide-react';
 
@@ -35,6 +36,13 @@ export function AdminPanel() {
       title: 'Indicators & Thresholds',
       desc: 'Edit 0–5 scoring thresholds for any of the 188 sub-indicators.',
       bg: 'from-purple-500 to-fuchsia-600',
+    },
+    {
+      href: '/admin/weights',
+      icon: Scale,
+      title: 'Score Weights',
+      desc: 'Tune the relative weight of each set, category and indicator in the final score.',
+      bg: 'from-pink-500 to-rose-600',
     },
     {
       href: '/admin/audit',

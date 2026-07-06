@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useDataEntry } from '@/stores/data-entry';
+import { useEffectiveWeights } from '@/stores/weights';
 import {
   computeCategoryScores,
   computeSetScores,
@@ -106,9 +107,10 @@ export function ReportingView() {
   useEffect(() => setMounted(true), []);
 
   const entries = useDataEntry((s) => s.entries);
-  const overall = useMemo(() => computeOverallScore(entries), [entries]);
-  const catScores = useMemo(() => computeCategoryScores(entries), [entries]);
-  const setScores = useMemo(() => computeSetScores(entries), [entries]);
+  const weights = useEffectiveWeights();
+  const overall = useMemo(() => computeOverallScore(entries, weights), [entries, weights]);
+  const catScores = useMemo(() => computeCategoryScores(entries, weights), [entries, weights]);
+  const setScores = useMemo(() => computeSetScores(entries, weights), [entries, weights]);
 
   const coveragePct = overall.total > 0 ? Math.round((overall.entered / overall.total) * 100) : 0;
 

@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Header } from '@/components/layout/Header';
 import { useProfile } from '@/hooks/useProfile';
 import { useDataEntry } from '@/stores/data-entry';
+import { useEffectiveWeights } from '@/stores/weights';
 import { computeCategoryScores, computeSetScores, SET_THEME, scoreBand } from '@/lib/scores';
 import { INDICATORS, type SetCode } from '@/lib/scald-indicators';
 import { clsx } from 'clsx';
@@ -23,8 +24,9 @@ export default function MyMunicipalityPage() {
     }
   }, [mounted, profile?.municipalityId, currentMunicipalityId, loadMunicipality]);
 
-  const catScores = useMemo(() => computeCategoryScores(entries), [entries]);
-  const setScores = useMemo(() => computeSetScores(entries), [entries]);
+  const weights = useEffectiveWeights();
+  const catScores = useMemo(() => computeCategoryScores(entries, weights), [entries, weights]);
+  const setScores = useMemo(() => computeSetScores(entries, weights), [entries, weights]);
   const municipality = profile?.municipality;
 
   return (

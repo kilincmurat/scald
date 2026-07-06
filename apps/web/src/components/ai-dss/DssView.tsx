@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useDataEntry } from '@/stores/data-entry';
+import { useEffectiveWeights } from '@/stores/weights';
 import {
   computeCategoryScores,
   computeSetScores,
@@ -243,8 +244,9 @@ export function DssView() {
   useEffect(() => setMounted(true), []);
 
   const entries = useDataEntry((s) => s.entries);
-  const catScores = useMemo(() => computeCategoryScores(entries), [entries]);
-  const setScores = useMemo(() => computeSetScores(entries), [entries]);
+  const weights = useEffectiveWeights();
+  const catScores = useMemo(() => computeCategoryScores(entries, weights), [entries, weights]);
+  const setScores = useMemo(() => computeSetScores(entries, weights), [entries, weights]);
 
   const strategies = useMemo(() => generateStrategies(entries, catScores), [entries, catScores]);
 

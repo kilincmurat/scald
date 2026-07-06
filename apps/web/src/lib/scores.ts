@@ -30,32 +30,52 @@ export type CategoryScore = {
   complete: boolean;
 };
 
+/**
+ * Weights applied to the 3-level score rollup. Missing entries default to 1
+ * (equal weighting). Negative values are treated as 1.
+ */
+export type Weights = {
+  setWeights?: Record<string, number>;
+  categoryWeights?: Record<string, number>;
+  indicatorWeights?: Record<string, number>;
+};
+
 const setCodes: SetCode[] = ['ES', 'SS', 'MS', 'ECS'];
 
 function isEntryComplete(e: IndicatorEntry | undefined): e is IndicatorEntry {
   return !!(e && e.rawValue && e.rawValue.trim().length > 0);
 }
 
+function wOf(map: Record<string, number> | undefined, code: string): number {
+  const v = map?.[code];
+  return typeof v === 'number' && v >= 0 ? v : 1;
+}
+
 export function computeCategoryScores(
   entries: Record<string, IndicatorEntry>,
+  weights: Weights = {},
 ): CategoryScore[] {
   return INDICATORS.order.map((code) => {
     const cat = INDICATORS.categories[code];
-    let sum = 0;
+    let wsum = 0;
+    let w = 0;
     let n = 0;
     for (const ind of cat.indicators) {
       const e = entries[ind.code];
       if (isEntryComplete(e)) {
-        sum += e.score;
+        const iw = wOf(weights.indicatorWeights, ind.code);
+        wsum += e.score * iw;
+        w += iw;
         n++;
       }
     }
-    const avg = n === 0 ? 0 : sum / n;
+    // Weighted 0..5 average of entered indicators.
+    const avg = w === 0 ? 0 : wsum / w;
     return {
       code,
       name: cat.name,
       setCode: cat.set,
-      score: n === 0 ? 0 : Math.round((sum / (n * 5)) * 100),
+      score: w === 0 ? 0 : Math.round((avg / 5) * 100),
       avgScore: +avg.toFixed(2),
       entered: n,
       total: cat.indicators.length,
@@ -66,22 +86,23 @@ export function computeCategoryScores(
 
 export function computeSetScores(
   entries: Record<string, IndicatorEntry>,
+  weights: Weights = {},
 ): Record<SetCode, SetScore> {
-  const acc: Record<SetCode, { sum: number; n: number; total: number }> = {
-    ES: { sum: 0, n: 0, total: 0 },
-    SS: { sum: 0, n: 0, total: 0 },
-    MS: { sum: 0, n: 0, total: 0 },
-    ECS: { sum: 0, n: 0, total: 0 },
+  const cats = computeCategoryScores(entries, weights);
+  const acc: Record<SetCode, { wsum: number; w: number; entered: number; total: number }> = {
+    ES: { wsum: 0, w: 0, entered: 0, total: 0 },
+    SS: { wsum: 0, w: 0, entered: 0, total: 0 },
+    MS: { wsum: 0, w: 0, entered: 0, total: 0 },
+    ECS: { wsum: 0, w: 0, entered: 0, total: 0 },
   };
-  for (const code of INDICATORS.order) {
-    const cat = INDICATORS.categories[code];
-    acc[cat.set].total += cat.indicators.length;
-    for (const ind of cat.indicators) {
-      const e = entries[ind.code];
-      if (isEntryComplete(e)) {
-        acc[cat.set].sum += e.score;
-        acc[cat.set].n += 1;
-      }
+  for (const c of cats) {
+    const s = acc[c.setCode];
+    s.entered += c.entered;
+    s.total += c.total;
+    if (c.entered > 0) {
+      const cw = wOf(weights.categoryWeights, c.code);
+      s.wsum += c.score * cw;
+      s.w += cw;
     }
   }
   const out = {} as Record<SetCode, SetScore>;
@@ -89,10 +110,10 @@ export function computeSetScores(
     const a = acc[s];
     out[s] = {
       setCode: s,
-      score: a.n === 0 ? 0 : Math.round((a.sum / (a.n * 5)) * 100),
-      entered: a.n,
+      score: a.w === 0 ? 0 : Math.round(a.wsum / a.w),
+      entered: a.entered,
       total: a.total,
-      complete: a.n > 0 && a.n === a.total,
+      complete: a.entered > 0 && a.entered === a.total,
     };
   }
   return out;
@@ -100,19 +121,24 @@ export function computeSetScores(
 
 export function computeOverallScore(
   entries: Record<string, IndicatorEntry>,
+  weights: Weights = {},
 ): { score: number; entered: number; total: number; ef: number } {
-  let sum = 0;
-  let n = 0;
-  for (const code of Object.keys(entries)) {
-    const e = entries[code];
-    if (!isEntryComplete(e)) continue;
-    sum += e.score;
-    n++;
+  const setScores = computeSetScores(entries, weights);
+  let wsum = 0;
+  let w = 0;
+  let entered = 0;
+  for (const s of setCodes) {
+    entered += setScores[s].entered;
+    if (setScores[s].entered > 0) {
+      const sw = wOf(weights.setWeights, s);
+      wsum += setScores[s].score * sw;
+      w += sw;
+    }
   }
-  const score = n === 0 ? 0 : Math.round((sum / (n * 5)) * 100);
+  const score = w === 0 ? 0 : Math.round(wsum / w);
   // Rough EF (gha/capita): 100 → 2.5, 0 → 8.0
   const ef = +(8.0 - (score / 100) * 5.5).toFixed(2);
-  return { score, entered: n, total: TOTAL_INDICATORS, ef };
+  return { score, entered, total: TOTAL_INDICATORS, ef };
 }
 
 export function getScoredEntries(

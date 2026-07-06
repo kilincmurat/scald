@@ -6,6 +6,7 @@ import { Sidebar } from './Sidebar';
 import { createClient } from '@/lib/supabase/client';
 import { useDataEntry } from '@/stores/data-entry';
 import { useThresholds } from '@/stores/thresholds';
+import { useWeights } from '@/stores/weights';
 
 interface DashboardShellProps {
   children: React.ReactNode;
@@ -18,16 +19,19 @@ export function DashboardShell({ children }: DashboardShellProps) {
   const clearLocal = useDataEntry((s) => s.clearLocal);
   const loadOverrides = useThresholds((s) => s.loadOverrides);
   const overridesLoaded = useThresholds((s) => s.loaded);
+  const loadWeights = useWeights((s) => s.loadOverrides);
+  const weightsLoaded = useWeights((s) => s.loaded);
 
   // Close mobile drawer on route change
   useEffect(() => {
     setMobileOpen(false);
   }, [pathname]);
 
-  // Load admin threshold overrides once
+  // Load admin threshold + weight overrides once
   useEffect(() => {
     if (!overridesLoaded) void loadOverrides();
-  }, [overridesLoaded, loadOverrides]);
+    if (!weightsLoaded) void loadWeights();
+  }, [overridesLoaded, loadOverrides, weightsLoaded, loadWeights]);
 
   // Wire up auth listener: on sign-out, wipe local data-entry cache so a
   // different user doesn't see the previous session's data.

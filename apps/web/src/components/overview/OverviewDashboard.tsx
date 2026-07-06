@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { useDataEntry } from '@/stores/data-entry';
+import { useEffectiveWeights } from '@/stores/weights';
 import { useProfile } from '@/hooks/useProfile';
 import { PILOT_MUNICIPALITIES } from '@/lib/pilot-municipalities';
 import {
@@ -66,9 +67,10 @@ export function OverviewDashboard() {
     ? PILOT_MUNICIPALITIES.find((m) => m.id === (adminMuniId || currentMunicipalityId)) ?? PILOT_MUNICIPALITIES[0]
     : profile?.municipality;
 
-  const setScores = useMemo(() => computeSetScores(entries), [entries]);
-  const catScores = useMemo(() => computeCategoryScores(entries), [entries]);
-  const overall = useMemo(() => computeOverallScore(entries), [entries]);
+  const weights = useEffectiveWeights();
+  const setScores = useMemo(() => computeSetScores(entries, weights), [entries, weights]);
+  const catScores = useMemo(() => computeCategoryScores(entries, weights), [entries, weights]);
+  const overall = useMemo(() => computeOverallScore(entries, weights), [entries, weights]);
   const recent = useMemo(() => getRecentEntries(entries, 5), [entries]);
   const weakest = useMemo(() => getWeakestIndicators(entries, 4), [entries]);
   const strongest = useMemo(() => getStrongestIndicators(entries, 4), [entries]);

@@ -3,6 +3,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import { useDataEntry } from '@/stores/data-entry';
+import { useEffectiveWeights } from '@/stores/weights';
 import { computeSetScores, SET_THEME } from '@/lib/scores';
 import type { SetCode } from '@/lib/scald-indicators';
 import {
@@ -93,7 +94,8 @@ const SET_LAYERS: { id: 'total' | SetCode; label: string; icon: React.ComponentT
 
 export function MapPageClient() {
   const entries = useDataEntry((s) => s.entries);
-  const mySetScores = useMemo(() => computeSetScores(entries), [entries]);
+  const weights = useEffectiveWeights();
+  const mySetScores = useMemo(() => computeSetScores(entries, weights), [entries, weights]);
 
   const partners: PartnerMunicipality[] = useMemo(() => {
     return PARTNERS_BASE.map((p) => {

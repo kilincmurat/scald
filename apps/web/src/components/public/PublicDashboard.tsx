@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useProfile } from '@/hooks/useProfile';
 import { useDataEntry } from '@/stores/data-entry';
+import { useEffectiveWeights } from '@/stores/weights';
 import { computeOverallScore, computeSetScores, scoreBand, SET_THEME } from '@/lib/scores';
 import { PILOT_MUNICIPALITIES } from '@/lib/pilot-municipalities';
 import { INDICATORS, type SetCode } from '@/lib/scald-indicators';
@@ -28,8 +29,9 @@ export function PublicDashboard() {
     }
   }, [mounted, profile?.municipalityId, currentMunicipalityId, loadMunicipality]);
 
-  const overall = useMemo(() => computeOverallScore(entries), [entries]);
-  const setScores = useMemo(() => computeSetScores(entries), [entries]);
+  const weights = useEffectiveWeights();
+  const overall = useMemo(() => computeOverallScore(entries, weights), [entries, weights]);
+  const setScores = useMemo(() => computeSetScores(entries, weights), [entries, weights]);
   const band = scoreBand(overall.score);
 
   if (!mounted) {
