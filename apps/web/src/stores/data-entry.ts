@@ -128,15 +128,7 @@ export const useDataEntry = create<DataEntryState>()(
 
       isCategoryComplete: (categoryCode) => !!get().completed[categoryCode],
 
-      isCategoryUnlocked: (categoryCode) => {
-        const order = INDICATORS.order;
-        const idx = order.indexOf(categoryCode);
-        if (idx <= 0) return true;
-        for (let i = 0; i < idx; i++) {
-          if (!get().completed[order[i]]) return false;
-        }
-        return true;
-      },
+      isCategoryUnlocked: (_categoryCode) => true,
 
       categoryProgress: (categoryCode) => {
         const cat = INDICATORS.categories[categoryCode];

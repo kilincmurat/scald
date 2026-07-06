@@ -8,7 +8,7 @@ export default function DataEntryPage() {
     <main id="main-content" className="flex-1">
       <Header
         title="Data Entry"
-        subtitle="Complete each category to unlock the next — earn XP and badges along the way"
+        subtitle="Open any category and fill in what you have — earn XP and badges as you go"
       />
       <DataEntryDashboard />
     </main>
