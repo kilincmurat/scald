@@ -191,7 +191,7 @@ export function OverviewDashboard() {
               <div>
                 <p className="text-2xl font-bold text-slate-900">
                   {completedCats}
-                  <span className="text-sm font-normal text-slate-400"> / 25</span>
+                  <span className="text-sm font-normal text-slate-400"> / 24</span>
                 </p>
                 <p className="text-[10px] uppercase tracking-wider text-slate-400">Categories</p>
               </div>
@@ -201,7 +201,7 @@ export function OverviewDashboard() {
                   {badges.length}
                   <span className="text-sm font-normal text-slate-400"> / 4</span>
                 </p>
-                <p className="text-[10px] uppercase tracking-wider text-slate-400">Badges</p>
+                <p className="text-[10px] uppercase tracking-wider text-slate-400">Sets Done</p>
               </div>
             </div>
             <div className="mt-3 flex flex-col gap-2 sm:flex-row">
@@ -293,7 +293,7 @@ export function OverviewDashboard() {
       {/* Categories at a glance */}
       <section className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm lg:p-5">
         <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-slate-900">All 25 Categories</h2>
+          <h2 className="text-sm font-semibold text-slate-900">All 24 Categories</h2>
           <Link
             href="/data-entry"
             className="text-xs font-medium text-slate-500 hover:text-slate-700"
@@ -453,7 +453,7 @@ function EmptyState() {
           Welcome to SCALD
         </h2>
         <p className="mx-auto mt-2 max-w-md text-sm text-slate-500">
-          Start by entering data for your municipality. Fill in 188 indicators across 25 categories
+          Start by entering data for your municipality. Fill in 152 indicators across 24 categories
           — the overview, ecological footprint, and reports will all update automatically.
         </p>
         <Link

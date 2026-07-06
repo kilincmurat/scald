@@ -202,7 +202,7 @@ export function CalculateFootprint() {
               </div>
               <h2 className="mt-4 text-2xl font-bold text-slate-900">Ready to calculate</h2>
               <p className="mt-2 max-w-md text-sm text-slate-600">
-                All {overall.total} indicators across 25 categories are filled. Run the calculation
+                All {overall.total} indicators across 24 categories are filled. Run the calculation
                 to see your municipality’s sustainability score, per-set breakdown, and estimated
                 ecological footprint.
               </p>

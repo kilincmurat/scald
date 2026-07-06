@@ -58,13 +58,13 @@ const TEMPLATES: Template[] = [
     id: 'annual',
     title: 'Annual Ecological Performance Report',
     description:
-      'Comprehensive annual review across all 25 categories, radar charts, target vs. current analysis and trend narrative.',
+      'Comprehensive annual review across all 24 categories, radar charts, target vs. current analysis and trend narrative.',
     minCoveragePct: 60,
     pages: '24–32',
     format: 'PDF / DOCX',
     icon: FileBarChart2,
     color: 'text-emerald-600 bg-emerald-50',
-    includes: ['All 25 categories', 'Ecological footprint (gHa)', 'Weak/strong analysis'],
+    includes: ['All 24 categories', 'Ecological footprint (gHa)', 'Weak/strong analysis'],
   },
   {
     id: 'strategic',

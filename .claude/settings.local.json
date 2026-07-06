@@ -19,7 +19,26 @@
       "Bash(mv '/Users/murattkilinc/Desktop/scald-project/apps/web/src/app/[locale]/ai-dss' '/Users/murattkilinc/Desktop/scald-project/apps/web/src/app/[locale]/\\(dashboard\\)/ai-dss')",
       "Bash(mv '/Users/murattkilinc/Desktop/scald-project/apps/web/src/app/[locale]/ai-rt' '/Users/murattkilinc/Desktop/scald-project/apps/web/src/app/[locale]/\\(dashboard\\)/ai-rt')",
       "Bash(mv '/Users/murattkilinc/Desktop/scald-project/apps/web/src/app/[locale]/efct' '/Users/murattkilinc/Desktop/scald-project/apps/web/src/app/[locale]/\\(dashboard\\)/efct')",
-      "Bash(mv '/Users/murattkilinc/Desktop/scald-project/apps/web/src/app/[locale]/login' '/Users/murattkilinc/Desktop/scald-project/apps/web/src/app/[locale]/\\(auth\\)/login')"
+      "Bash(mv '/Users/murattkilinc/Desktop/scald-project/apps/web/src/app/[locale]/login' '/Users/murattkilinc/Desktop/scald-project/apps/web/src/app/[locale]/\\(auth\\)/login')",
+      "Bash(pnpm --filter @scald/web build)",
+      "Bash(cat /Users/murattkilinc/Desktop/scald-project/apps/web/src/app/[locale]/\\\\\\(auth\\\\\\)/login/page.tsx)",
+      "Bash(wc -l /Users/murattkilinc/Desktop/scald-project/apps/web/messages/*/common.json)",
+      "Bash(md5 /Users/murattkilinc/Desktop/scald-project/apps/web/messages/*/common.json)",
+      "Bash(pnpm --filter web build)",
+      "Bash(find /Users/murattkilinc/Desktop/SCALD -iname \"*INDICATORS*\" 2>/dev/null | head -20)",
+      "Read(//Users/murattkilinc/Desktop/SCALD/**)",
+      "Bash(brew install *)",
+      "Bash(python3 -c \"import pypdf; print\\(pypdf.__version__\\)\")",
+      "Bash(python3 -c \"import PyPDF2; print\\(PyPDF2.__version__\\)\")",
+      "Bash(python3 -c \"import pdfplumber; print\\('OK'\\)\")",
+      "Bash(python3)",
+      "Bash(cp /tmp/scald_indicators.json /Users/murattkilinc/Desktop/SCALD/scald-project/apps/web/src/lib/scald-indicators.json && ls -la /Users/murattkilinc/Desktop/SCALD/scald-project/apps/web/src/lib/scald-indicators.json)",
+      "Bash(mkdir -p /Users/murattkilinc/Desktop/SCALD/scald-project/apps/web/src/app/\\\\\\(dashboard\\\\\\)/data-entry/\\\\[category\\\\])",
+      "Bash(pnpm build *)"
+    ],
+    "additionalDirectories": [
+      "/private/tmp",
+      "/Users/murattkilinc/Desktop/SCALD/scald-project/apps/web/src/app/(dashboard)/data-entry"
     ]
   }
 }

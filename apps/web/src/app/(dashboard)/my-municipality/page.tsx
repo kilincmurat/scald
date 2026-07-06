@@ -77,7 +77,7 @@ export default function MyMunicipalityPage() {
 
           {/* Category grid */}
           <section>
-            <h3 className="mb-3 text-sm font-semibold text-slate-900">All 25 Categories</h3>
+            <h3 className="mb-3 text-sm font-semibold text-slate-900">All 24 Categories</h3>
             <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
               {catScores.map((cs) => {
                 const theme = SET_THEME[cs.setCode];

@@ -34,7 +34,7 @@ export function AdminPanel() {
       href: '/admin/indicators',
       icon: Sliders,
       title: 'Indicators & Thresholds',
-      desc: 'Edit 0–5 scoring thresholds for any of the 188 sub-indicators.',
+      desc: 'Edit 0–5 scoring thresholds for any of the 152 sub-indicators.',
       bg: 'from-purple-500 to-fuchsia-600',
     },
     {

@@ -429,7 +429,7 @@ function DeleteModal({
             <h3 className="text-base font-bold text-slate-900">Delete {row.name}?</h3>
           </div>
           <p className="mt-3 text-sm text-slate-600">
-            This will also delete all indicator entries, category completions, badges,
+            This will also delete all indicator entries, category completions,
             profiles bound to this municipality, and any feedback submitted to it. This
             action cannot be undone.
           </p>

@@ -6,7 +6,7 @@ export default function DashboardPage() {
     <main id="main-content" className="flex-1">
       <Header
         title="Overview"
-        subtitle="Municipal sustainability performance across 25 categories"
+        subtitle="Municipal sustainability performance across 24 categories"
       />
       <OverviewDashboard />
     </main>

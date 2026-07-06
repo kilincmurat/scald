@@ -6,7 +6,7 @@ export default function AdminIndicatorsPage() {
     <main id="main-content" className="flex-1">
       <Header
         title="Indicators & Thresholds"
-        subtitle="Edit 0–5 scoring thresholds for any of the 188 sub-indicators"
+        subtitle="Edit 0–5 scoring thresholds for any of the 152 sub-indicators"
       />
       <IndicatorAdmin />
     </main>

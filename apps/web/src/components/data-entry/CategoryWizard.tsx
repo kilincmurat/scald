@@ -15,7 +15,6 @@ import {
   CheckCircle2,
   Lock,
   Sparkles,
-  Trophy,
   Info,
   Zap,
   AlertCircle,
@@ -554,7 +553,7 @@ function CelebrationOverlay({
   onNext: () => void;
 }) {
   const badges = useDataEntry((s) => s.badges);
-  const setBadgeEarned = badges.includes(setCode);
+  const setComplete = badges.includes(setCode);
   const nextCat = nextCatCode ? INDICATORS.categories[nextCatCode] : null;
 
   return (
@@ -567,7 +566,7 @@ function CelebrationOverlay({
               `bg-gradient-to-br ${SET_GRADIENT[setCode]}`,
             )}
           >
-            <Trophy className="h-8 w-8" />
+            <CheckCircle2 className="h-8 w-8" />
           </div>
         </div>
         <h2 className="mt-4 text-center text-xl font-bold text-slate-900">Category complete!</h2>
@@ -575,10 +574,10 @@ function CelebrationOverlay({
           You finished <span className="font-semibold text-slate-700">{categoryName}</span>.
         </p>
 
-        {setBadgeEarned && (
+        {setComplete && (
           <div className="mt-4 rounded-lg border border-emerald-100 bg-emerald-50 p-3 text-center">
             <p className="text-xs font-semibold text-emerald-700">
-              🎉 {INDICATORS.sets[setCode].name} Sustainability badge earned!
+              All {INDICATORS.sets[setCode].name} Sustainability categories completed.
             </p>
           </div>
         )}
@@ -605,7 +604,7 @@ function CelebrationOverlay({
               onClick={onClose}
               className="w-full rounded-lg bg-gradient-to-r from-emerald-500 to-green-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:opacity-90"
             >
-              🏆 All 25 categories complete!
+              All 24 categories complete
             </button>
           )}
           <button

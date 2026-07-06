@@ -10,8 +10,7 @@ import {
   Lock,
   CheckCircle2,
   ChevronRight,
-  Trophy,
-  Award,
+  ClipboardList,
   Calculator,
   ArrowRight,
   Loader2,
@@ -135,11 +134,11 @@ export function DataEntryDashboard() {
         )}
       </div>
 
-      {/* HUD: Overall Progress · Badges */}
+      {/* HUD: Overall Progress · Sets Completed */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
           <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-500">
-            <Trophy className="h-3.5 w-3.5 text-emerald-500" /> Overall Progress
+            <ClipboardList className="h-3.5 w-3.5 text-emerald-500" /> Overall Progress
           </div>
           <p className="mt-2 text-4xl font-bold text-slate-900">{overall.pct}%</p>
           <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-100">
@@ -155,7 +154,7 @@ export function DataEntryDashboard() {
 
         <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
           <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-500">
-            <Award className="h-3.5 w-3.5 text-amber-500" /> Set Badges
+            <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" /> Sets Completed
           </div>
           <p className="mt-2 text-4xl font-bold text-slate-900">
             {badges.length}
@@ -173,7 +172,7 @@ export function DataEntryDashboard() {
                       ? `text-white bg-gradient-to-br ${SET_THEME[sc].gradient} shadow`
                       : 'bg-slate-100 text-slate-300',
                   )}
-                  title={earned ? `${INDICATORS.sets[sc].name} — complete` : `${INDICATORS.sets[sc].name} — locked`}
+                  title={earned ? `${INDICATORS.sets[sc].name} — complete` : `${INDICATORS.sets[sc].name} — incomplete`}
                 >
                   {sc.slice(0, 2)}
                 </div>
@@ -219,7 +218,7 @@ export function DataEntryDashboard() {
                   <h2 className="text-lg font-bold text-slate-900">{group.meta.name} Sustainability</h2>
                   <p className="text-xs text-slate-500">
                     {group.categories.length} categories · {setProgress.total} indicators · {setPct}% complete
-                    {setDone && ' · ✓ Badge earned'}
+                    {setDone && ' · ✓ Complete'}
                   </p>
                 </div>
               </div>
@@ -262,8 +261,8 @@ export function DataEntryDashboard() {
               <h3 className="text-lg font-bold text-slate-900">Reset all data?</h3>
             </div>
             <p className="mt-3 text-sm text-slate-600">
-              This will permanently delete all your indicator entries, category
-              completions and badges — both locally and on the server. This
+              This will permanently delete all your indicator entries and
+              category completions — both locally and on the server. This
               action cannot be undone.
             </p>
             <div className="mt-5 flex justify-end gap-2">
