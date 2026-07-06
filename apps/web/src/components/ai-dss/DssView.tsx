@@ -111,7 +111,7 @@ const STRATEGY_TEMPLATES: Record<
     cost: 'Medium',
     timeframe: 'Medium (3–5y)',
   },
-  ES_SI: {
+  ES_IN: {
     title: 'Smart Infrastructure Rollout',
     description:
       'Install air-quality and climate monitoring sensors, smart water meters, and a real-time carbon monitoring dashboard.',
@@ -119,27 +119,20 @@ const STRATEGY_TEMPLATES: Record<
     timeframe: 'Medium (3–5y)',
   },
   SS_CA: {
-    title: 'Climate Awareness Campaign',
+    title: 'Climate Awareness & Capacity Building',
     description:
-      'Run climate & environmental awareness campaigns, deliver municipal-staff and citizen adaptation training and expand circular-economy education.',
+      'Run climate & environmental awareness campaigns, train municipal staff on climate adaptation, and expand circular-economy education programmes.',
     cost: 'Low',
     timeframe: 'Short (1–2y)',
   },
-  SS_EC: {
-    title: 'Inclusive Adaptation Programme',
+  SS_VE: {
+    title: 'Vulnerable Group Engagement & Inclusion',
     description:
-      'Target refugees, migrants and linguistically-diverse groups with adaptation activities; communicate climate risk info in multiple languages.',
+      'Raise citizen participation in climate action, register more disaster volunteers, and communicate climate risk info in multiple languages to refugees, migrants and vulnerable districts.',
     cost: 'Low',
     timeframe: 'Short (1–2y)',
   },
-  SS_PV: {
-    title: 'Participatory Planning Framework',
-    description:
-      'Increase citizen participation in climate action planning, run multi-stakeholder strategy meetings and register more disaster volunteers.',
-    cost: 'Low',
-    timeframe: 'Short (1–2y)',
-  },
-  SS_PP: {
+  SS_GL: {
     title: 'Green Livelihoods & Social Resilience',
     description:
       'Launch municipal support programmes for climate-affected small businesses, distribute adaptation micro-grants and run green job training.',
