@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { INDICATORS, TOTAL_INDICATORS, type SetCode } from '@/lib/scald-indicators';
+import { INDICATORS, type SetCode } from '@/lib/scald-indicators';
 import { useDataEntry } from '@/stores/data-entry';
 import { useProfile } from '@/hooks/useProfile';
 import { canWriteDataEntry } from '@/lib/roles';
@@ -237,7 +237,7 @@ export function DataEntryDashboard() {
                     key={catCode}
                     code={catCode}
                     name={cat.name}
-                    count={cat.indicators.length}
+                    count={prog.total}
                     done={prog.done}
                     pct={prog.pct}
                     completed={isDone}

@@ -115,7 +115,13 @@ export function CategoryWizard({ categoryCode }: { categoryCode: string }) {
     return !!(e.rawValue && e.rawValue.trim().length > 0);
   };
 
-  const allScored = cat.indicators.every((ind) => isIndicatorComplete(ind.code));
+  // Category can be finished when every REQUIRED indicator is filled;
+  // optional (purple) ones are bonus and never block completion.
+  const requiredInds = cat.indicators.filter((i) => !i.optional);
+  const optionalCount = cat.indicators.length - requiredInds.length;
+  const optionalFilled = cat.indicators.filter((i) => i.optional && isIndicatorComplete(i.code)).length;
+  const allRequiredScored = requiredInds.every((ind) => isIndicatorComplete(ind.code));
+  const allScored = allRequiredScored;
   const nextCatCode = getNextCategoryCode(categoryCode);
 
   // Manual score selection is only used for non-numeric (categorical) indicators
@@ -181,7 +187,17 @@ export function CategoryWizard({ categoryCode }: { categoryCode: string }) {
               </div>
               <h2 className="mt-1 text-lg font-bold text-slate-900">{cat.name}</h2>
               <p className="text-xs text-slate-500">
-                Fill in all {cat.indicators.length} indicators — you can enter them in any order.
+                {optionalCount > 0 ? (
+                  <>
+                    Fill in {requiredInds.length} required indicators
+                    {' · '}
+                    <span className="font-medium text-purple-600">
+                      {optionalCount} optional (purple) can be skipped
+                    </span>
+                  </>
+                ) : (
+                  <>Fill in all {cat.indicators.length} indicators — any order.</>
+                )}
               </p>
             </div>
             <div className="text-right">
@@ -237,12 +253,22 @@ export function CategoryWizard({ categoryCode }: { categoryCode: string }) {
               <>
                 <CheckCircle2 className="h-5 w-5 text-emerald-500" />
                 <span className="font-medium text-slate-700">
-                  All {cat.indicators.length} indicators completed
+                  All {requiredInds.length} required indicators completed
+                  {optionalCount > 0 && (
+                    <span className="ml-2 text-xs text-purple-600">
+                      · {optionalFilled}/{optionalCount} optional filled
+                    </span>
+                  )}
                 </span>
               </>
             ) : (
               <span className="text-slate-500">
-                {categoryProgress.total - categoryProgress.done} more indicator(s) to score
+                {categoryProgress.total - categoryProgress.done} more required indicator(s) to score
+                {optionalCount > 0 && (
+                  <span className="ml-2 text-xs text-purple-600">
+                    · {optionalCount} optional can be skipped
+                  </span>
+                )}
               </span>
             )}
           </div>
@@ -305,7 +331,11 @@ function IndicatorRow({
   onRawChange: (v: string) => void;
   onManualScore: (score: number) => void;
 }) {
-  const accent = SET_ACCENT[setCode];
+  const setAccent = SET_ACCENT[setCode];
+  const isOptional = !!indicator.optional;
+  const accent = isOptional
+    ? { text: 'text-purple-700', bg: 'bg-purple-50', border: 'border-purple-300' }
+    : setAccent;
   const [expanded, setExpanded] = useState(true);
   const hasRaw = rawValue.trim().length > 0;
   const isComplete = currentScore !== undefined && hasRaw;
@@ -317,15 +347,22 @@ function IndicatorRow({
     <div
       className={clsx(
         'rounded-xl border bg-white shadow-sm transition',
-        isComplete ? 'border-emerald-200' : 'border-slate-200',
+        isComplete ? 'border-emerald-200' : isOptional ? 'border-purple-200' : 'border-slate-200',
       )}
     >
-      <div className="flex items-start gap-3 border-b border-slate-100 p-4">
+      <div className={clsx(
+        'flex items-start gap-3 border-b p-4',
+        isOptional ? 'border-purple-100 bg-purple-50/40' : 'border-slate-100',
+      )}>
         {/* Index badge */}
         <div
           className={clsx(
             'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-xs font-bold',
-            isComplete ? 'bg-emerald-500 text-white' : `${accent.bg} ${accent.text}`,
+            isComplete
+              ? 'bg-emerald-500 text-white'
+              : isOptional
+                ? 'bg-purple-100 text-purple-700'
+                : `${setAccent.bg} ${setAccent.text}`,
           )}
         >
           {isComplete ? <CheckCircle2 className="h-4 w-4" /> : index + 1}
@@ -336,6 +373,11 @@ function IndicatorRow({
             <span className={clsx('rounded px-1.5 py-0.5 text-[10px] font-bold', accent.bg, accent.text)}>
               {indicator.code}
             </span>
+            {isOptional && (
+              <span className="rounded-full bg-purple-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-purple-700 ring-1 ring-purple-200">
+                Optional
+              </span>
+            )}
             <h3 className="text-sm font-semibold text-slate-900">{indicator.name}</h3>
           </div>
           <p className="mt-1 text-xs text-slate-500">
@@ -369,26 +411,38 @@ function IndicatorRow({
           <div className="grid grid-cols-1 gap-3 lg:grid-cols-12">
             <div className="lg:col-span-3">
               <label className="block text-[11px] font-semibold text-slate-600">
-                Raw value <span className="text-red-500">*</span>
+                Raw value {isOptional ? (
+                  <span className="text-purple-600">(optional)</span>
+                ) : (
+                  <span className="text-red-500">*</span>
+                )}
               </label>
               <input
                 type="text"
                 value={rawValue}
                 onChange={(e) => onRawChange(e.target.value)}
                 placeholder={indicator.unit}
-                required
+                required={!isOptional}
                 disabled={readOnly}
                 className={clsx(
                   'mt-1 w-full rounded-lg border bg-slate-50 px-3 py-2 text-sm text-slate-900 placeholder-slate-400 outline-none transition focus:bg-white focus:ring-2',
                   readOnly && 'cursor-not-allowed opacity-60',
                   hasRaw
-                    ? 'border-slate-200 focus:border-slate-400 focus:ring-slate-200'
-                    : 'border-slate-200 focus:border-emerald-500 focus:ring-emerald-500/20',
+                    ? isOptional
+                      ? 'border-purple-200 focus:border-purple-400 focus:ring-purple-200'
+                      : 'border-slate-200 focus:border-slate-400 focus:ring-slate-200'
+                    : isOptional
+                      ? 'border-purple-200 focus:border-purple-500 focus:ring-purple-500/20'
+                      : 'border-slate-200 focus:border-emerald-500 focus:ring-emerald-500/20',
                 )}
               />
               {!hasRaw && (
-                <p className="mt-1 text-[10px] text-slate-400">
-                  Required · in <span className="font-medium">{indicator.unit}</span>
+                <p className={clsx(
+                  'mt-1 text-[10px]',
+                  isOptional ? 'text-purple-500' : 'text-slate-400',
+                )}>
+                  {isOptional ? 'Skip if unavailable' : 'Required'} · in{' '}
+                  <span className="font-medium">{indicator.unit}</span>
                 </p>
               )}
               {hasRaw && isComplete && isNumeric && (

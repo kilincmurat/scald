@@ -9,7 +9,9 @@ export interface Indicator {
   method: string;
   thresholds: [string, string, string, string, string, string]; // 0..5
   normalisation: string;
-  source: 'v4' | 'v2';
+  source: 'v5' | 'v4' | 'v2';
+  /** Optional indicators (purple in source workbook) don't block category completion. */
+  optional?: boolean;
 }
 
 export interface Category {
@@ -36,6 +38,18 @@ export const TOTAL_INDICATORS = INDICATORS.order.reduce(
   (sum, code) => sum + INDICATORS.categories[code].indicators.length,
   0,
 );
+
+/** Count of indicators required for completion (excludes optional). */
+export const REQUIRED_INDICATORS = INDICATORS.order.reduce(
+  (sum, code) => sum + INDICATORS.categories[code].indicators.filter((i) => !i.optional).length,
+  0,
+);
+
+export function requiredCountFor(categoryCode: string): number {
+  const cat = INDICATORS.categories[categoryCode];
+  if (!cat) return 0;
+  return cat.indicators.filter((i) => !i.optional).length;
+}
 
 export function getCategory(code: string): Category | undefined {
   return INDICATORS.categories[code];

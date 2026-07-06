@@ -2,7 +2,7 @@
 
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { INDICATORS, TOTAL_INDICATORS } from '@/lib/scald-indicators';
+import { INDICATORS, REQUIRED_INDICATORS } from '@/lib/scald-indicators';
 import {
   fetchServerSnapshot,
   upsertEntry,
@@ -133,9 +133,11 @@ export const useDataEntry = create<DataEntryState>()(
       categoryProgress: (categoryCode) => {
         const cat = INDICATORS.categories[categoryCode];
         if (!cat) return { done: 0, total: 0, pct: 0 };
-        const total = cat.indicators.length;
+        // Progress tracks required indicators only — optionals are bonus.
+        const required = cat.indicators.filter((i) => !i.optional);
+        const total = required.length;
         const entries = get().entries;
-        const done = cat.indicators.filter((i) => {
+        const done = required.filter((i) => {
           const e = entries[i.code];
           return !!(e && e.rawValue && e.rawValue.trim().length > 0);
         }).length;
@@ -144,13 +146,19 @@ export const useDataEntry = create<DataEntryState>()(
 
       overallProgress: () => {
         const entries = get().entries;
-        const done = Object.values(entries).filter(
-          (e) => !!(e.rawValue && e.rawValue.trim().length > 0),
-        ).length;
+        // Only required indicators count toward the overall progress bar.
+        let done = 0;
+        for (const code of INDICATORS.order) {
+          for (const ind of INDICATORS.categories[code].indicators) {
+            if (ind.optional) continue;
+            const e = entries[ind.code];
+            if (e && e.rawValue && e.rawValue.trim().length > 0) done++;
+          }
+        }
         return {
           done,
-          total: TOTAL_INDICATORS,
-          pct: TOTAL_INDICATORS === 0 ? 0 : Math.round((done / TOTAL_INDICATORS) * 100),
+          total: REQUIRED_INDICATORS,
+          pct: REQUIRED_INDICATORS === 0 ? 0 : Math.round((done / REQUIRED_INDICATORS) * 100),
         };
       },
 

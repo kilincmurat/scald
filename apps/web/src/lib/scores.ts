@@ -1,4 +1,4 @@
-import { INDICATORS, TOTAL_INDICATORS, type SetCode, type Indicator } from './scald-indicators';
+import { INDICATORS, REQUIRED_INDICATORS, type SetCode, type Indicator } from './scald-indicators';
 import type { IndicatorEntry } from '@/stores/data-entry';
 
 export type ScoredEntry = {
@@ -58,23 +58,28 @@ export function computeCategoryScores(
     const cat = INDICATORS.categories[code];
     let sum = 0;
     let n = 0;
+    let requiredEntered = 0;
+    let requiredTotal = 0;
     for (const ind of cat.indicators) {
+      if (!ind.optional) requiredTotal++;
       const e = entries[ind.code];
       if (isEntryComplete(e)) {
         sum += e.score;
         n++;
+        if (!ind.optional) requiredEntered++;
       }
     }
     const avg = n === 0 ? 0 : sum / n;
+    // Progress reflects required indicators; optional ones score-in but never block.
     return {
       code,
       name: cat.name,
       setCode: cat.set,
       score: n === 0 ? 0 : Math.round((avg / 5) * 100),
       avgScore: +avg.toFixed(2),
-      entered: n,
-      total: cat.indicators.length,
-      complete: n > 0 && n === cat.indicators.length,
+      entered: requiredEntered,
+      total: requiredTotal,
+      complete: requiredTotal > 0 && requiredEntered === requiredTotal,
     };
   });
 }
@@ -133,7 +138,7 @@ export function computeOverallScore(
   const score = contributing === 0 ? 0 : Math.round(sum / contributing);
   // Rough EF (gha/capita): 100 → 2.5, 0 → 8.0
   const ef = +(8.0 - (score / 100) * 5.5).toFixed(2);
-  return { score, entered, total: TOTAL_INDICATORS, ef };
+  return { score, entered, total: REQUIRED_INDICATORS, ef };
 }
 
 export function getScoredEntries(
