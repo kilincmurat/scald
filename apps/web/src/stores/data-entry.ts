@@ -26,6 +26,14 @@ export const YEAR_OPTIONS = Array.from(
 );
 export const DEFAULT_YEAR = MIN_YEAR;
 
+/** Last calendar year that has fully ended — only completed years can receive data. */
+export function maxEditableYear(): number {
+  return new Date().getFullYear() - 1;
+}
+export function isYearEditable(year: number): boolean {
+  return year >= MIN_YEAR && year <= Math.min(MAX_YEAR, maxEditableYear());
+}
+
 type SyncStatus = 'idle' | 'loading' | 'syncing' | 'error';
 
 /** Per-year entry map — the primary storage. `entries` at the top level
@@ -294,7 +302,17 @@ export const useDataEntry = create<DataEntryState>()(
       name: 'scald-data-entry',
       version: 2,
       onRehydrateStorage: () => (state) => {
-        if (state) state.hydrated = true;
+        if (state) {
+          state.hydrated = true;
+          const cap = Math.min(MAX_YEAR, maxEditableYear());
+          if (state.selectedYear > cap) {
+            const y = Math.max(MIN_YEAR, cap);
+            state.selectedYear = y;
+            state.entries = state.entriesByYear?.[y] ?? {};
+            state.completed = state.completedByYear?.[y] ?? {};
+            state.badges = state.badgesByYear?.[y] ?? [];
+          }
+        }
       },
       partialize: (state) => ({
         municipalityId: state.municipalityId,
