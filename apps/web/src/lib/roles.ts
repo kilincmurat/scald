@@ -43,6 +43,8 @@ const ACCESS_MATRIX: Record<Role, string[]> = {
     '/ai-rt',
     '/map',
     '/admin',
+    '/exports',
+    '/official-report',
     '/feedback',
     '/settings',
   ],
@@ -59,6 +61,8 @@ const ACCESS_MATRIX: Record<Role, string[]> = {
     '/ai-dss',
     '/ai-rt',
     '/map',
+    '/exports',
+    '/official-report',
     '/feedback', // inbox
     '/settings',
   ],
@@ -86,6 +90,11 @@ export function canWriteDataEntry(role: Role): boolean {
 
 /** Whether this role can approve strategies / respond to feedback. */
 export function canRespondFeedback(role: Role): boolean {
+  return role === 'admin' || role === 'decision_maker';
+}
+
+/** Whether this role can download official / Excel reports. */
+export function canExportReports(role: Role): boolean {
   return role === 'admin' || role === 'decision_maker';
 }
 

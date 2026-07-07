@@ -21,6 +21,7 @@ import {
   MessageSquare,
   Home,
   Building2,
+  Download,
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import type { LucideIcon } from 'lucide-react';
@@ -53,6 +54,7 @@ function buildNav(role: Role, t: (k: string) => string): NavItem[] {
         { href: '/ai-dss', label: t('aiDss'), icon: BrainCircuit },
         { href: '/ai-rt', label: t('aiRt'), icon: FileBarChart2 },
         { href: '/map', label: t('map'), icon: Map },
+        { href: '/exports', label: 'Data Exports', icon: Download },
         { href: '/feedback', label: 'Feedback', icon: MessageSquare },
       ];
     case 'data_entry':
@@ -69,6 +71,7 @@ function buildNav(role: Role, t: (k: string) => string): NavItem[] {
         { href: '/ai-dss', label: t('aiDss'), icon: BrainCircuit },
         { href: '/ai-rt', label: t('aiRt'), icon: FileBarChart2 },
         { href: '/map', label: t('map'), icon: Map },
+        { href: '/exports', label: 'Data Exports', icon: Download },
         { href: '/feedback', label: 'Feedback', icon: MessageSquare },
       ];
     case 'citizen':
