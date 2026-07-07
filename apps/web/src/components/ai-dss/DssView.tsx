@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useDataEntry } from '@/stores/data-entry';
 import { useEffectiveWeights } from '@/stores/weights';
+import { YearPicker } from '@/components/data-entry/YearPicker';
 import {
   computeCategoryScores,
   computeSetScores,
@@ -297,6 +298,9 @@ export function DssView() {
 
   return (
     <div className="p-4 lg:p-6 space-y-5 lg:space-y-6">
+      <div className="flex justify-end">
+        <YearPicker size="sm" />
+      </div>
       {/* Header cards */}
       <section className="grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-4">
         <StatCard

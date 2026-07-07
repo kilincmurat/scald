@@ -6,6 +6,7 @@ import { INDICATORS, type SetCode } from '@/lib/scald-indicators';
 import { useDataEntry } from '@/stores/data-entry';
 import { useProfile } from '@/hooks/useProfile';
 import { canWriteDataEntry } from '@/lib/roles';
+import { YearPicker } from './YearPicker';
 import {
   Lock,
   CheckCircle2,
@@ -120,9 +121,12 @@ export function DataEntryDashboard() {
         </div>
       )}
 
-      {/* Sync status + Reset */}
-      <div className="flex items-center justify-between gap-3">
-        <SyncStatusPill status={syncStatus} initialized={!!currentMunicipalityId} />
+      {/* Year selector + Sync status + Reset */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <YearPicker size="sm" />
+          <SyncStatusPill status={syncStatus} initialized={!!currentMunicipalityId} />
+        </div>
         {canWrite && (overall.done > 0 || Object.keys(completed).length > 0) && (
           <button
             onClick={() => setShowResetConfirm(true)}

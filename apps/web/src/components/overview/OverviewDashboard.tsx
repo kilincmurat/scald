@@ -7,6 +7,7 @@ import { useDataEntry } from '@/stores/data-entry';
 import { useEffectiveWeights } from '@/stores/weights';
 import { useProfile } from '@/hooks/useProfile';
 import { PILOT_MUNICIPALITIES } from '@/lib/pilot-municipalities';
+import { YearPicker } from '@/components/data-entry/YearPicker';
 import {
   computeCategoryScores,
   computeSetScores,
@@ -109,19 +110,22 @@ export function OverviewDashboard() {
             <span className="text-slate-400">No municipality</span>
           )}
         </div>
-        {isAdmin && (
-          <select
-            value={adminMuniId || (currentMunicipalityId ?? '')}
-            onChange={(e) => setAdminMuniId(e.target.value)}
-            className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 shadow-sm outline-none focus:border-slate-400 focus:ring-2 focus:ring-slate-200"
-          >
-            {PILOT_MUNICIPALITIES.map((m) => (
-              <option key={m.id} value={m.id}>
-                {m.flag} {m.name} · {m.country}
-              </option>
-            ))}
-          </select>
-        )}
+        <div className="flex items-center gap-2">
+          <YearPicker size="sm" />
+          {isAdmin && (
+            <select
+              value={adminMuniId || (currentMunicipalityId ?? '')}
+              onChange={(e) => setAdminMuniId(e.target.value)}
+              className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 shadow-sm outline-none focus:border-slate-400 focus:ring-2 focus:ring-slate-200"
+            >
+              {PILOT_MUNICIPALITIES.map((m) => (
+                <option key={m.id} value={m.id}>
+                  {m.flag} {m.name} · {m.country}
+                </option>
+              ))}
+            </select>
+          )}
+        </div>
       </div>
 
       {/* Overall Score Hero */}

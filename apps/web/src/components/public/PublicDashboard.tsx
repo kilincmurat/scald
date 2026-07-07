@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useProfile } from '@/hooks/useProfile';
 import { useDataEntry } from '@/stores/data-entry';
+import { YearPicker } from '@/components/data-entry/YearPicker';
 import { useEffectiveWeights } from '@/stores/weights';
 import { computeOverallScore, computeSetScores, scoreBand, SET_THEME } from '@/lib/scores';
 import { PILOT_MUNICIPALITIES } from '@/lib/pilot-municipalities';
@@ -58,6 +59,9 @@ export function PublicDashboard() {
 
   return (
     <div className="p-4 lg:p-6 space-y-5 lg:space-y-6">
+      <div className="flex justify-end">
+        <YearPicker size="sm" />
+      </div>
       {/* Hero */}
       <section className="overflow-hidden rounded-2xl border border-emerald-200 bg-gradient-to-br from-emerald-50 via-white to-teal-50 p-6 shadow-sm lg:p-8">
         <div className="flex items-center gap-3">

@@ -17,12 +17,30 @@ export type IndicatorEntry = {
   enteredAt: number;
 };
 
+/** UI-supported reporting year range. Migration 009 uses 2020..2040 at the DB level. */
+export const MIN_YEAR = 2025;
+export const MAX_YEAR = 2030;
+export const YEAR_OPTIONS = Array.from(
+  { length: MAX_YEAR - MIN_YEAR + 1 },
+  (_, i) => MIN_YEAR + i,
+);
+export const DEFAULT_YEAR = MIN_YEAR;
+
 type SyncStatus = 'idle' | 'loading' | 'syncing' | 'error';
 
-export type DataEntryState = {
-  // Which municipality's data is loaded. Null = anonymous / not initialised.
-  municipalityId: string | null;
+/** Per-year entry map — the primary storage. `entries` at the top level
+ * mirrors the currently-selected year so existing UI code keeps working. */
+type YearScoped<T> = Record<number, T>;
 
+export type DataEntryState = {
+  municipalityId: string | null;
+  selectedYear: number;
+
+  entriesByYear: YearScoped<Record<string, IndicatorEntry>>;
+  completedByYear: YearScoped<Record<string, boolean>>;
+  badgesByYear: YearScoped<string[]>;
+
+  /** Current-year views — derived from *ByYear + selectedYear on setYear/save. */
   entries: Record<string, IndicatorEntry>;
   completed: Record<string, boolean>;
   badges: string[];
@@ -33,6 +51,7 @@ export type DataEntryState = {
   lastSyncedAt: number | null;
 
   // actions
+  setYear: (year: number) => void;
   saveEntry: (indicatorCode: string, score: number, rawValue?: string) => void;
   completeCategory: (categoryCode: string) => void;
   isCategoryComplete: (categoryCode: string) => boolean;
@@ -61,7 +80,31 @@ function xpToLevel(xp: number) {
   return { level, xpInLevel: xp - acc, xpForNext: 100 * level };
 }
 
+function clampYear(y: number): number {
+  if (!Number.isFinite(y)) return DEFAULT_YEAR;
+  if (y < MIN_YEAR) return MIN_YEAR;
+  if (y > MAX_YEAR) return MAX_YEAR;
+  return Math.trunc(y);
+}
+
+function xpFromYearScoped(
+  entriesByYear: YearScoped<Record<string, IndicatorEntry>>,
+  completedByYear: YearScoped<Record<string, boolean>>,
+  badgesByYear: YearScoped<string[]>,
+): number {
+  let entryCount = 0;
+  for (const y of Object.keys(entriesByYear)) entryCount += Object.keys(entriesByYear[+y]).length;
+  let catCount = 0;
+  for (const y of Object.keys(completedByYear)) catCount += Object.keys(completedByYear[+y]).length;
+  let badgeCount = 0;
+  for (const y of Object.keys(badgesByYear)) badgeCount += badgesByYear[+y].length;
+  return entryCount * XP_PER_INDICATOR + catCount * XP_PER_CATEGORY_BONUS + badgeCount * XP_PER_SET_BONUS;
+}
+
 const emptyState = {
+  entriesByYear: {} as YearScoped<Record<string, IndicatorEntry>>,
+  completedByYear: {} as YearScoped<Record<string, boolean>>,
+  badgesByYear: {} as YearScoped<string[]>,
   entries: {} as Record<string, IndicatorEntry>,
   completed: {} as Record<string, boolean>,
   badges: [] as string[],
@@ -73,56 +116,80 @@ export const useDataEntry = create<DataEntryState>()(
     (set, get) => ({
       ...emptyState,
       municipalityId: null,
+      selectedYear: DEFAULT_YEAR,
       hydrated: false,
       syncStatus: 'idle',
       lastSyncedAt: null,
 
-      saveEntry: (indicatorCode, score, rawValue) => {
-        const municipalityId = get().municipalityId;
-        const prev = get().entries[indicatorCode];
-        const trimmed = rawValue?.trim() || undefined;
+      setYear: (year) => {
+        const y = clampYear(year);
         set((s) => ({
-          entries: {
-            ...s.entries,
-            [indicatorCode]: { score, rawValue: trimmed, enteredAt: Date.now() },
-          },
-          xp: prev ? s.xp : s.xp + XP_PER_INDICATOR,
+          selectedYear: y,
+          entries: s.entriesByYear[y] ?? {},
+          completed: s.completedByYear[y] ?? {},
+          badges: s.badgesByYear[y] ?? [],
         }));
+      },
+
+      saveEntry: (indicatorCode, score, rawValue) => {
+        const s = get();
+        const year = s.selectedYear;
+        const municipalityId = s.municipalityId;
+        const yearEntries = s.entriesByYear[year] ?? {};
+        const prev = yearEntries[indicatorCode];
+        const trimmed = rawValue?.trim() || undefined;
+        const nextEntry: IndicatorEntry = { score, rawValue: trimmed, enteredAt: Date.now() };
+        const nextYearEntries = { ...yearEntries, [indicatorCode]: nextEntry };
+        const nextEntriesByYear = { ...s.entriesByYear, [year]: nextYearEntries };
+
+        set({
+          entries: nextYearEntries,
+          entriesByYear: nextEntriesByYear,
+          xp: prev ? s.xp : s.xp + XP_PER_INDICATOR,
+        });
 
         if (trimmed && municipalityId) {
           set({ syncStatus: 'syncing' });
-          upsertEntry(municipalityId, indicatorCode, score, trimmed)
+          upsertEntry(municipalityId, indicatorCode, score, trimmed, year)
             .then(() => set({ syncStatus: 'idle', lastSyncedAt: Date.now() }))
             .catch(() => set({ syncStatus: 'error' }));
         }
       },
 
       completeCategory: (categoryCode) => {
-        const municipalityId = get().municipalityId;
-        const wasCompleted = get().completed[categoryCode];
-        if (wasCompleted) return;
+        const s = get();
+        const year = s.selectedYear;
+        const municipalityId = s.municipalityId;
+        const yearCompleted = s.completedByYear[year] ?? {};
+        if (yearCompleted[categoryCode]) return;
 
-        set((s) => ({
-          completed: { ...s.completed, [categoryCode]: true },
+        const nextYearCompleted = { ...yearCompleted, [categoryCode]: true };
+        const nextCompletedByYear = { ...s.completedByYear, [year]: nextYearCompleted };
+
+        set({
+          completed: nextYearCompleted,
+          completedByYear: nextCompletedByYear,
           xp: s.xp + XP_PER_CATEGORY_BONUS,
-        }));
+        });
 
         if (municipalityId) {
-          upsertCategoryCompletion(municipalityId, categoryCode).catch(() => {});
+          upsertCategoryCompletion(municipalityId, categoryCode, year).catch(() => {});
         }
 
         const setCode = INDICATORS.categories[categoryCode]?.set;
         if (!setCode) return;
-        const setCats = INDICATORS.order.filter(
-          (c) => INDICATORS.categories[c].set === setCode,
-        );
-        const allDone = setCats.every((c) => get().completed[c]);
-        if (allDone && !get().badges.includes(setCode)) {
-          set((s) => ({
-            badges: [...s.badges, setCode],
-            xp: s.xp + XP_PER_SET_BONUS,
+        const setCats = INDICATORS.order.filter((c) => INDICATORS.categories[c].set === setCode);
+        const allDone = setCats.every((c) => nextYearCompleted[c]);
+        const yearBadges = get().badgesByYear[year] ?? [];
+        if (allDone && !yearBadges.includes(setCode)) {
+          const nextYearBadges = [...yearBadges, setCode];
+          const nextBadgesByYear = { ...get().badgesByYear, [year]: nextYearBadges };
+          set((s2) => ({
+            badges: nextYearBadges,
+            badgesByYear: nextBadgesByYear,
+            xp: s2.xp + XP_PER_SET_BONUS,
           }));
-          if (municipalityId) upsertBadge(municipalityId, setCode).catch(() => {});
+          if (municipalityId) upsertBadge(municipalityId, setCode, year).catch(() => {});
         }
       },
 
@@ -133,7 +200,6 @@ export const useDataEntry = create<DataEntryState>()(
       categoryProgress: (categoryCode) => {
         const cat = INDICATORS.categories[categoryCode];
         if (!cat) return { done: 0, total: 0, pct: 0 };
-        // Progress tracks required indicators only — optionals are bonus.
         const required = cat.indicators.filter((i) => !i.optional);
         const total = required.length;
         const entries = get().entries;
@@ -146,7 +212,6 @@ export const useDataEntry = create<DataEntryState>()(
 
       overallProgress: () => {
         const entries = get().entries;
-        // Only required indicators count toward the overall progress bar.
         let done = 0;
         for (const code of INDICATORS.order) {
           for (const ind of INDICATORS.categories[code].indicators) {
@@ -170,11 +235,6 @@ export const useDataEntry = create<DataEntryState>()(
         if (municipalityId) deleteAllMunicipalityData(municipalityId).catch(() => {});
       },
 
-      /**
-       * Load state for the given municipality. Overwrites local cache with
-       * server truth. Also flips the store's municipality context so
-       * subsequent saves target the same municipality.
-       */
       loadMunicipality: async (municipalityId) => {
         if (!municipalityId) return;
         set({ municipalityId, syncStatus: 'loading' });
@@ -184,33 +244,38 @@ export const useDataEntry = create<DataEntryState>()(
           return;
         }
 
-        const entries: Record<string, IndicatorEntry> = {};
+        const entriesByYear: YearScoped<Record<string, IndicatorEntry>> = {};
         for (const row of snapshot.entries) {
-          entries[row.indicator_code] = {
+          const y = row.year ?? DEFAULT_YEAR;
+          if (!entriesByYear[y]) entriesByYear[y] = {};
+          entriesByYear[y][row.indicator_code] = {
             score: row.score,
             rawValue: row.raw_value,
             enteredAt: new Date(row.updated_at).getTime(),
           };
         }
-        const completed: Record<string, boolean> = {};
+        const completedByYear: YearScoped<Record<string, boolean>> = {};
         for (const row of snapshot.completions) {
-          completed[row.category_code] = true;
+          const y = row.year ?? DEFAULT_YEAR;
+          if (!completedByYear[y]) completedByYear[y] = {};
+          completedByYear[y][row.category_code] = true;
         }
-        const badges = snapshot.badges.map((b) => b.set_code);
+        const badgesByYear: YearScoped<string[]> = {};
+        for (const row of snapshot.badges) {
+          const y = row.year ?? DEFAULT_YEAR;
+          if (!badgesByYear[y]) badgesByYear[y] = [];
+          badgesByYear[y].push(row.set_code);
+        }
 
-        const entryCount = Object.keys(entries).length;
-        const catCount = Object.keys(completed).length;
-        const badgeCount = badges.length;
-        const xp =
-          entryCount * XP_PER_INDICATOR +
-          catCount * XP_PER_CATEGORY_BONUS +
-          badgeCount * XP_PER_SET_BONUS;
-
+        const currentYear = get().selectedYear;
         set({
-          entries,
-          completed,
-          badges,
-          xp,
+          entriesByYear,
+          completedByYear,
+          badgesByYear,
+          entries: entriesByYear[currentYear] ?? {},
+          completed: completedByYear[currentYear] ?? {},
+          badges: badgesByYear[currentYear] ?? [],
+          xp: xpFromYearScoped(entriesByYear, completedByYear, badgesByYear),
           syncStatus: 'idle',
           lastSyncedAt: Date.now(),
         });
@@ -227,11 +292,16 @@ export const useDataEntry = create<DataEntryState>()(
     }),
     {
       name: 'scald-data-entry',
+      version: 2,
       onRehydrateStorage: () => (state) => {
         if (state) state.hydrated = true;
       },
       partialize: (state) => ({
         municipalityId: state.municipalityId,
+        selectedYear: state.selectedYear,
+        entriesByYear: state.entriesByYear,
+        completedByYear: state.completedByYear,
+        badgesByYear: state.badgesByYear,
         entries: state.entries,
         completed: state.completed,
         badges: state.badges,

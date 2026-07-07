@@ -5,6 +5,7 @@ import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { useDataEntry } from '@/stores/data-entry';
 import { useEffectiveWeights } from '@/stores/weights';
+import { YearPicker } from '@/components/data-entry/YearPicker';
 import {
   computeCategoryScores,
   computeSetScores,
@@ -91,6 +92,9 @@ export function EfctView() {
 
   return (
     <div className="p-4 lg:p-6 space-y-5 lg:space-y-6">
+      <div className="flex justify-end">
+        <YearPicker size="sm" />
+      </div>
       {/* Hero */}
       <section className="overflow-hidden rounded-2xl border border-emerald-200 bg-gradient-to-br from-emerald-50 via-white to-teal-50 shadow-sm">
         <div className="grid grid-cols-1 gap-4 p-5 lg:grid-cols-4 lg:gap-6 lg:p-6">

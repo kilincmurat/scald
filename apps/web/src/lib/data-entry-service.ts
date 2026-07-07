@@ -9,16 +9,19 @@ export type ServerEntry = {
   set_code: string;
   score: number;
   raw_value: string;
+  year: number;
   updated_at: string;
 };
 
 export type ServerCompletion = {
   category_code: string;
+  year: number;
   completed_at: string;
 };
 
 export type ServerBadge = {
   set_code: string;
+  year: number;
   earned_at: string;
 };
 
@@ -73,8 +76,8 @@ export function lookupIndicatorCategory(
 }
 
 /**
- * Fetch all data-entry state for a given municipality. Returns null when
- * Supabase is not configured or the caller has no municipality.
+ * Fetch all data-entry state for a given municipality (all years).
+ * Client groups by year in the store.
  */
 export async function fetchServerSnapshot(municipalityId: string): Promise<ServerSnapshot | null> {
   if (!isConfigured() || !municipalityId) return null;
@@ -84,15 +87,15 @@ export async function fetchServerSnapshot(municipalityId: string): Promise<Serve
     const [entriesRes, completionsRes, badgesRes] = await Promise.all([
       supabase
         .from('scald_indicator_entries')
-        .select('indicator_code, category_code, set_code, score, raw_value, updated_at')
+        .select('indicator_code, category_code, set_code, score, raw_value, year, updated_at')
         .eq('municipality_id', municipalityId),
       supabase
         .from('scald_category_completions')
-        .select('category_code, completed_at')
+        .select('category_code, year, completed_at')
         .eq('municipality_id', municipalityId),
       supabase
         .from('scald_set_badges')
-        .select('set_code, earned_at')
+        .select('set_code, year, earned_at')
         .eq('municipality_id', municipalityId),
     ]);
 
@@ -112,6 +115,7 @@ export async function upsertEntry(
   indicatorCode: string,
   score: number,
   rawValue: string,
+  year: number,
 ): Promise<void> {
   const userId = await getUserId();
   if (!userId || !municipalityId) return;
@@ -130,8 +134,9 @@ export async function upsertEntry(
           set_code: lookup.set,
           score,
           raw_value: rawValue,
+          year,
         },
-        { onConflict: 'municipality_id,indicator_code' },
+        { onConflict: 'municipality_id,indicator_code,year' },
       );
   } catch (err) {
     console.warn('[SCALD] upsertEntry failed:', err);
@@ -141,6 +146,7 @@ export async function upsertEntry(
 export async function upsertCategoryCompletion(
   municipalityId: string,
   categoryCode: string,
+  year: number,
 ): Promise<void> {
   const userId = await getUserId();
   if (!userId || !municipalityId) return;
@@ -153,8 +159,9 @@ export async function upsertCategoryCompletion(
           municipality_id: municipalityId,
           completed_by: userId,
           category_code: categoryCode,
+          year,
         },
-        { onConflict: 'municipality_id,category_code' },
+        { onConflict: 'municipality_id,category_code,year' },
       );
   } catch (err) {
     console.warn('[SCALD] upsertCategoryCompletion failed:', err);
@@ -164,6 +171,7 @@ export async function upsertCategoryCompletion(
 export async function upsertBadge(
   municipalityId: string,
   setCode: string,
+  year: number,
 ): Promise<void> {
   if (!municipalityId) return;
   try {
@@ -171,15 +179,15 @@ export async function upsertBadge(
     await supabase
       .from('scald_set_badges')
       .upsert(
-        { municipality_id: municipalityId, set_code: setCode },
-        { onConflict: 'municipality_id,set_code' },
+        { municipality_id: municipalityId, set_code: setCode, year },
+        { onConflict: 'municipality_id,set_code,year' },
       );
   } catch (err) {
     console.warn('[SCALD] upsertBadge failed:', err);
   }
 }
 
-/** Admin-only wipe of a municipality's data-entry state. */
+/** Admin-only wipe of a municipality's data-entry state (all years). */
 export async function deleteAllMunicipalityData(municipalityId: string): Promise<void> {
   if (!municipalityId) return;
   try {

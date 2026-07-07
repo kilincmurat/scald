@@ -5,6 +5,7 @@ import { Header } from '@/components/layout/Header';
 import { useProfile } from '@/hooks/useProfile';
 import { useDataEntry } from '@/stores/data-entry';
 import { useEffectiveWeights } from '@/stores/weights';
+import { YearPicker } from '@/components/data-entry/YearPicker';
 import { computeCategoryScores, computeSetScores, SET_THEME, scoreBand } from '@/lib/scores';
 import { INDICATORS, type SetCode } from '@/lib/scald-indicators';
 import { clsx } from 'clsx';
@@ -43,6 +44,9 @@ export default function MyMunicipalityPage() {
         <div className="p-6 text-sm text-slate-500">No municipality on your profile.</div>
       ) : (
         <div className="p-4 lg:p-6 space-y-5">
+          <div className="flex justify-end">
+            <YearPicker size="sm" />
+          </div>
           {/* Set scores */}
           <section className="grid grid-cols-2 gap-3 lg:grid-cols-4">
             {(['ES', 'SS', 'MS', 'ECS'] as SetCode[]).map((sc) => {

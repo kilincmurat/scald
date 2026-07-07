@@ -9,6 +9,7 @@ import { useDataEntry } from '@/stores/data-entry';
 import { useThresholds, getEffectiveThresholds } from '@/stores/thresholds';
 import { useProfile } from '@/hooks/useProfile';
 import { canWriteDataEntry } from '@/lib/roles';
+import { YearPicker } from './YearPicker';
 import { clsx } from 'clsx';
 import {
   ArrowLeft,
@@ -55,6 +56,7 @@ export function CategoryWizard({ categoryCode }: { categoryCode: string }) {
   useEffect(() => setMounted(true), []);
 
   const entries = useDataEntry((s) => s.entries);
+  const selectedYear = useDataEntry((s) => s.selectedYear);
   const saveEntry = useDataEntry((s) => s.saveEntry);
   const completeCategory = useDataEntry((s) => s.completeCategory);
   const isUnlocked = useDataEntry((s) => s.isCategoryUnlocked(categoryCode));
@@ -72,7 +74,8 @@ export function CategoryWizard({ categoryCode }: { categoryCode: string }) {
   // Local raw-value state per indicator code (independent of persisted store)
   const [rawValues, setRawValues] = useState<Record<string, string>>({});
 
-  // Hydrate raw values from persisted entries once
+  // Hydrate raw values from persisted entries on mount, on category change,
+  // and whenever the reporting year switches (each year has its own entries).
   useEffect(() => {
     if (mounted) {
       const initial: Record<string, string> = {};
@@ -83,7 +86,7 @@ export function CategoryWizard({ categoryCode }: { categoryCode: string }) {
       setRawValues(initial);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mounted, categoryCode]);
+  }, [mounted, categoryCode, selectedYear]);
 
   // Lock guard
   if (mounted && !isUnlocked && !isComplete) {
@@ -159,12 +162,15 @@ export function CategoryWizard({ categoryCode }: { categoryCode: string }) {
     <div className="p-6">
       <div className="mx-auto max-w-5xl">
         {/* Back link */}
-        <Link
-          href="/data-entry"
-          className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-slate-700"
-        >
-          <ArrowLeft className="h-4 w-4" /> All categories
-        </Link>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <Link
+            href="/data-entry"
+            className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-slate-700"
+          >
+            <ArrowLeft className="h-4 w-4" /> All categories
+          </Link>
+          <YearPicker size="sm" label="Reporting year" />
+        </div>
 
         {/* Progress header */}
         <div className="mt-4 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
