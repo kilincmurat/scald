@@ -19,6 +19,7 @@ import {
   CloudOff,
   RotateCcw,
   Eye,
+  FileDown,
 } from 'lucide-react';
 import { clsx } from 'clsx';
 
@@ -121,21 +122,33 @@ export function DataEntryDashboard() {
         </div>
       )}
 
-      {/* Year selector + Sync status + Reset */}
+      {/* Year selector + Sync status + Prep sheet + Reset */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <YearPicker size="sm" />
           <SyncStatusPill status={syncStatus} initialized={!!currentMunicipalityId} />
         </div>
-        {canWrite && (overall.done > 0 || Object.keys(completed).length > 0) && (
-          <button
-            onClick={() => setShowResetConfirm(true)}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-[11px] font-medium text-slate-500 shadow-sm transition hover:border-red-200 hover:text-red-600"
+        <div className="flex items-center gap-2">
+          <Link
+            href="/prep-sheet"
+            target="_blank"
+            rel="noopener"
+            title="Downloadable list of all indicators, methods, and value ranges — useful for offline preparation."
+            className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-200 bg-emerald-50 px-2.5 py-1.5 text-[11px] font-medium text-emerald-700 shadow-sm transition hover:bg-emerald-100"
           >
-            <RotateCcw className="h-3 w-3" />
-            <span className="hidden sm:inline">Reset all</span>
-          </button>
-        )}
+            <FileDown className="h-3.5 w-3.5" />
+            <span>Preparation sheet</span>
+          </Link>
+          {canWrite && (overall.done > 0 || Object.keys(completed).length > 0) && (
+            <button
+              onClick={() => setShowResetConfirm(true)}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-[11px] font-medium text-slate-500 shadow-sm transition hover:border-red-200 hover:text-red-600"
+            >
+              <RotateCcw className="h-3 w-3" />
+              <span className="hidden sm:inline">Reset all</span>
+            </button>
+          )}
+        </div>
       </div>
 
       {/* HUD: Overall Progress · Sets Completed */}
