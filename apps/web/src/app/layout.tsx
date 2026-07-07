@@ -2,6 +2,7 @@ import './globals.css';
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages, getTranslations } from 'next-intl/server';
 import { Inter } from 'next/font/google';
+import { AccessibilityWidget } from '@/components/a11y/AccessibilityWidget';
 
 const inter = Inter({
   subsets: ['latin', 'latin-ext'],
@@ -22,9 +23,13 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang="en" className={inter.variable} suppressHydrationWarning>
       <body className="min-h-screen font-sans antialiased">
+        <a href="#main-content" className="a11y-skip-link">
+          Skip to main content
+        </a>
         <NextIntlClientProvider messages={messages}>
           {children}
         </NextIntlClientProvider>
+        <AccessibilityWidget />
       </body>
     </html>
   );

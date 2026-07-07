@@ -32,3 +32,101 @@
     background-color: rgb(var(--card));
   }
 }
+
+/* ---------- Accessibility widget ---------- */
+
+/* Skip-to-content link (visible only on focus) */
+.a11y-skip-link {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 100;
+  transform: translateY(-120%);
+  padding: 10px 16px;
+  background: #059669;
+  color: #fff;
+  font-weight: 600;
+  border-bottom-right-radius: 8px;
+  transition: transform 0.15s ease;
+}
+.a11y-skip-link:focus,
+.a11y-skip-link:focus-visible {
+  transform: translateY(0);
+  outline: 3px solid #34d399;
+  outline-offset: 2px;
+}
+
+/* Text size steps — scales the root font-size, most Tailwind text sizes are rem-based */
+html[data-a11y-font='1'] { font-size: 115%; }
+html[data-a11y-font='2'] { font-size: 130%; }
+html[data-a11y-font='3'] { font-size: 150%; }
+
+/* High contrast — darker text, stronger borders, links stand out */
+html[data-a11y-contrast='high'] body {
+  background: #ffffff !important;
+  color: #000000 !important;
+}
+html[data-a11y-contrast='high'] * {
+  border-color: #000000 !important;
+}
+html[data-a11y-contrast='high'] a,
+html[data-a11y-contrast='high'] button {
+  color: #003bb3 !important;
+}
+html[data-a11y-contrast='high'] .text-slate-400,
+html[data-a11y-contrast='high'] .text-slate-500,
+html[data-a11y-contrast='high'] .text-slate-600 {
+  color: #1f2937 !important;
+}
+html[data-a11y-contrast='high'] .bg-slate-50,
+html[data-a11y-contrast='high'] .bg-slate-100 {
+  background: #ffffff !important;
+}
+
+/* Dyslexia-friendly — wider tracking, larger line height, sans-serif */
+html[data-a11y-dyslexia='on'],
+html[data-a11y-dyslexia='on'] body,
+html[data-a11y-dyslexia='on'] * {
+  font-family: 'Atkinson Hyperlegible', Verdana, Tahoma, 'Trebuchet MS', sans-serif !important;
+}
+html[data-a11y-dyslexia='on'] p,
+html[data-a11y-dyslexia='on'] li,
+html[data-a11y-dyslexia='on'] span,
+html[data-a11y-dyslexia='on'] a,
+html[data-a11y-dyslexia='on'] label {
+  letter-spacing: 0.03em;
+  line-height: 1.7;
+  word-spacing: 0.08em;
+}
+
+/* Reduce motion — override user preference explicitly */
+html[data-a11y-motion='reduce'] *,
+html[data-a11y-motion='reduce'] *::before,
+html[data-a11y-motion='reduce'] *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+  scroll-behavior: auto !important;
+}
+
+/* Underline all links */
+html[data-a11y-links='underline'] a {
+  text-decoration: underline !important;
+  text-underline-offset: 2px;
+}
+
+/* Large cursor — inline SVG so it works offline */
+html[data-a11y-cursor='big'],
+html[data-a11y-cursor='big'] * {
+  cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 24 24' fill='%23000000' stroke='%23ffffff' stroke-width='1.5'><path d='M4 2 L4 20 L9 15 L12 22 L15 21 L12 14 L18 14 Z'/></svg>") 4 2, auto !important;
+}
+
+/* Respect the OS setting too, even if the widget hasn't been touched */
+@media (prefers-reduced-motion: reduce) {
+  html:not([data-a11y-motion='normal']) *,
+  html:not([data-a11y-motion='normal']) *::before,
+  html:not([data-a11y-motion='normal']) *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}

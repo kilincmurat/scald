@@ -45,7 +45,7 @@ export function PrepSheet() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-4xl px-6 py-8 print:px-0 print:py-0">
+      <main id="main-content" className="mx-auto max-w-4xl px-6 py-8 print:px-0 print:py-0">
         <div className="mb-6 border-b border-slate-200 pb-6">
           <p className="text-[10px] font-semibold uppercase tracking-wider text-emerald-600">
             SCALD · KA220-ADU
