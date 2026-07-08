@@ -47,7 +47,7 @@ export function OverviewDashboard() {
   const completed = useDataEntry((s) => s.completed);
   const badges = useDataEntry((s) => s.badges);
 
-  const { isAdmin, municipality: viewingMunicipality } = useEffectiveMunicipality();
+  const { canBrowseAll, municipality: viewingMunicipality } = useEffectiveMunicipality();
   const adminMuniId = useDataEntry((s) => s.adminMunicipalityId);
   const setAdminMuni = useDataEntry((s) => s.setAdminMunicipality);
 
@@ -95,7 +95,7 @@ export function OverviewDashboard() {
         </div>
         <div className="flex items-center gap-2">
           <YearPicker size="sm" />
-          {isAdmin && (
+          {canBrowseAll && (
             <select
               value={adminMuniId ?? PILOT_MUNICIPALITIES[0]?.id ?? ''}
               onChange={(e) => setAdminMuni(e.target.value)}

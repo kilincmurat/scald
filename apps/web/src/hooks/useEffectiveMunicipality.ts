@@ -26,11 +26,14 @@ export function useEffectiveMunicipality() {
   const loadMunicipality = useDataEntry((s) => s.loadMunicipality);
 
   const isAdmin = profile?.role === 'admin';
-  const resolvedId = isAdmin
+  const isResearcher = profile?.role === 'researcher';
+  const canBrowseAll = isAdmin || isResearcher;
+
+  const resolvedId = canBrowseAll
     ? adminMuniId ?? PILOT_MUNICIPALITIES[0]?.id ?? null
     : profile?.municipalityId ?? null;
 
-  const municipality = isAdmin
+  const municipality = canBrowseAll
     ? getPilotById(resolvedId) ?? null
     : profile?.municipality ?? null;
 
@@ -45,5 +48,7 @@ export function useEffectiveMunicipality() {
     municipalityId: resolvedId,
     municipality,
     isAdmin,
+    isResearcher,
+    canBrowseAll,
   };
 }

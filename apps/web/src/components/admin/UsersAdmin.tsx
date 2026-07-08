@@ -80,7 +80,7 @@ export function UsersAdmin() {
   }, [rows, q, roleFilter]);
 
   const counts = useMemo(() => {
-    const c: Record<Role, number> = { admin: 0, data_entry: 0, decision_maker: 0, citizen: 0 };
+    const c: Record<Role, number> = { admin: 0, data_entry: 0, decision_maker: 0, citizen: 0, researcher: 0 };
     for (const r of rows) c[r.role] = (c[r.role] ?? 0) + 1;
     return c;
   }, [rows]);
@@ -101,8 +101,8 @@ export function UsersAdmin() {
       </div>
 
       {/* Counts */}
-      <section className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        {(['admin', 'decision_maker', 'data_entry', 'citizen'] as Role[]).map((r) => (
+      <section className="grid grid-cols-2 gap-3 lg:grid-cols-5">
+        {(['admin', 'decision_maker', 'data_entry', 'researcher', 'citizen'] as Role[]).map((r) => (
           <div key={r} className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
             <span className={clsx('inline-block rounded-full px-2 py-0.5 text-[10px] font-semibold ring-1 ring-inset', ROLE_BADGE_COLOR[r])}>
               {ROLE_LABELS[r]}
@@ -356,7 +356,7 @@ function InviteUserModal({ onClose, onCreated }: { onClose: () => void; onCreate
               onChange={(e) => setRole(e.target.value as Role)}
               className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-200"
             >
-              {(['admin', 'decision_maker', 'data_entry', 'citizen'] as Role[]).map((r) => (
+              {(['admin', 'decision_maker', 'data_entry', 'researcher', 'citizen'] as Role[]).map((r) => (
                 <option key={r} value={r}>
                   {ROLE_LABELS[r]}
                 </option>
@@ -565,7 +565,7 @@ function EditUserModal({
               onChange={(e) => setRole(e.target.value as Role)}
               className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-200"
             >
-              {(['admin', 'decision_maker', 'data_entry', 'citizen'] as Role[]).map((r) => (
+              {(['admin', 'decision_maker', 'data_entry', 'researcher', 'citizen'] as Role[]).map((r) => (
                 <option key={r} value={r}>
                   {ROLE_LABELS[r]}
                 </option>

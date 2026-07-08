@@ -101,6 +101,16 @@ function buildNav(role: Role, t: (k: string) => string): NavStructure {
         ],
         bottom: [{ href: '/feedback', label: 'Feedback', icon: MessageSquare }],
       };
+    case 'researcher':
+      return {
+        top: [
+          { href: '/', label: t('overview'), icon: LayoutDashboard, exact: true },
+        ],
+        userScreens: [
+          { href: '/map', label: t('map'), icon: Map },
+        ],
+        bottom: [],
+      };
   }
 }
 
