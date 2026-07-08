@@ -11,13 +11,30 @@
 -- yeni policy YOK — dolayısıyla yazma reddedilir.
 -- ============================================================
 
--- ALTER TYPE ADD VALUE bir transaction bloğu içinde çağrılıp aynı
--- transaction'da referans edilemez; bu yüzden standalone çalıştırıyoruz.
-ALTER TYPE user_role ADD VALUE IF NOT EXISTS 'researcher';
+-- !!! ÖNEMLİ !!!
+-- Postgres, yeni bir enum değerinin eklendiği transaction içinde
+-- o değerin kullanılmasına izin vermiyor (55P04: "New enum values
+-- must be committed before they can be used").
+--
+-- Supabase SQL Editor tüm dosyayı tek transaction olarak çalıştırır.
+-- Bu yüzden bu dosyayı İKİ AYRI ÇALIŞTIRMA olarak uygula:
+--
+--   1) Önce sadece 1. Bölüm'ü (ALTER TYPE) çalıştır → Success gör.
+--   2) Sonra 2. Bölüm'ü (policies) çalıştır.
+--
+-- psql veya `supabase db push` gibi transaction dışı çalıştırıcılarda
+-- iki bölümü peş peşe uygulayabilirsin.
+-- ============================================================
 
 -- ------------------------------------------------------------
--- Read-only policies for researcher
+-- 1. BÖLÜM — enum değeri ekle (tek başına çalıştır)
 -- ------------------------------------------------------------
+ALTER TYPE user_role ADD VALUE IF NOT EXISTS 'researcher';
+
+-- ============================================================
+-- 2. BÖLÜM — Read-only policies for researcher
+-- (Yalnızca 1. Bölüm başarılı olduktan sonra çalıştır)
+-- ============================================================
 
 DROP POLICY IF EXISTS "researcher reads all entries" ON scald_indicator_entries;
 CREATE POLICY "researcher reads all entries"
