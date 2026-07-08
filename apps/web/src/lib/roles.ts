@@ -45,6 +45,7 @@ const ACCESS_MATRIX: Record<Role, string[]> = {
     '/admin',
     '/exports',
     '/official-report',
+    '/reports',
     '/feedback',
     '/settings',
   ],
@@ -63,6 +64,7 @@ const ACCESS_MATRIX: Record<Role, string[]> = {
     '/map',
     '/exports',
     '/official-report',
+    '/reports',
     '/feedback', // inbox
     '/settings',
   ],

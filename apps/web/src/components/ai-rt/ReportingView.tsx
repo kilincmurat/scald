@@ -80,16 +80,16 @@ const TEMPLATES: Template[] = [
     includes: ['Full strategy list', 'Set breakdowns', 'Roadmap 2025–2030'],
   },
   {
-    id: 'climate',
+    id: 'footprint',
     title: 'Ecological Footprint Summary',
     description:
-      'Focused report on Environmental Sustainability with 74 ES indicators, footprint estimate and improvement pathways.',
+      'Focused report explaining how the footprint value is derived from all 4 sustainability sets, with radar, gauge and set/category breakdown.',
     minCoveragePct: 40,
     pages: '16–22',
     format: 'PDF',
     icon: Leaf,
     color: 'text-teal-600 bg-teal-50',
-    includes: ['10 ES categories', 'gHa/capita', 'Category radar'],
+    includes: ['4-set contribution', 'gHa/capita mapping', 'Improvement pathway'],
   },
 ];
 
@@ -98,9 +98,9 @@ type ReportItem = {
   templateId: string;
   title: string;
   date: string;
-  size: string;
   format: string;
-  status: 'ready' | 'draft';
+  year: number;
+  href: string;
 };
 
 export function ReportingView() {
@@ -108,6 +108,7 @@ export function ReportingView() {
   useEffect(() => setMounted(true), []);
 
   const entries = useDataEntry((s) => s.entries);
+  const year = useDataEntry((s) => s.selectedYear);
   const weights = useEffectiveWeights();
   const overall = useMemo(() => computeOverallScore(entries, weights), [entries, weights]);
   const catScores = useMemo(() => computeCategoryScores(entries, weights), [entries, weights]);
@@ -116,28 +117,31 @@ export function ReportingView() {
   const coveragePct = overall.total > 0 ? Math.round((overall.entered / overall.total) * 100) : 0;
 
   const [preview, setPreview] = useState<Template | null>(null);
-  const [generating, setGenerating] = useState<string | null>(null);
   const [generated, setGenerated] = useState<ReportItem[]>([]);
 
   const handleGenerate = (tpl: Template) => {
-    setGenerating(tpl.id);
-    setTimeout(() => {
-      const now = new Date();
-      const dd = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
-      setGenerated((prev) => [
-        {
-          id: `${tpl.id}-${now.getTime()}`,
-          templateId: tpl.id,
-          title: `${tpl.title} — ${now.toLocaleDateString('en-GB', { month: 'short', year: 'numeric' })}`,
-          date: dd,
-          size: `${(1.2 + Math.random() * 6).toFixed(1)} MB`,
-          format: tpl.format.split(' / ')[0],
-          status: 'ready',
-        },
-        ...prev,
-      ]);
-      setGenerating(null);
-    }, 2200);
+    const now = new Date();
+    const href = `/reports/${tpl.id}?year=${year}`;
+    window.open(href, '_blank', 'noopener');
+    const dd = now.toLocaleDateString('en-GB', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+    setGenerated((prev) => [
+      {
+        id: `${tpl.id}-${now.getTime()}`,
+        templateId: tpl.id,
+        title: `${tpl.title} — ${year}`,
+        date: dd,
+        format: tpl.format.split(' / ')[0],
+        year,
+        href,
+      },
+      ...prev.filter((r) => r.href !== href).slice(0, 9),
+    ]);
   };
 
   if (!mounted) {
@@ -219,8 +223,8 @@ export function ReportingView() {
               coveragePct={coveragePct}
               onPreview={() => setPreview(tpl)}
               onGenerate={() => handleGenerate(tpl)}
-              isGenerating={generating === tpl.id}
-              disabledByOther={generating !== null && generating !== tpl.id}
+              isGenerating={false}
+              disabledByOther={false}
             />
           ))}
         </div>
@@ -243,20 +247,19 @@ export function ReportingView() {
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-xs font-medium text-slate-800">{r.title}</p>
                     <p className="mt-0.5 text-[10px] text-slate-400">
-                      {r.date} · {r.size} · {r.format}
+                      Opened {r.date} · {r.format} · reporting year {r.year}
                     </p>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="hidden rounded-full bg-emerald-100 px-1.5 py-0.5 text-[10px] font-medium text-emerald-700 sm:inline">
-                      Ready
-                    </span>
-                    <button
-                      className="rounded p-1.5 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600"
-                      title="Download"
-                    >
-                      <Download className="h-4 w-4" />
-                    </button>
-                  </div>
+                  <a
+                    href={r.href}
+                    target="_blank"
+                    rel="noopener"
+                    className="inline-flex items-center gap-1 rounded-lg border border-slate-200 px-2.5 py-1.5 text-[11px] font-medium text-slate-600 transition hover:bg-slate-50"
+                    title="Reopen in a new tab"
+                  >
+                    <Download className="h-3.5 w-3.5" />
+                    Reopen
+                  </a>
                 </li>
               ))}
             </ul>
@@ -391,17 +394,8 @@ function TemplateCard({
           disabled={!unlocked || isGenerating || disabledByOther}
           className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-slate-900 px-3 py-2 text-xs font-semibold text-white transition hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed"
         >
-          {isGenerating ? (
-            <>
-              <Loader2 className="h-3.5 w-3.5 animate-spin" />
-              Generating…
-            </>
-          ) : (
-            <>
-              <Sparkles className="h-3.5 w-3.5" />
-              Generate
-            </>
-          )}
+          <Sparkles className="h-3.5 w-3.5" />
+          Open report
         </button>
         <button
           onClick={onPreview}
