@@ -4,6 +4,9 @@ import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { INDICATORS, type SetCode } from '@/lib/scald-indicators';
 import { useDataEntry } from '@/stores/data-entry';
+import { useProfile } from '@/hooks/useProfile';
+import { useSubmission } from '@/hooks/useSubmission';
+import { canRespondFeedback } from '@/lib/roles';
 import { clsx } from 'clsx';
 import {
   ArrowLeft,
@@ -16,6 +19,8 @@ import {
   Sparkles,
   TrendingUp,
   Award,
+  ShieldAlert,
+  Clock,
 } from 'lucide-react';
 
 type Phase = 'idle' | 'calculating' | 'done';
@@ -48,12 +53,20 @@ export function CalculateFootprint() {
 
   const entries = useDataEntry((s) => s.entries);
   const overall = useDataEntry((s) => s.overallProgress());
+  const year = useDataEntry((s) => s.selectedYear);
+  const { profile } = useProfile();
+  const municipalityId = profile?.municipalityId ?? null;
+  const { submission, loading: submissionLoading } = useSubmission(municipalityId, year);
+  const role = profile?.role;
+  const canApprove = role ? canRespondFeedback(role) : false;
 
   const [phase, setPhase] = useState<Phase>('idle');
   const [stepIdx, setStepIdx] = useState(0);
   const [animatedScore, setAnimatedScore] = useState(0);
 
   const allComplete = overall.total > 0 && overall.done === overall.total;
+  const approved = submission?.status === 'approved';
+  const awaitingReview = submission?.status === 'submitted';
 
   // Compute set/category averages and overall score (0..100)
   const result = useMemo(() => {
@@ -144,7 +157,7 @@ export function CalculateFootprint() {
     return () => cancelAnimationFrame(raf);
   }, [phase, result.overallScore]);
 
-  if (!mounted) {
+  if (!mounted || submissionLoading) {
     return (
       <div className="p-6">
         <div className="h-64 rounded-xl bg-slate-100 animate-pulse" />
@@ -152,7 +165,44 @@ export function CalculateFootprint() {
     );
   }
 
-  // Lock guard: if not all indicators complete
+  // Gate 1: approval required (admin bypasses only if all data present)
+  if (!approved && role !== 'admin') {
+    return (
+      <div className="p-6">
+        <div className="mx-auto max-w-md rounded-xl border border-slate-200 bg-white p-8 text-center shadow-sm">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-amber-50">
+            {awaitingReview ? (
+              <Clock className="h-7 w-7 text-amber-500" />
+            ) : (
+              <ShieldAlert className="h-7 w-7 text-amber-500" />
+            )}
+          </div>
+          <h2 className="mt-4 text-lg font-bold text-slate-900">
+            {awaitingReview ? 'Awaiting approval' : 'Approval required'}
+          </h2>
+          <p className="mt-1 text-sm text-slate-500">
+            {awaitingReview
+              ? canApprove
+                ? 'The data for ' +
+                  year +
+                  ' has been submitted. Go to Data Entry to review the declarations and approve before calculating.'
+                : 'The data for ' +
+                  year +
+                  ' has been submitted and is waiting for the decision maker to approve it.'
+              : 'This year’s data has not yet been submitted and approved. Ecological footprint can only be calculated on approved data.'}
+          </p>
+          <Link
+            href="/data-entry"
+            className="mt-5 inline-flex items-center gap-2 rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800"
+          >
+            <ArrowLeft className="h-4 w-4" /> Back to data entry
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  // Gate 2: all indicators must be present (defensive)
   if (!allComplete) {
     return (
       <div className="p-6">
