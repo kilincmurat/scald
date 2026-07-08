@@ -22,7 +22,6 @@ import {
   X,
   ArrowRight,
   CheckCircle2,
-  Loader2,
   FileBarChart2,
   FileSearch,
   CalendarDays,
