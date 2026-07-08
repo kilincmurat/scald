@@ -8,6 +8,7 @@ import { useProfile } from '@/hooks/useProfile';
 import { canWriteDataEntry } from '@/lib/roles';
 import { YearPicker } from './YearPicker';
 import { SubmissionCard } from './SubmissionCard';
+import { DecisionMakerReview } from './DecisionMakerReview';
 import {
   Lock,
   CheckCircle2,
@@ -78,6 +79,7 @@ export function DataEntryDashboard() {
   const { profile, loading: profileLoading } = useProfile();
   const canWrite = profile ? canWriteDataEntry(profile.role) : false;
   const isReadOnly = !canWrite;
+  const isDecisionMaker = profile?.role === 'decision_maker';
 
   // Sync store to profile's municipality on mount / profile change
   useEffect(() => {
@@ -103,6 +105,11 @@ export function DataEntryDashboard() {
         <div className="h-32 rounded-xl bg-slate-100 animate-pulse" />
       </div>
     );
+  }
+
+  // Decision makers get a review-focused view (no submit UI, no reset, no category grid).
+  if (isDecisionMaker) {
+    return <DecisionMakerReview />;
   }
 
   return (
