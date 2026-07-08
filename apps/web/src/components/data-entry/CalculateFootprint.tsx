@@ -6,6 +6,7 @@ import { INDICATORS, type SetCode } from '@/lib/scald-indicators';
 import { useDataEntry } from '@/stores/data-entry';
 import { useProfile } from '@/hooks/useProfile';
 import { useSubmission } from '@/hooks/useSubmission';
+import { useEffectiveMunicipality } from '@/hooks/useEffectiveMunicipality';
 import { canRespondFeedback } from '@/lib/roles';
 import { clsx } from 'clsx';
 import {
@@ -56,7 +57,7 @@ export function CalculateFootprint() {
   const overall = useDataEntry((s) => s.overallProgress());
   const year = useDataEntry((s) => s.selectedYear);
   const { profile } = useProfile();
-  const municipalityId = profile?.municipalityId ?? null;
+  const { municipalityId } = useEffectiveMunicipality();
   const { submission, loading: submissionLoading } = useSubmission(municipalityId, year);
   const role = profile?.role;
   const canApprove = role ? canRespondFeedback(role) : false;

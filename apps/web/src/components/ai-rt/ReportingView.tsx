@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useDataEntry } from '@/stores/data-entry';
 import { useEffectiveWeights } from '@/stores/weights';
+import { useEffectiveMunicipality } from '@/hooks/useEffectiveMunicipality';
 import { YearPicker } from '@/components/data-entry/YearPicker';
 import {
   computeCategoryScores,
@@ -105,6 +106,7 @@ type ReportItem = {
 export function ReportingView() {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
+  useEffectiveMunicipality();
 
   const entries = useDataEntry((s) => s.entries);
   const year = useDataEntry((s) => s.selectedYear);

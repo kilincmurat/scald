@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useProfile } from '@/hooks/useProfile';
+import { useEffectiveMunicipality } from '@/hooks/useEffectiveMunicipality';
 import { useDataEntry, DEFAULT_YEAR, MIN_YEAR, MAX_YEAR } from '@/stores/data-entry';
 import { useEffectiveWeights } from '@/stores/weights';
 import {
@@ -68,16 +69,8 @@ export function ReportPage({ template }: { template: ReportTemplateId }) {
   const yearParam = clampYear(Number(params.get('year') ?? DEFAULT_YEAR));
 
   const { profile } = useProfile();
-  const loadMunicipality = useDataEntry((s) => s.loadMunicipality);
-  const currentMunicipalityId = useDataEntry((s) => s.municipalityId);
+  const { municipality } = useEffectiveMunicipality();
   const entriesByYear = useDataEntry((s) => s.entriesByYear);
-
-  useEffect(() => {
-    if (!mounted) return;
-    if (profile?.municipalityId && profile.municipalityId !== currentMunicipalityId) {
-      void loadMunicipality(profile.municipalityId);
-    }
-  }, [mounted, profile?.municipalityId, currentMunicipalityId, loadMunicipality]);
 
   const entries = useMemo(() => entriesByYear[yearParam] ?? {}, [entriesByYear, yearParam]);
   const weights = useEffectiveWeights();
@@ -85,7 +78,6 @@ export function ReportPage({ template }: { template: ReportTemplateId }) {
   const setScores = useMemo(() => computeSetScores(entries, weights), [entries, weights]);
   const catScores = useMemo(() => computeCategoryScores(entries, weights), [entries, weights]);
 
-  const municipality = profile?.municipality;
   const meta = TITLES[template];
   const preparedBy = profile?.fullName || profile?.email || undefined;
 

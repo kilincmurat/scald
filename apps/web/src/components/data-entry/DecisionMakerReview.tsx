@@ -3,8 +3,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { INDICATORS, type SetCode } from '@/lib/scald-indicators';
-import { useProfile } from '@/hooks/useProfile';
 import { useDataEntry } from '@/stores/data-entry';
+import { useEffectiveMunicipality } from '@/hooks/useEffectiveMunicipality';
 import { useEffectiveWeights } from '@/stores/weights';
 import { computeCategoryScores, computeOverallScore, computeSetScores, SET_THEME } from '@/lib/scores';
 import { YearPicker } from './YearPicker';
@@ -21,17 +21,8 @@ import { clsx } from 'clsx';
 export function DecisionMakerReview() {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
-  const { profile } = useProfile();
-  const loadMunicipality = useDataEntry((s) => s.loadMunicipality);
-  const currentMunicipalityId = useDataEntry((s) => s.municipalityId);
   const entries = useDataEntry((s) => s.entries);
-
-  useEffect(() => {
-    if (!mounted) return;
-    if (profile?.municipalityId && profile.municipalityId !== currentMunicipalityId) {
-      void loadMunicipality(profile.municipalityId);
-    }
-  }, [mounted, profile?.municipalityId, currentMunicipalityId, loadMunicipality]);
+  useEffectiveMunicipality();
 
   const weights = useEffectiveWeights();
   const overall = useMemo(() => computeOverallScore(entries, weights), [entries, weights]);

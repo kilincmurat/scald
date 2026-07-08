@@ -5,6 +5,7 @@ import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { useDataEntry } from '@/stores/data-entry';
 import { useEffectiveWeights } from '@/stores/weights';
+import { useEffectiveMunicipality } from '@/hooks/useEffectiveMunicipality';
 import { YearPicker } from '@/components/data-entry/YearPicker';
 import {
   computeCategoryScores,
@@ -39,6 +40,7 @@ const SET_ORDER: SetCode[] = ['ES', 'SS', 'MS', 'ECS'];
 export function EfctView() {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
+  useEffectiveMunicipality();
 
   const entries = useDataEntry((s) => s.entries);
   const weights = useEffectiveWeights();

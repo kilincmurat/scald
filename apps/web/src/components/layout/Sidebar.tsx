@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
@@ -11,6 +12,7 @@ import {
   Map,
   Settings,
   ChevronRight,
+  ChevronDown,
   Sprout,
   PanelLeftClose,
   PanelLeftOpen,
@@ -27,6 +29,7 @@ import { clsx } from 'clsx';
 import type { LucideIcon } from 'lucide-react';
 import { useProfile } from '@/hooks/useProfile';
 import { ROLE_BADGE_COLOR, ROLE_LABELS, type Role } from '@/lib/roles';
+import { AdminMunicipalityPicker } from './AdminMunicipalityPicker';
 
 interface SidebarProps {
   collapsed: boolean;
@@ -43,44 +46,61 @@ type NavItem = {
   badge?: string;
 };
 
-function buildNav(role: Role, t: (k: string) => string): NavItem[] {
+type NavStructure = {
+  top: NavItem[];
+  userScreens?: NavItem[];
+  bottom: NavItem[];
+};
+
+function buildNav(role: Role, t: (k: string) => string): NavStructure {
   switch (role) {
     case 'admin':
-      return [
-        { href: '/admin', label: 'Admin Panel', icon: ShieldCheck, exact: true },
-        { href: '/', label: t('overview'), icon: LayoutDashboard, exact: true },
-        { href: '/data-entry', label: t('dataEntry'), icon: ClipboardList },
-        { href: '/efct', label: t('efct'), icon: Leaf },
-        { href: '/ai-dss', label: t('aiDss'), icon: BrainCircuit },
-        { href: '/ai-rt', label: t('aiRt'), icon: FileBarChart2 },
-        { href: '/map', label: t('map'), icon: Map },
-        { href: '/exports', label: 'Data Exports', icon: Download },
-        { href: '/feedback', label: 'Feedback', icon: MessageSquare },
-      ];
+      return {
+        top: [
+          { href: '/admin', label: 'Admin Panel', icon: ShieldCheck, exact: true },
+          { href: '/', label: t('overview'), icon: LayoutDashboard, exact: true },
+        ],
+        userScreens: [
+          { href: '/data-entry', label: t('dataEntry'), icon: ClipboardList },
+          { href: '/efct', label: t('efct'), icon: Leaf },
+          { href: '/ai-dss', label: t('aiDss'), icon: BrainCircuit },
+          { href: '/ai-rt', label: t('aiRt'), icon: FileBarChart2 },
+          { href: '/exports', label: 'Data Exports', icon: Download },
+          { href: '/map', label: t('map'), icon: Map },
+        ],
+        bottom: [{ href: '/feedback', label: 'Feedback', icon: MessageSquare }],
+      };
     case 'data_entry':
-      return [
-        { href: '/data-entry', label: t('dataEntry'), icon: ClipboardList },
-        { href: '/efct', label: t('efct'), icon: Leaf, badge: 'read' },
-        { href: '/map', label: t('map'), icon: Map },
-      ];
+      return {
+        top: [
+          { href: '/data-entry', label: t('dataEntry'), icon: ClipboardList },
+          { href: '/efct', label: t('efct'), icon: Leaf, badge: 'read' },
+          { href: '/map', label: t('map'), icon: Map },
+        ],
+        bottom: [],
+      };
     case 'decision_maker':
-      return [
-        { href: '/', label: t('overview'), icon: LayoutDashboard, exact: true },
-        { href: '/data-entry', label: t('dataEntry'), icon: ClipboardList, badge: 'read' },
-        { href: '/efct', label: t('efct'), icon: Leaf },
-        { href: '/ai-dss', label: t('aiDss'), icon: BrainCircuit },
-        { href: '/ai-rt', label: t('aiRt'), icon: FileBarChart2 },
-        { href: '/map', label: t('map'), icon: Map },
-        { href: '/exports', label: 'Data Exports', icon: Download },
-        { href: '/feedback', label: 'Feedback', icon: MessageSquare },
-      ];
+      return {
+        top: [
+          { href: '/', label: t('overview'), icon: LayoutDashboard, exact: true },
+          { href: '/data-entry', label: t('dataEntry'), icon: ClipboardList, badge: 'read' },
+          { href: '/efct', label: t('efct'), icon: Leaf },
+          { href: '/ai-dss', label: t('aiDss'), icon: BrainCircuit },
+          { href: '/ai-rt', label: t('aiRt'), icon: FileBarChart2 },
+          { href: '/map', label: t('map'), icon: Map },
+          { href: '/exports', label: 'Data Exports', icon: Download },
+        ],
+        bottom: [{ href: '/feedback', label: 'Feedback', icon: MessageSquare }],
+      };
     case 'citizen':
-      return [
-        { href: '/public', label: 'Home', icon: Home, exact: true },
-        { href: '/my-municipality', label: 'My Municipality', icon: Building2 },
-        { href: '/map', label: t('map'), icon: Map },
-        { href: '/feedback', label: 'Feedback', icon: MessageSquare },
-      ];
+      return {
+        top: [
+          { href: '/public', label: 'Home', icon: Home, exact: true },
+          { href: '/my-municipality', label: 'My Municipality', icon: Building2 },
+          { href: '/map', label: t('map'), icon: Map },
+        ],
+        bottom: [{ href: '/feedback', label: 'Feedback', icon: MessageSquare }],
+      };
   }
 }
 
@@ -90,7 +110,8 @@ export function Sidebar({ collapsed, mobileOpen, onToggle, onMobileClose }: Side
   const { profile } = useProfile();
   const role: Role = profile?.role ?? 'data_entry';
   const municipality = profile?.municipality;
-  const navItems = buildNav(role, t);
+  const nav = buildNav(role, t);
+  const [userScreensOpen, setUserScreensOpen] = useState(true);
 
   const isActive = (href: string, exact?: boolean) => {
     if (exact) return pathname === href;
@@ -172,42 +193,79 @@ export function Sidebar({ collapsed, mobileOpen, onToggle, onMobileClose }: Side
 
       <nav className="flex-1 overflow-y-auto px-2 py-3">
         <ul className="space-y-1">
-          {navItems.map((item) => {
-            const active = isActive(item.href, item.exact);
-            return (
-              <li key={item.href}>
-                <Link
-                  href={item.href}
-                  title={collapsed ? item.label : undefined}
-                  className={clsx(
-                    'group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all',
-                    collapsed && 'lg:justify-center lg:px-0',
-                    active
-                      ? 'bg-emerald-600 text-white'
-                      : 'text-slate-400 hover:bg-slate-800 hover:text-white',
-                  )}
-                >
-                  <item.icon className="h-4 w-4 shrink-0" />
-                  {(!collapsed || mobileOpen) && (
-                    <>
-                      <span className={clsx('flex-1', collapsed && 'lg:hidden')}>{item.label}</span>
-                      {item.badge && !collapsed && (
-                        <span className="rounded bg-slate-800 px-1.5 py-0.5 text-[9px] font-bold uppercase text-slate-400">
-                          {item.badge}
-                        </span>
-                      )}
-                      {active && !item.badge && (
-                        <ChevronRight
-                          className={clsx('h-3 w-3 opacity-60', collapsed && 'lg:hidden')}
-                        />
-                      )}
-                    </>
-                  )}
-                </Link>
-              </li>
-            );
-          })}
+          {nav.top.map((item) => (
+            <NavRow
+              key={item.href}
+              item={item}
+              active={isActive(item.href, item.exact)}
+              collapsed={collapsed}
+              mobileOpen={mobileOpen}
+            />
+          ))}
         </ul>
+
+        {nav.userScreens && nav.userScreens.length > 0 && (
+          <div className="mt-4">
+            {!collapsed && (
+              <div className="mb-1 px-1">
+                <button
+                  type="button"
+                  onClick={() => setUserScreensOpen((v) => !v)}
+                  className="flex w-full items-center justify-between rounded-md px-2 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500 transition hover:text-slate-300"
+                  aria-expanded={userScreensOpen}
+                >
+                  <span>User Screens</span>
+                  <ChevronDown
+                    className={clsx(
+                      'h-3 w-3 transition',
+                      !userScreensOpen && '-rotate-90',
+                    )}
+                  />
+                </button>
+                <p className="mt-1 px-2 text-[10px] text-slate-500">
+                  Browse any municipality's user-side pages.
+                </p>
+                <div className="mt-2 px-1">
+                  <AdminMunicipalityPicker collapsed={false} />
+                </div>
+              </div>
+            )}
+            {collapsed && (
+              <div className="mb-2 flex justify-center">
+                <AdminMunicipalityPicker collapsed={true} />
+              </div>
+            )}
+
+            {(userScreensOpen || collapsed) && (
+              <ul className="space-y-1">
+                {nav.userScreens.map((item) => (
+                  <NavRow
+                    key={item.href}
+                    item={item}
+                    active={isActive(item.href, item.exact)}
+                    collapsed={collapsed}
+                    mobileOpen={mobileOpen}
+                    inGroup
+                  />
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
+
+        {nav.bottom.length > 0 && (
+          <ul className="mt-4 space-y-1 border-t border-slate-700/50 pt-3">
+            {nav.bottom.map((item) => (
+              <NavRow
+                key={item.href}
+                item={item}
+                active={isActive(item.href, item.exact)}
+                collapsed={collapsed}
+                mobileOpen={mobileOpen}
+              />
+            ))}
+          </ul>
+        )}
 
         <div className="mt-4 border-t border-slate-700/50 pt-3">
           {!collapsed && (
@@ -256,5 +314,53 @@ export function Sidebar({ collapsed, mobileOpen, onToggle, onMobileClose }: Side
         )}
       </div>
     </aside>
+  );
+}
+
+function NavRow({
+  item,
+  active,
+  collapsed,
+  mobileOpen,
+  inGroup,
+}: {
+  item: NavItem;
+  active: boolean;
+  collapsed: boolean;
+  mobileOpen: boolean;
+  inGroup?: boolean;
+}) {
+  return (
+    <li>
+      <Link
+        href={item.href}
+        title={collapsed ? item.label : undefined}
+        className={clsx(
+          'group flex items-center gap-3 rounded-lg py-2.5 text-sm font-medium transition-all',
+          inGroup ? 'pl-4 pr-3' : 'px-3',
+          collapsed && 'lg:justify-center lg:px-0',
+          active
+            ? 'bg-emerald-600 text-white'
+            : 'text-slate-400 hover:bg-slate-800 hover:text-white',
+        )}
+      >
+        <item.icon className="h-4 w-4 shrink-0" />
+        {(!collapsed || mobileOpen) && (
+          <>
+            <span className={clsx('flex-1', collapsed && 'lg:hidden')}>{item.label}</span>
+            {item.badge && !collapsed && (
+              <span className="rounded bg-slate-800 px-1.5 py-0.5 text-[9px] font-bold uppercase text-slate-400">
+                {item.badge}
+              </span>
+            )}
+            {active && !item.badge && (
+              <ChevronRight
+                className={clsx('h-3 w-3 opacity-60', collapsed && 'lg:hidden')}
+              />
+            )}
+          </>
+        )}
+      </Link>
+    </li>
   );
 }

@@ -9,6 +9,7 @@ import { canWriteDataEntry } from '@/lib/roles';
 import { YearPicker } from './YearPicker';
 import { SubmissionCard } from './SubmissionCard';
 import { DecisionMakerReview } from './DecisionMakerReview';
+import { useEffectiveMunicipality } from '@/hooks/useEffectiveMunicipality';
 import {
   Lock,
   CheckCircle2,
@@ -71,24 +72,16 @@ export function DataEntryDashboard() {
   const completed = useDataEntry((s) => s.completed);
   const categoryProgress = useDataEntry((s) => s.categoryProgress);
   const isUnlocked = useDataEntry((s) => s.isCategoryUnlocked);
-  const loadMunicipality = useDataEntry((s) => s.loadMunicipality);
-  const currentMunicipalityId = useDataEntry((s) => s.municipalityId);
   const syncStatus = useDataEntry((s) => s.syncStatus);
   const resetAll = useDataEntry((s) => s.reset);
 
-  const { profile, loading: profileLoading } = useProfile();
+  const { profile } = useProfile();
   const canWrite = profile ? canWriteDataEntry(profile.role) : false;
   const isReadOnly = !canWrite;
   const isDecisionMaker = profile?.role === 'decision_maker';
 
-  // Sync store to profile's municipality on mount / profile change
-  useEffect(() => {
-    if (!mounted || profileLoading) return;
-    const target = profile?.municipalityId;
-    if (target && target !== currentMunicipalityId) {
-      void loadMunicipality(target);
-    }
-  }, [mounted, profileLoading, profile?.municipalityId, currentMunicipalityId, loadMunicipality]);
+  // Sync store to the effective municipality (admin picker aware).
+  const { municipalityId: currentMunicipalityId } = useEffectiveMunicipality();
 
   const setCodes: SetCode[] = ['ES', 'SS', 'MS', 'ECS'];
 

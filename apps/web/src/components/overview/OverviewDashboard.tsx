@@ -6,6 +6,7 @@ import dynamic from 'next/dynamic';
 import { useDataEntry } from '@/stores/data-entry';
 import { useEffectiveWeights } from '@/stores/weights';
 import { useProfile } from '@/hooks/useProfile';
+import { useEffectiveMunicipality } from '@/hooks/useEffectiveMunicipality';
 import { PILOT_MUNICIPALITIES } from '@/lib/pilot-municipalities';
 import { YearPicker } from '@/components/data-entry/YearPicker';
 import {
@@ -45,28 +46,10 @@ export function OverviewDashboard() {
   const entries = useDataEntry((s) => s.entries);
   const completed = useDataEntry((s) => s.completed);
   const badges = useDataEntry((s) => s.badges);
-  const currentMunicipalityId = useDataEntry((s) => s.municipalityId);
-  const loadMunicipality = useDataEntry((s) => s.loadMunicipality);
 
-  const isAdmin = profile?.role === 'admin';
-
-  // For admin: allow browsing any pilot city. For everyone else the profile's
-  // municipality is the source of truth.
-  const [adminMuniId, setAdminMuniId] = useState<string>('');
-
-  useEffect(() => {
-    if (!mounted) return;
-    const target = isAdmin
-      ? adminMuniId || PILOT_MUNICIPALITIES[0]?.id
-      : profile?.municipalityId;
-    if (target && target !== currentMunicipalityId) {
-      void loadMunicipality(target);
-    }
-  }, [mounted, isAdmin, adminMuniId, profile?.municipalityId, currentMunicipalityId, loadMunicipality]);
-
-  const viewingMunicipality = isAdmin
-    ? PILOT_MUNICIPALITIES.find((m) => m.id === (adminMuniId || currentMunicipalityId)) ?? PILOT_MUNICIPALITIES[0]
-    : profile?.municipality;
+  const { isAdmin, municipality: viewingMunicipality } = useEffectiveMunicipality();
+  const adminMuniId = useDataEntry((s) => s.adminMunicipalityId);
+  const setAdminMuni = useDataEntry((s) => s.setAdminMunicipality);
 
   const weights = useEffectiveWeights();
   const setScores = useMemo(() => computeSetScores(entries, weights), [entries, weights]);
@@ -114,8 +97,8 @@ export function OverviewDashboard() {
           <YearPicker size="sm" />
           {isAdmin && (
             <select
-              value={adminMuniId || (currentMunicipalityId ?? '')}
-              onChange={(e) => setAdminMuniId(e.target.value)}
+              value={adminMuniId ?? PILOT_MUNICIPALITIES[0]?.id ?? ''}
+              onChange={(e) => setAdminMuni(e.target.value)}
               className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 shadow-sm outline-none focus:border-slate-400 focus:ring-2 focus:ring-slate-200"
             >
               {PILOT_MUNICIPALITIES.map((m) => (

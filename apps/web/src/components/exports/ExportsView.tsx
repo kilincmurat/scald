@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { useProfile } from '@/hooks/useProfile';
 import { useDataEntry } from '@/stores/data-entry';
+import { useEffectiveMunicipality } from '@/hooks/useEffectiveMunicipality';
 import { useEffectiveWeights } from '@/stores/weights';
 import { YearPicker } from '@/components/data-entry/YearPicker';
 import { downloadExcelReport } from '@/lib/exports';
@@ -15,19 +15,9 @@ export function ExportsView() {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
-  const { profile } = useProfile();
-  const loadMunicipality = useDataEntry((s) => s.loadMunicipality);
-  const currentMunicipalityId = useDataEntry((s) => s.municipalityId);
+  const { municipality } = useEffectiveMunicipality();
   const entries = useDataEntry((s) => s.entries);
   const year = useDataEntry((s) => s.selectedYear);
-  const municipality = profile?.municipality;
-
-  useEffect(() => {
-    if (!mounted) return;
-    if (profile?.municipalityId && profile.municipalityId !== currentMunicipalityId) {
-      void loadMunicipality(profile.municipalityId);
-    }
-  }, [mounted, profile?.municipalityId, currentMunicipalityId, loadMunicipality]);
 
   const weights = useEffectiveWeights();
   const overall = useMemo(() => computeOverallScore(entries, weights), [entries, weights]);

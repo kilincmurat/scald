@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useProfile } from '@/hooks/useProfile';
 import { useDataEntry, isYearEditable } from '@/stores/data-entry';
 import { useSubmission } from '@/hooks/useSubmission';
+import { useEffectiveMunicipality } from '@/hooks/useEffectiveMunicipality';
 import { canWriteDataEntry, canRespondFeedback } from '@/lib/roles';
 import {
   Send,
@@ -38,9 +39,9 @@ function formatDate(iso: string): string {
 
 export function SubmissionCard() {
   const { profile } = useProfile();
+  const { municipalityId } = useEffectiveMunicipality();
   const year = useDataEntry((s) => s.selectedYear);
   const overall = useDataEntry((s) => s.overallProgress());
-  const municipalityId = profile?.municipalityId ?? null;
   const { submission, loading, mutating, error, submit, approve } = useSubmission(
     municipalityId,
     year,

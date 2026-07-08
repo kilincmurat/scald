@@ -42,6 +42,11 @@ type YearScoped<T> = Record<number, T>;
 
 export type DataEntryState = {
   municipalityId: string | null;
+  /**
+   * Admin-only override — when an admin picks a municipality to inspect from the
+   * sidebar, we keep the id here (persisted). Non-admin users ignore this field.
+   */
+  adminMunicipalityId: string | null;
   selectedYear: number;
 
   entriesByYear: YearScoped<Record<string, IndicatorEntry>>;
@@ -59,6 +64,7 @@ export type DataEntryState = {
   lastSyncedAt: number | null;
 
   // actions
+  setAdminMunicipality: (municipalityId: string | null) => void;
   setYear: (year: number) => void;
   saveEntry: (indicatorCode: string, score: number, rawValue?: string) => void;
   completeCategory: (categoryCode: string) => void;
@@ -124,10 +130,15 @@ export const useDataEntry = create<DataEntryState>()(
     (set, get) => ({
       ...emptyState,
       municipalityId: null,
+      adminMunicipalityId: null,
       selectedYear: DEFAULT_YEAR,
       hydrated: false,
       syncStatus: 'idle',
       lastSyncedAt: null,
+
+      setAdminMunicipality: (id) => {
+        set({ adminMunicipalityId: id });
+      },
 
       setYear: (year) => {
         const y = clampYear(year);
@@ -316,6 +327,7 @@ export const useDataEntry = create<DataEntryState>()(
       },
       partialize: (state) => ({
         municipalityId: state.municipalityId,
+        adminMunicipalityId: state.adminMunicipalityId,
         selectedYear: state.selectedYear,
         entriesByYear: state.entriesByYear,
         completedByYear: state.completedByYear,
