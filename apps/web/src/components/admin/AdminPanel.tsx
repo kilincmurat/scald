@@ -12,6 +12,8 @@ import {
   Activity,
   Scale,
   ArrowRight,
+  HeartPulse,
+  ScrollText,
 } from 'lucide-react';
 
 export function AdminPanel() {
@@ -45,10 +47,17 @@ export function AdminPanel() {
       bg: 'from-pink-500 to-rose-600',
     },
     {
-      href: '/admin/audit',
-      icon: ShieldAlert,
-      title: 'Audit Logs',
-      desc: 'Chronological trace of who changed what across the system.',
+      href: '/admin/health',
+      icon: HeartPulse,
+      title: 'System Health',
+      desc: 'Live probes: database reachability, auth session, row counts, latest activity.',
+      bg: 'from-teal-500 to-emerald-600',
+    },
+    {
+      href: '/admin/logs',
+      icon: ScrollText,
+      title: 'Log Management',
+      desc: 'Chronological trace of every entry, submission, approval and feedback across all pilot cities.',
       bg: 'from-orange-500 to-amber-600',
     },
   ];
