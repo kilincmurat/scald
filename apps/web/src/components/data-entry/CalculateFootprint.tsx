@@ -21,6 +21,7 @@ import {
   Award,
   ShieldAlert,
   Clock,
+  FileText,
 } from 'lucide-react';
 
 type Phase = 'idle' | 'calculating' | 'done';
@@ -324,7 +325,7 @@ export function CalculateFootprint() {
           </div>
         )}
 
-        {phase === 'done' && <Result animatedScore={animatedScore} result={result} />}
+        {phase === 'done' && <Result animatedScore={animatedScore} result={result} year={year} />}
       </div>
     </div>
   );
@@ -333,6 +334,7 @@ export function CalculateFootprint() {
 function Result({
   animatedScore,
   result,
+  year,
 }: {
   animatedScore: number;
   result: {
@@ -342,6 +344,7 @@ function Result({
     ef: number;
     band: { label: string; color: string; bg: string; ring: string };
   };
+  year: number;
 }) {
   return (
     <div className="mt-5 space-y-6">
@@ -387,6 +390,23 @@ function Result({
             </p>
             <p className="mt-2 text-xs text-slate-500">Global target · 2.5 gHa</p>
           </div>
+        </div>
+
+        <div className="mt-6 flex flex-col items-center gap-2 border-t border-emerald-100 pt-5 sm:flex-row sm:justify-between">
+          <p className="text-xs text-slate-600">
+            Formal report — includes charts, per-set and per-category tables. Suitable for
+            council briefings and archival.
+          </p>
+          <a
+            href={`/official-report?year=${year}`}
+            target="_blank"
+            rel="noopener"
+            className="inline-flex items-center gap-2 rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800"
+          >
+            <FileText className="h-4 w-4" />
+            Download official report
+            <ArrowRight className="h-4 w-4" />
+          </a>
         </div>
       </div>
 

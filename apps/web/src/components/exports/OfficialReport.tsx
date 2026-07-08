@@ -13,6 +13,7 @@ import {
 } from '@/lib/scores';
 import { INDICATORS, type SetCode } from '@/lib/scald-indicators';
 import { Printer, ArrowLeft } from 'lucide-react';
+import { ScoreGauge, SetRadar, CategoryBars, ChartLegend } from './report-charts';
 
 const SET_FULL: Record<SetCode, string> = {
   ES: 'Environmental Sustainability',
@@ -199,6 +200,70 @@ export function OfficialReport() {
             </tbody>
           </table>
         </section>
+
+        {/* Charts — visual summary */}
+        {overall.entered > 0 && (
+          <section className="page-break mt-8">
+            <h2 className="text-sm font-bold uppercase tracking-wider text-slate-500">
+              Visual Summary
+            </h2>
+
+            <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div className="avoid-break rounded-xl border border-slate-300 p-4">
+                <h3 className="text-xs font-bold text-slate-800">Overall score</h3>
+                <p className="mt-0.5 text-[10px] text-slate-500">
+                  Aggregate of all four sustainability sets, 0–100.
+                </p>
+                <div className="mt-3 flex justify-center">
+                  <ScoreGauge score={overall.score} label={band.label} size={220} />
+                </div>
+              </div>
+
+              <div className="avoid-break rounded-xl border border-slate-300 p-4">
+                <h3 className="text-xs font-bold text-slate-800">Sustainability sets</h3>
+                <p className="mt-0.5 text-[10px] text-slate-500">
+                  Comparison of the four sets on a 0–100 scale.
+                </p>
+                <div className="mt-3 flex justify-center">
+                  <SetRadar
+                    scores={{
+                      ES: setScores.ES.score,
+                      SS: setScores.SS.score,
+                      MS: setScores.MS.score,
+                      ECS: setScores.ECS.score,
+                    }}
+                    size={280}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="avoid-break mt-4 rounded-xl border border-slate-300 p-4">
+              <div className="flex flex-wrap items-baseline justify-between gap-2">
+                <div>
+                  <h3 className="text-xs font-bold text-slate-800">
+                    All categories — score breakdown
+                  </h3>
+                  <p className="mt-0.5 text-[10px] text-slate-500">
+                    Horizontal bars show the 0–100 score for each of the 24 categories,
+                    colored by their set.
+                  </p>
+                </div>
+                <ChartLegend />
+              </div>
+              <div className="mt-4">
+                <CategoryBars
+                  categories={catScores.map((c) => ({
+                    code: c.code,
+                    name: c.name,
+                    setCode: c.setCode,
+                    score: c.entered > 0 ? c.score : 0,
+                  }))}
+                />
+              </div>
+            </div>
+          </section>
+        )}
 
         {/* Category tables per set */}
         {(['ES', 'SS', 'MS', 'ECS'] as SetCode[]).map((sc, i) => {
