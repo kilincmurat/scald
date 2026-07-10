@@ -10,11 +10,12 @@ Startup sequence:
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator
 
-from fastapi import FastAPI, Request, status
+from fastapi import Depends, FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from src.core.config.settings import settings
+from src.core.security.auth import require_user
 from src.db.session import engine
 
 
@@ -75,7 +76,12 @@ async def health() -> dict:
 # ── EFCT module routers ────────────────────────────────────────────────────────
 from src.api.v1.endpoints.efct import scores, submissions, indicators, climate  # noqa: E402
 
-app.include_router(scores.router,      prefix="/api/v1/efct")
-app.include_router(submissions.router, prefix="/api/v1/efct")
-app.include_router(indicators.router,  prefix="/api/v1/efct")
+# GÜVENLİK: Tüm EFCT endpoint'leri geçerli bir Supabase access token'ı ister.
+# require_user, SUPABASE_JWT_SECRET tanımlı değilse fail-closed (503) döner.
+# (Belediye-bazlı yetki/rol kontrolü endpoint içinde ayrıca uygulanmalıdır.)
+_efct_auth = [Depends(require_user)]
+
+app.include_router(scores.router,      prefix="/api/v1/efct", dependencies=_efct_auth)
+app.include_router(submissions.router, prefix="/api/v1/efct", dependencies=_efct_auth)
+app.include_router(indicators.router,  prefix="/api/v1/efct", dependencies=_efct_auth)
 app.include_router(climate.router,     prefix="/api/v1/efct")

@@ -21,6 +21,12 @@ class Settings(BaseSettings):
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
     ALGORITHM: str = "HS256"
 
+    # Supabase JWT — bu backend Supabase tarafından üretilen access token'ları
+    # doğrular. Self-hosted Supabase'de docker .env'indeki JWT_SECRET ile aynı
+    # olmalı. Boşsa korumalı endpoint'ler fail-closed (503) döner.
+    SUPABASE_JWT_SECRET: str = ""
+    SUPABASE_JWT_AUDIENCE: str = "authenticated"
+
     # CORS
     ALLOWED_ORIGINS: list[str] = ["http://localhost:3000"]
 
