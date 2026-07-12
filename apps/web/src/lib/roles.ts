@@ -51,6 +51,7 @@ const ACCESS_MATRIX: Record<Role, string[]> = {
     '/ai-rt',
     '/map',
     '/admin',
+    '/system-map',
     '/exports',
     '/official-report',
     '/reports',

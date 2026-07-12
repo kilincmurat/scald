@@ -24,6 +24,7 @@ import {
   Home,
   Building2,
   Download,
+  Network,
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import type { LucideIcon } from 'lucide-react';
@@ -58,6 +59,7 @@ function buildNav(role: Role, t: (k: string) => string): NavStructure {
       return {
         top: [
           { href: '/admin', label: 'Admin Panel', icon: ShieldCheck, exact: true },
+          { href: '/system-map', label: 'System Map', icon: Network, exact: true },
           { href: '/', label: t('overview'), icon: LayoutDashboard, exact: true },
         ],
         userScreens: [
