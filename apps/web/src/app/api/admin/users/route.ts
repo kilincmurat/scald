@@ -12,7 +12,10 @@ import { createClient as createServerClient } from '@/lib/supabase/server';
  * Also needs the standard NEXT_PUBLIC_SUPABASE_URL.
  */
 
-const VALID_ROLES = ['admin', 'data_entry', 'decision_maker', 'citizen'] as const;
+const VALID_ROLES = ['admin', 'data_entry', 'decision_maker', 'researcher', 'citizen'] as const;
+
+// Belediyeye bağlı olmayan roller (kendi belediyesi yok — çok belediye / sistem).
+const MUNICIPALITY_EXEMPT_ROLES: readonly Role[] = ['admin', 'researcher'];
 type Role = (typeof VALID_ROLES)[number];
 
 function service() {
@@ -82,9 +85,9 @@ export async function POST(req: Request) {
   if (!role || !VALID_ROLES.includes(role)) {
     return NextResponse.json({ error: 'Invalid role' }, { status: 400 });
   }
-  if (role !== 'admin' && !municipalityId) {
+  if (!MUNICIPALITY_EXEMPT_ROLES.includes(role) && !municipalityId) {
     return NextResponse.json(
-      { error: 'Non-admin roles require a municipality' },
+      { error: 'This role requires a municipality' },
       { status: 400 },
     );
   }

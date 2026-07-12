@@ -126,7 +126,7 @@ export function UsersAdmin() {
           />
         </div>
         <div className="flex flex-wrap gap-1.5">
-          {(['all', 'admin', 'decision_maker', 'data_entry', 'citizen'] as const).map((r) => (
+          {(['all', 'admin', 'decision_maker', 'data_entry', 'researcher', 'citizen'] as const).map((r) => (
             <button
               key={r}
               onClick={() => setRoleFilter(r)}
@@ -292,7 +292,7 @@ function InviteUserModal({ onClose, onCreated }: { onClose: () => void; onCreate
           password,
           full_name: fullName.trim(),
           role,
-          municipality_id: role === 'admin' ? null : municipalityId,
+          municipality_id: role === 'admin' || role === 'researcher' ? null : municipalityId,
         }),
       });
       const json = await res.json();
@@ -363,7 +363,7 @@ function InviteUserModal({ onClose, onCreated }: { onClose: () => void; onCreate
               ))}
             </select>
           </div>
-          {role !== 'admin' && (
+          {role !== 'admin' && role !== 'researcher' && (
             <div>
               <label className="mb-1 block text-[11px] font-semibold text-slate-600">Municipality</label>
               <select
