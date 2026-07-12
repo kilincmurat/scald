@@ -7,7 +7,6 @@ import {
   Users2,
   Building2,
   Sliders,
-  ShieldAlert,
   Database,
   Activity,
   Scale,
@@ -119,17 +118,6 @@ export function AdminPanel() {
           })}
         </div>
       </section>
-
-      <div className="rounded-xl border border-slate-100 bg-slate-50 p-4 text-xs text-slate-600">
-        <p className="font-semibold text-slate-800">Environment note</p>
-        <p className="mt-1">
-          The user Invite / Delete flows call <code className="rounded bg-white px-1">/api/admin/users</code>,
-          which uses the Supabase service role. Set{' '}
-          <code className="rounded bg-white px-1">SUPABASE_SERVICE_ROLE_KEY</code> in
-          your <code className="rounded bg-white px-1">apps/web/.env.local</code> (server-side only,
-          <b> do not</b> prefix with NEXT_PUBLIC).
-        </p>
-      </div>
     </div>
   );
 }
