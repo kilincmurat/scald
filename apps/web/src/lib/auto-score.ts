@@ -116,6 +116,66 @@ export function isNumericIndicator(thresholds: string[]): boolean {
 }
 
 /**
+ * Extract the numeric boundary value(s) mentioned in a single threshold cell.
+ * "<15" → [15], "15-30" → [15,30], ">61" → [61], "1" → [1], "None" → [].
+ */
+function thresholdNumbers(raw: string): number[] {
+  if (!raw) return [];
+  const s = raw.trim().replace(/[≥]/g, '>=').replace(/[≤]/g, '<=');
+  if (NON_NUMERIC_KEYWORDS.test(s)) return [];
+
+  const range = s.match(/^(-?\d[\d,\.]*)\s*[-–—]\s*(-?\d[\d,\.]*)$/);
+  if (range) {
+    return [
+      normalizeNumber(range[1], { threshold: true }),
+      normalizeNumber(range[2], { threshold: true }),
+    ].filter((n): n is number => n !== null);
+  }
+
+  const comp = s.match(/^([><]=?)\s*(-?\d[\d,\.]*)$/);
+  if (comp) {
+    const n = normalizeNumber(comp[2], { threshold: true });
+    return n !== null ? [n] : [];
+  }
+
+  const num = normalizeNumber(s, { threshold: true });
+  return num !== null ? [num] : [];
+}
+
+export type OutlierWarning = { severity: 'high' | 'low'; lo: number; hi: number };
+
+/**
+ * Advisory outlier check — NON-blocking. Returns a warning when the raw value
+ * sits far outside the numeric range implied by the indicator's thresholds
+ * (e.g. entering 500 where the top band is ">61"), or is negative for an
+ * otherwise non-negative indicator. Users can always still save the value.
+ *
+ * Heuristic: derive [lo, hi] from all numeric threshold boundaries, then allow
+ * one full span of slack beyond the named range before warning — generous
+ * enough to never nag on normal data.
+ */
+export function checkOutlier(rawValue: string, thresholds: string[]): OutlierWarning | null {
+  const value = normalizeNumber(rawValue.trim());
+  if (value === null) return null;
+  if (!isNumericIndicator(thresholds)) return null;
+
+  const nums: number[] = [];
+  for (let i = 1; i <= 5; i++) nums.push(...thresholdNumbers(thresholds[i] ?? ''));
+  if (nums.length === 0) return null;
+
+  const lo = Math.min(...nums);
+  const hi = Math.max(...nums);
+  const floor = Math.min(lo, 0); // most SCALD indicators are ≥ 0
+  const span = Math.max(hi - floor, Math.abs(hi), 1);
+  const margin = span; // one full span of slack
+
+  if (value > hi + margin) return { severity: 'high', lo, hi };
+  if (value < floor - margin) return { severity: 'low', lo, hi };
+  if (lo >= 0 && value < 0) return { severity: 'low', lo, hi };
+  return null;
+}
+
+/**
  * Given a raw string value and the 6 threshold strings, return the matching
  * 0–5 score, or null if no rule matches (or raw is non-numeric).
  * Iteration order: 5 → 1 → 0. First match wins.

@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { INDICATORS, getNextCategoryCode, type Indicator, type SetCode } from '@/lib/scald-indicators';
-import { autoScore, isNumericIndicator } from '@/lib/auto-score';
+import { autoScore, isNumericIndicator, checkOutlier } from '@/lib/auto-score';
 import { useDataEntry } from '@/stores/data-entry';
 import { useThresholds, getEffectiveThresholds } from '@/stores/thresholds';
 import { useProfile } from '@/hooks/useProfile';
@@ -347,6 +347,8 @@ function IndicatorRow({
   const isNumeric = isNumericIndicator(indicator.thresholds);
   const autoUnresolved =
     isNumeric && hasRaw && currentScore === undefined;
+  // Advisory only — does not block saving.
+  const outlier = hasRaw && isNumeric ? checkOutlier(rawValue, indicator.thresholds) : null;
 
   return (
     <div
@@ -460,6 +462,14 @@ function IndicatorRow({
                 <p className="mt-1 flex items-start gap-1 text-[10px] text-amber-600">
                   <AlertCircle className="mt-0.5 h-3 w-3 shrink-0" />
                   Value doesn't match any threshold. Check the number.
+                </p>
+              )}
+              {outlier && (
+                <p className="mt-1 flex items-start gap-1 text-[10px] text-amber-600">
+                  <AlertCircle className="mt-0.5 h-3 w-3 shrink-0" />
+                  {outlier.severity === 'high'
+                    ? `Unusually high — well above the top band (>${outlier.hi}). You can still save, but please double-check the value and unit.`
+                    : `Unusually low — well below the expected range. You can still save, but please double-check the value and unit.`}
                 </p>
               )}
               {hasRaw && !isNumeric && (
