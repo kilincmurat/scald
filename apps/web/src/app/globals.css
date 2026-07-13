@@ -130,3 +130,29 @@ html[data-a11y-cursor='big'] * {
     transition-duration: 0.001ms !important;
   }
 }
+
+/* Slim, modern scrollbar for dark surfaces (e.g. the sidebar nav).
+   Thin, rounded, translucent thumb that only asserts itself on hover. */
+.scrollbar-slim {
+  scrollbar-width: thin;                                  /* Firefox */
+  scrollbar-color: rgba(148, 163, 184, 0.28) transparent; /* thumb / track */
+}
+.scrollbar-slim::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.scrollbar-slim::-webkit-scrollbar-track {
+  background: transparent;
+}
+.scrollbar-slim::-webkit-scrollbar-thumb {
+  background-color: rgba(148, 163, 184, 0.25);
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+.scrollbar-slim:hover::-webkit-scrollbar-thumb {
+  background-color: rgba(148, 163, 184, 0.45);
+}
+.scrollbar-slim::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(148, 163, 184, 0.6);
+}

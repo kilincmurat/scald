@@ -203,7 +203,7 @@ export function Sidebar({ collapsed, mobileOpen, onToggle, onMobileClose }: Side
 
       <div className="mx-3 border-t border-slate-700/60" />
 
-      <nav className="flex-1 overflow-y-auto px-2 py-3">
+      <nav className="scrollbar-slim flex-1 overflow-y-auto px-2 py-3">
         <ul className="space-y-1">
           {nav.top.map((item) => (
             <NavRow
