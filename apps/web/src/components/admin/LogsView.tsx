@@ -18,6 +18,10 @@ import {
   Reply,
   Filter,
   User,
+  LogIn,
+  Monitor,
+  Globe,
+  MapPin,
 } from 'lucide-react';
 import { clsx } from 'clsx';
 
@@ -25,6 +29,7 @@ const KIND_META: Record<
   LogEntryKind,
   { label: string; icon: typeof ClipboardList; color: string }
 > = {
+  auth: { label: 'Login', icon: LogIn, color: 'text-indigo-700 bg-indigo-100' },
   entry: { label: 'Entry', icon: ClipboardList, color: 'text-purple-700 bg-purple-100' },
   submission: { label: 'Submitted', icon: Send, color: 'text-amber-700 bg-amber-100' },
   approval: { label: 'Approved', icon: ShieldCheck, color: 'text-emerald-700 bg-emerald-100' },
@@ -51,6 +56,7 @@ const KIND_META: Record<
 };
 
 const ALL_KINDS: LogEntryKind[] = [
+  'auth',
   'entry',
   'submission',
   'approval',
@@ -114,6 +120,7 @@ export function LogsView() {
 
   const counts = useMemo(() => {
     const c: Record<LogEntryKind, number> = {
+      auth: 0,
       entry: 0,
       submission: 0,
       approval: 0,
@@ -322,6 +329,28 @@ export function LogsView() {
                         {row.detail && (
                           <div className="text-[10px] text-slate-500">{row.detail}</div>
                         )}
+                        {(row.device || row.ip || row.location) && (
+                          <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[10px] text-slate-500">
+                            {row.device && (
+                              <span className="inline-flex items-center gap-1" title="Device">
+                                <Monitor className="h-3 w-3 text-slate-400" />
+                                {row.device}
+                              </span>
+                            )}
+                            {row.ip && (
+                              <span className="inline-flex items-center gap-1" title="IP address">
+                                <Globe className="h-3 w-3 text-slate-400" />
+                                <span className="font-mono">{row.ip}</span>
+                              </span>
+                            )}
+                            {row.location && (
+                              <span className="inline-flex items-center gap-1" title="Location (timezone)">
+                                <MapPin className="h-3 w-3 text-slate-400" />
+                                {row.location}
+                              </span>
+                            )}
+                          </div>
+                        )}
                       </td>
                     </tr>
                   );
@@ -333,8 +362,9 @@ export function LogsView() {
       </section>
 
       <p className="text-[10px] text-slate-400">
-        Logs are derived from live table rows (indicator entries, submissions, feedback) —
-        no separate audit table is maintained, keeping the schema portable.
+        Activity is derived from live table rows (entries, submissions, feedback). Login events
+        are recorded in the audit log with the sign-in IP, device and timezone. Location is
+        inferred from the browser timezone (no external geo-IP lookup, for portability).
       </p>
     </div>
   );

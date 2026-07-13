@@ -57,6 +57,16 @@ export default function LoginPage() {
       return;
     }
 
+    // Fire-and-forget login audit (IP, device, timezone) — never blocks sign-in.
+    void fetch('/api/audit/login', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        language: navigator.language,
+      }),
+    }).catch(() => {});
+
     router.push('/');
     router.refresh();
   };

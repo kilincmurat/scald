@@ -138,6 +138,7 @@ export async function fetchHealthSnapshot(): Promise<HealthSnapshot> {
 // ============================================================
 
 export type LogEntryKind =
+  | 'auth'
   | 'entry'
   | 'submission'
   | 'approval'
@@ -157,6 +158,10 @@ export type LogEntry = {
   municipalityId: string | null;
   target: string; // human-readable target descriptor
   detail?: string;
+  // Origin metadata — populated for 'auth' (login) entries.
+  ip?: string | null;
+  device?: string | null;
+  location?: string | null;
 };
 
 export type LogFilters = {
@@ -292,6 +297,38 @@ export async function fetchActivityLog(filters: LogFilters = {}): Promise<LogEnt
           detail: r.status ? `Status: ${r.status}` : undefined,
         });
       }
+    }
+  }
+
+  // Auth / login events (real audit_logs rows with IP + device + timezone).
+  // audit_logs has no municipality column, so only surface these in the
+  // "all municipalities" view.
+  if (wantsKind('auth') && !muniFilter) {
+    const { data } = await supabase
+      .from('audit_logs')
+      .select('id, user_id, action, ip_address, user_agent, new_values, created_at')
+      .eq('action', 'LOGIN')
+      .order('created_at', { ascending: false })
+      .limit(limit);
+    for (const r of (data ?? []) as Array<Record<string, unknown>>) {
+      if (r.user_id) actorIds.add(String(r.user_id));
+      const nv = (r.new_values ?? {}) as Record<string, unknown>;
+      const device = nv.device ? String(nv.device) : null;
+      const timezone = nv.timezone ? String(nv.timezone) : null;
+      results.push({
+        id: `auth-${r.id}`,
+        kind: 'auth',
+        ts: String(r.created_at),
+        actorId: r.user_id ? String(r.user_id) : null,
+        actorEmail: null,
+        actorName: null,
+        actorRole: null,
+        municipalityId: null,
+        target: 'Signed in',
+        ip: r.ip_address ? String(r.ip_address) : null,
+        device,
+        location: timezone,
+      });
     }
   }
 
