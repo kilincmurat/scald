@@ -6,7 +6,7 @@ import {
   type LogEntry,
   type LogEntryKind,
 } from '@/lib/admin-monitoring-service';
-import { PILOT_MUNICIPALITIES, getPilotById } from '@/lib/pilot-municipalities';
+import { MUNICIPALITIES, getMunicipalityById } from '@/lib/pilot-municipalities';
 import { ROLE_BADGE_COLOR, ROLE_LABELS, type Role } from '@/lib/roles';
 import {
   Loader2,
@@ -198,7 +198,7 @@ export function LogsView() {
               className="rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs text-slate-700 outline-none focus:ring-2 focus:ring-emerald-500/20"
             >
               <option value="all">All municipalities</option>
-              {PILOT_MUNICIPALITIES.map((m) => (
+              {MUNICIPALITIES.map((m) => (
                 <option key={m.id} value={m.id}>
                   {m.flag} {m.name}
                 </option>
@@ -262,7 +262,7 @@ export function LogsView() {
                 {filtered.map((row) => {
                   const meta = KIND_META[row.kind];
                   const Icon = meta.icon;
-                  const muni = row.municipalityId ? getPilotById(row.municipalityId) : null;
+                  const muni = row.municipalityId ? getMunicipalityById(row.municipalityId) : null;
                   const roleKey = row.actorRole as Role | undefined;
                   return (
                     <tr key={row.id} className="border-b border-slate-100 hover:bg-slate-50">

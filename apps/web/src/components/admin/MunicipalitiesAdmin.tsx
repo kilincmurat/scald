@@ -310,7 +310,7 @@ function EditModal({
           </div>
 
           <label className="flex cursor-pointer items-center justify-between rounded-lg border border-slate-200 px-3 py-2">
-            <span className="text-xs font-medium text-slate-700">Pilot city</span>
+            <span className="text-xs font-medium text-slate-700">Public</span>
             <input
               type="checkbox"
               checked={isPilot}

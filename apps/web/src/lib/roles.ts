@@ -74,7 +74,7 @@ const ACCESS_MATRIX: Record<Role, string[]> = {
     '/settings',
   ],
   researcher: [
-    '/', // aggregate overview across all pilot cities
+    '/', // aggregate overview across all municipalities
     '/map',
     '/settings',
   ],

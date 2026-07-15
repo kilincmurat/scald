@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import Map, { Marker, Popup, NavigationControl, ScaleControl } from 'react-map-gl/maplibre';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import type { SetCode } from '@/lib/scald-indicators';
@@ -24,6 +24,10 @@ export interface PartnerMunicipality {
 interface MapViewProps {
   municipalities: PartnerMunicipality[];
   activeLayer: 'total' | SetCode;
+  /** Called when a marker is clicked — lets a parent drive selection. */
+  onSelect?: (id: string) => void;
+  /** When it changes, the map gently centres on that municipality. */
+  selectedId?: string;
 }
 
 const SCORE_COLOR = (score: number) => {
@@ -34,7 +38,7 @@ const SCORE_COLOR = (score: number) => {
   return '#94a3b8';
 };
 
-export function MapView({ municipalities, activeLayer }: MapViewProps) {
+export function MapView({ municipalities, activeLayer, onSelect, selectedId }: MapViewProps) {
   const [popupInfo, setPopupInfo] = useState<PartnerMunicipality | null>(null);
   const [viewState, setViewState] = useState({
     longitude: 28.5,
@@ -44,9 +48,22 @@ export function MapView({ municipalities, activeLayer }: MapViewProps) {
     bearing: 0,
   });
 
-  const handleMarkerClick = useCallback((mun: PartnerMunicipality) => {
-    setPopupInfo(mun);
-  }, []);
+  const handleMarkerClick = useCallback(
+    (mun: PartnerMunicipality) => {
+      setPopupInfo(mun);
+      onSelect?.(mun.id);
+    },
+    [onSelect],
+  );
+
+  // Gently centre on the externally-selected municipality.
+  useEffect(() => {
+    if (!selectedId) return;
+    const m = municipalities.find((x) => x.id === selectedId);
+    if (!m) return;
+    setViewState((v) => ({ ...v, longitude: m.lng, latitude: m.lat, zoom: Math.max(v.zoom, 8) }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedId]);
 
   const getValue = (m: PartnerMunicipality) =>
     activeLayer === 'total' ? m.total : m.scores[activeLayer];

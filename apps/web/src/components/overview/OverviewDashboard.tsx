@@ -7,7 +7,7 @@ import { useDataEntry } from '@/stores/data-entry';
 import { useEffectiveWeights } from '@/stores/weights';
 import { useProfile } from '@/hooks/useProfile';
 import { useEffectiveMunicipality } from '@/hooks/useEffectiveMunicipality';
-import { PILOT_MUNICIPALITIES } from '@/lib/pilot-municipalities';
+import { MUNICIPALITIES } from '@/lib/pilot-municipalities';
 import { YearPicker } from '@/components/data-entry/YearPicker';
 import {
   computeCategoryScores,
@@ -97,11 +97,11 @@ export function OverviewDashboard() {
           <YearPicker size="sm" />
           {canBrowseAll && (
             <select
-              value={adminMuniId ?? PILOT_MUNICIPALITIES[0]?.id ?? ''}
+              value={adminMuniId ?? MUNICIPALITIES[0]?.id ?? ''}
               onChange={(e) => setAdminMuni(e.target.value)}
               className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 shadow-sm outline-none focus:border-slate-400 focus:ring-2 focus:ring-slate-200"
             >
-              {PILOT_MUNICIPALITIES.map((m) => (
+              {MUNICIPALITIES.map((m) => (
                 <option key={m.id} value={m.id}>
                   {m.flag} {m.name} · {m.country}
                 </option>

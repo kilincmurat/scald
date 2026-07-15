@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useDataEntry } from '@/stores/data-entry';
-import { PILOT_MUNICIPALITIES, getPilotById } from '@/lib/pilot-municipalities';
+import { MUNICIPALITIES, getMunicipalityById } from '@/lib/pilot-municipalities';
 import { ChevronDown, Building2, Check } from 'lucide-react';
 import { clsx } from 'clsx';
 
@@ -20,8 +20,8 @@ export function AdminMunicipalityPicker({ collapsed }: { collapsed: boolean }) {
   const setAdmin = useDataEntry((s) => s.setAdminMunicipality);
   const boxRef = useRef<HTMLDivElement>(null);
 
-  const activeId = adminMuniId ?? PILOT_MUNICIPALITIES[0]?.id ?? '';
-  const active = getPilotById(activeId);
+  const activeId = adminMuniId ?? MUNICIPALITIES[0]?.id ?? '';
+  const active = getMunicipalityById(activeId);
 
   useEffect(() => {
     if (!open) return;
@@ -88,11 +88,11 @@ export function AdminMunicipalityPicker({ collapsed }: { collapsed: boolean }) {
               Switch municipality
             </p>
             <p className="text-[10px] text-slate-500">
-              Admin — view any pilot city's data.
+              Admin — view any municipality's data.
             </p>
           </div>
           <div className="my-1 h-px bg-slate-100" />
-          {PILOT_MUNICIPALITIES.map((m) => {
+          {MUNICIPALITIES.map((m) => {
             const selected = m.id === activeId;
             return (
               <button

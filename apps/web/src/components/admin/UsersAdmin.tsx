@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { createBrowserClient } from '@supabase/ssr';
-import { PILOT_MUNICIPALITIES, getPilotById } from '@/lib/pilot-municipalities';
+import { MUNICIPALITIES, getMunicipalityById } from '@/lib/pilot-municipalities';
 import { ROLE_LABELS, ROLE_BADGE_COLOR, type Role } from '@/lib/roles';
 import {
   ArrowLeft,
@@ -168,7 +168,7 @@ export function UsersAdmin() {
                   </tr>
                 ) : (
                   filtered.map((r) => {
-                    const m = getPilotById(r.municipality_id);
+                    const m = getMunicipalityById(r.municipality_id);
                     return (
                       <tr
                         key={r.id}
@@ -276,7 +276,7 @@ function InviteUserModal({ onClose, onCreated }: { onClose: () => void; onCreate
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [role, setRole] = useState<Role>('data_entry');
-  const [municipalityId, setMunicipalityId] = useState<string>(PILOT_MUNICIPALITIES[0]?.id ?? '');
+  const [municipalityId, setMunicipalityId] = useState<string>(MUNICIPALITIES[0]?.id ?? '');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -371,7 +371,7 @@ function InviteUserModal({ onClose, onCreated }: { onClose: () => void; onCreate
                 onChange={(e) => setMunicipalityId(e.target.value)}
                 className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-200"
               >
-                {PILOT_MUNICIPALITIES.map((m) => (
+                {MUNICIPALITIES.map((m) => (
                   <option key={m.id} value={m.id}>
                     {m.flag} {m.name} · {m.country}
                   </option>
@@ -581,7 +581,7 @@ function EditUserModal({
               className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-200"
             >
               <option value="">— None (admin only) —</option>
-              {PILOT_MUNICIPALITIES.map((m) => (
+              {MUNICIPALITIES.map((m) => (
                 <option key={m.id} value={m.id}>
                   {m.flag} {m.name} · {m.country}
                 </option>

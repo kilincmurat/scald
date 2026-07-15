@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { normaliseRole, type Role } from '@/lib/roles';
-import { getPilotById, type PilotMunicipality } from '@/lib/pilot-municipalities';
+import { getMunicipalityById, type Municipality } from '@/lib/pilot-municipalities';
 
 export type Profile = {
   id: string;
@@ -11,7 +11,7 @@ export type Profile = {
   fullName: string | null;
   role: Role;
   municipalityId: string | null;
-  municipality: PilotMunicipality | null;
+  municipality: Municipality | null;
 };
 
 export type ProfileState = {
@@ -68,7 +68,7 @@ export function useProfile(): ProfileState {
         fullName: row.full_name,
         role: normaliseRole(row.role),
         municipalityId: row.municipality_id,
-        municipality: getPilotById(row.municipality_id),
+        municipality: getMunicipalityById(row.municipality_id),
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load profile');

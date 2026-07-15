@@ -36,13 +36,33 @@ const MapView = dynamic(() => import('./MapView').then((m) => m.MapView), {
 const PARTNERS_BASE = [
   {
     id: 'trabzon',
-    name: 'Trabzon Büyükşehir',
+    name: 'Trabzon Metropolitan',
     country: 'Turkey',
     countryCode: 'TR',
     lat: 41.0027,
     lng: 39.7168,
     population: 824352,
     partner: 'Trabzon Metropolitan Municipality · KTU',
+  },
+  {
+    id: 'ortahisar',
+    name: 'Ortahisar',
+    country: 'Turkey',
+    countryCode: 'TR',
+    lat: 41.005,
+    lng: 39.7226,
+    population: 330836,
+    partner: 'Ortahisar Municipality',
+  },
+  {
+    id: 'yomra',
+    name: 'Yomra',
+    country: 'Turkey',
+    countryCode: 'TR',
+    lat: 40.9539,
+    lng: 39.86,
+    population: 49721,
+    partner: 'Yomra Municipality',
   },
   {
     id: 'kavala',
@@ -79,6 +99,8 @@ const PARTNERS_BASE = [
 // Demo scores per municipality (pending real data). Structured per set.
 // Trabzon gets the user's actual score for a "this is my municipality" feel.
 const DEMO_SCORES: Record<string, Record<SetCode, number>> = {
+  ortahisar: { ES: 58, SS: 55, MS: 52, ECS: 50 },
+  yomra: { ES: 52, SS: 49, MS: 47, ECS: 45 },
   kavala: { ES: 61, SS: 58, MS: 54, ECS: 49 },
   tulcea: { ES: 55, SS: 51, MS: 48, ECS: 46 },
   novaci: { ES: 48, SS: 52, MS: 44, ECS: 42 },

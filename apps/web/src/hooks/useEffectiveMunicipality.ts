@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import { useProfile } from '@/hooks/useProfile';
 import { useDataEntry } from '@/stores/data-entry';
-import { PILOT_MUNICIPALITIES, getPilotById } from '@/lib/pilot-municipalities';
+import { MUNICIPALITIES, getMunicipalityById } from '@/lib/pilot-municipalities';
 
 /**
  * Resolves the municipality whose data the current user should be viewing.
@@ -30,11 +30,11 @@ export function useEffectiveMunicipality() {
   const canBrowseAll = isAdmin || isResearcher;
 
   const resolvedId = canBrowseAll
-    ? adminMuniId ?? PILOT_MUNICIPALITIES[0]?.id ?? null
+    ? adminMuniId ?? MUNICIPALITIES[0]?.id ?? null
     : profile?.municipalityId ?? null;
 
   const municipality = canBrowseAll
-    ? getPilotById(resolvedId) ?? null
+    ? getMunicipalityById(resolvedId) ?? null
     : profile?.municipality ?? null;
 
   useEffect(() => {

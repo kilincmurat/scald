@@ -55,7 +55,7 @@ export function ExportsView() {
           <ShieldAlert className="mx-auto h-8 w-8 text-slate-400" />
           <h2 className="mt-4 text-lg font-bold text-slate-900">No municipality on your profile</h2>
           <p className="mt-1 text-sm text-slate-500">
-            Please contact the SCALD team to be linked to a pilot municipality.
+            Please contact the SCALD team to be linked to a municipality.
           </p>
         </div>
       </div>

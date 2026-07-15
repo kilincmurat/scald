@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { PILOT_MUNICIPALITIES } from '@/lib/pilot-municipalities';
+import { MUNICIPALITIES } from '@/lib/pilot-municipalities';
 import { INDICATORS, TOTAL_INDICATORS } from '@/lib/scald-indicators';
 import {
   Users2,
@@ -28,7 +28,7 @@ export function AdminPanel() {
       href: '/admin/municipalities',
       icon: Building2,
       title: 'Municipalities',
-      desc: 'Manage pilot cities, boundaries and population data.',
+      desc: 'Manage municipalities, boundaries and population data.',
       bg: 'from-emerald-500 to-teal-600',
     },
     {
@@ -56,7 +56,7 @@ export function AdminPanel() {
       href: '/admin/logs',
       icon: ScrollText,
       title: 'Log Management',
-      desc: 'Chronological trace of every entry, submission, approval and feedback across all pilot cities.',
+      desc: 'Chronological trace of every entry, submission, approval and feedback across all municipalities.',
       bg: 'from-orange-500 to-amber-600',
     },
   ];
@@ -67,8 +67,8 @@ export function AdminPanel() {
       <section className="grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-4">
         <StatCard
           icon={<Building2 className="h-3.5 w-3.5 text-emerald-500" />}
-          label="Pilot Cities"
-          value={PILOT_MUNICIPALITIES.length}
+          label="Municipalities"
+          value={MUNICIPALITIES.length}
           sub="Turkey · Greece · Romania · N. Macedonia"
         />
         <StatCard

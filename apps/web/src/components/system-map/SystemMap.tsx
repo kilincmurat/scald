@@ -40,7 +40,7 @@ import {
   type SetCode,
 } from '@/lib/scald-indicators';
 import { SET_THEME } from '@/lib/scores';
-import { PILOT_MUNICIPALITIES } from '@/lib/pilot-municipalities';
+import { MUNICIPALITIES } from '@/lib/pilot-municipalities';
 import { ROLE_LABELS, ROLE_BADGE_COLOR, type Role } from '@/lib/roles';
 
 // ── Derived stats (computed once from the live dataset) ──────────────────────
@@ -90,7 +90,7 @@ const ROLES: RoleInfo[] = [
   { role: 'admin', blurb: 'Manages users, municipalities, indicators, weights and thresholds — system-wide oversight.', screens: 'Admin Panel · System Map · every module' },
   { role: 'data_entry', blurb: "Enters and submits the municipality's indicator data for the year.", screens: 'Data Entry · EFCT (read) · Map' },
   { role: 'decision_maker', blurb: 'Reviews and approves submissions, reads analytics, exports reports, answers feedback.', screens: 'Overview · EFCT · AI-DSS · AI-RT · Exports · Feedback' },
-  { role: 'researcher', blurb: 'Read-only access to scores across all pilot cities for cross-city research.', screens: 'Overview · Map' },
+  { role: 'researcher', blurb: 'Read-only access to scores across all municipalities for cross-city research.', screens: 'Overview · Map' },
 ];
 
 type Module = { icon: LucideIcon; name: string; note: string };
@@ -171,7 +171,7 @@ export function SystemMap() {
             { k: '4', v: 'Dimensions' },
             { k: String(CATEGORY_COUNT), v: 'Categories' },
             { k: String(TOTAL_INDICATORS), v: 'Indicators' },
-            { k: String(PILOT_MUNICIPALITIES.length), v: 'Pilot cities' },
+            { k: String(MUNICIPALITIES.length), v: 'Municipalities' },
             { k: '4', v: 'User roles' },
           ].map((s) => (
             <div key={s.v} className="rounded-xl bg-white/5 px-3 py-2.5 ring-1 ring-white/10">
@@ -182,7 +182,7 @@ export function SystemMap() {
         </div>
 
         <div className="mt-5 flex flex-wrap items-center gap-2">
-          {PILOT_MUNICIPALITIES.map((m) => (
+          {MUNICIPALITIES.map((m) => (
             <span key={m.id} className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-xs">
               <span className="text-base leading-none">{m.flag}</span>
               {m.name} <span className="text-slate-400">· {m.country}</span>

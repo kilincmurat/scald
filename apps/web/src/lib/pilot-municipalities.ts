@@ -1,29 +1,32 @@
 /**
- * The pilot partner municipalities in the SCALD KA220-ADU project.
- * These UUIDs match the seed rows in the municipalities table (migration
- * 013_municipalities_restructure.sql), so registration and admin flows can
- * reference them without a DB lookup.
+ * The partner municipalities in the SCALD KA220-ADU project. UUIDs match the
+ * municipalities table (migrations 013 / 015) so registration and admin flows
+ * can reference them without a DB lookup.
  *
- * Note: the "Demo Municipality" (holder for the moved demo data) is is_pilot
- * = false in the DB and intentionally NOT listed here — it is not a pilot city.
+ * A country can hold several cities and a province several districts — each has
+ * its own coordinates, so the map plots them separately. The synthetic "Demo
+ * Municipality" (holder for example data) has `demo: true`; it is navigable in
+ * selectors but excluded from the geographic map.
  */
 
-export type PilotMunicipality = {
+export type Municipality = {
   id: string;
   name: string;
   country: string;
-  countryCode: 'TR' | 'GR' | 'RO' | 'MK';
+  countryCode: 'TR' | 'GR' | 'RO' | 'MK' | 'XX';
   flag: string;
   region: string;
   lat: number;
   lng: number;
   population: number;
+  /** Synthetic example municipality — not a real place; kept off the map. */
+  demo?: boolean;
 };
 
-export const PILOT_MUNICIPALITIES: PilotMunicipality[] = [
+export const MUNICIPALITIES: Municipality[] = [
   {
     id: 'a1a1a1a1-a1a1-a1a1-a1a1-a1a1a1a1a1a1',
-    name: 'Trabzon Büyükşehir Belediyesi',
+    name: 'Trabzon Metropolitan Municipality',
     country: 'Turkey',
     countryCode: 'TR',
     flag: '🇹🇷',
@@ -34,7 +37,7 @@ export const PILOT_MUNICIPALITIES: PilotMunicipality[] = [
   },
   {
     id: 'b1b1b1b1-b1b1-b1b1-b1b1-b1b1b1b1b1b1',
-    name: 'Ortahisar Belediyesi',
+    name: 'Ortahisar Municipality',
     country: 'Turkey',
     countryCode: 'TR',
     flag: '🇹🇷',
@@ -45,7 +48,7 @@ export const PILOT_MUNICIPALITIES: PilotMunicipality[] = [
   },
   {
     id: 'b2b2b2b2-b2b2-b2b2-b2b2-b2b2b2b2b2b2',
-    name: 'Yomra Belediyesi',
+    name: 'Yomra Municipality',
     country: 'Turkey',
     countryCode: 'TR',
     flag: '🇹🇷',
@@ -56,7 +59,7 @@ export const PILOT_MUNICIPALITIES: PilotMunicipality[] = [
   },
   {
     id: 'b3b3b3b3-b3b3-b3b3-b3b3-b3b3b3b3b3b3',
-    name: 'Novaci',
+    name: 'Novaci Municipality',
     country: 'North Macedonia',
     countryCode: 'MK',
     flag: '🇲🇰',
@@ -67,7 +70,7 @@ export const PILOT_MUNICIPALITIES: PilotMunicipality[] = [
   },
   {
     id: 'a2a2a2a2-a2a2-a2a2-a2a2-a2a2a2a2a2a2',
-    name: 'Kavala',
+    name: 'Kavala Municipality',
     country: 'Greece',
     countryCode: 'GR',
     flag: '🇬🇷',
@@ -78,7 +81,7 @@ export const PILOT_MUNICIPALITIES: PilotMunicipality[] = [
   },
   {
     id: 'a3a3a3a3-a3a3-a3a3-a3a3-a3a3a3a3a3a3',
-    name: 'Tulcea',
+    name: 'Tulcea Municipality',
     country: 'Romania',
     countryCode: 'RO',
     flag: '🇷🇴',
@@ -87,9 +90,24 @@ export const PILOT_MUNICIPALITIES: PilotMunicipality[] = [
     lng: 28.8006,
     population: 65624,
   },
+  {
+    id: 'd0d0d0d0-d0d0-d0d0-d0d0-d0d0d0d0d0d0',
+    name: 'Demo Municipality',
+    country: 'Example',
+    countryCode: 'XX',
+    flag: '🧪',
+    region: 'Example data',
+    lat: 41.0027,
+    lng: 39.7168,
+    population: 0,
+    demo: true,
+  },
 ];
 
-export function getPilotById(id: string | null | undefined): PilotMunicipality | null {
+/** Municipalities that appear on the geographic map (real places only). */
+export const MAPPABLE_MUNICIPALITIES = MUNICIPALITIES.filter((m) => !m.demo);
+
+export function getMunicipalityById(id: string | null | undefined): Municipality | null {
   if (!id) return null;
-  return PILOT_MUNICIPALITIES.find((m) => m.id === id) ?? null;
+  return MUNICIPALITIES.find((m) => m.id === id) ?? null;
 }
