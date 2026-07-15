@@ -15,6 +15,9 @@ export type PilotMunicipality = {
   countryCode: 'TR' | 'GR' | 'RO' | 'MK';
   flag: string;
   region: string;
+  lat: number;
+  lng: number;
+  population: number;
 };
 
 export const PILOT_MUNICIPALITIES: PilotMunicipality[] = [
@@ -25,6 +28,9 @@ export const PILOT_MUNICIPALITIES: PilotMunicipality[] = [
     countryCode: 'TR',
     flag: '🇹🇷',
     region: 'Black Sea',
+    lat: 41.0027,
+    lng: 39.7168,
+    population: 824352,
   },
   {
     id: 'b1b1b1b1-b1b1-b1b1-b1b1-b1b1b1b1b1b1',
@@ -33,6 +39,9 @@ export const PILOT_MUNICIPALITIES: PilotMunicipality[] = [
     countryCode: 'TR',
     flag: '🇹🇷',
     region: 'Black Sea',
+    lat: 41.005,
+    lng: 39.7226,
+    population: 330836,
   },
   {
     id: 'b2b2b2b2-b2b2-b2b2-b2b2-b2b2b2b2b2b2',
@@ -41,6 +50,9 @@ export const PILOT_MUNICIPALITIES: PilotMunicipality[] = [
     countryCode: 'TR',
     flag: '🇹🇷',
     region: 'Black Sea',
+    lat: 40.9539,
+    lng: 39.86,
+    population: 49721,
   },
   {
     id: 'b3b3b3b3-b3b3-b3b3-b3b3-b3b3b3b3b3b3',
@@ -49,6 +61,9 @@ export const PILOT_MUNICIPALITIES: PilotMunicipality[] = [
     countryCode: 'MK',
     flag: '🇲🇰',
     region: 'Pelagonia',
+    lat: 41.0428,
+    lng: 21.4583,
+    population: 2648,
   },
   {
     id: 'a2a2a2a2-a2a2-a2a2-a2a2-a2a2a2a2a2a2',
@@ -57,6 +72,9 @@ export const PILOT_MUNICIPALITIES: PilotMunicipality[] = [
     countryCode: 'GR',
     flag: '🇬🇷',
     region: 'East Macedonia and Thrace',
+    lat: 41.0131,
+    lng: 24.4046,
+    population: 66376,
   },
   {
     id: 'a3a3a3a3-a3a3-a3a3-a3a3-a3a3a3a3a3a3',
@@ -65,6 +83,9 @@ export const PILOT_MUNICIPALITIES: PilotMunicipality[] = [
     countryCode: 'RO',
     flag: '🇷🇴',
     region: 'Northern Dobruja',
+    lat: 45.1667,
+    lng: 28.8006,
+    population: 65624,
   },
 ];
 

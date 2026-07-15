@@ -91,7 +91,6 @@ const ROLES: RoleInfo[] = [
   { role: 'data_entry', blurb: "Enters and submits the municipality's indicator data for the year.", screens: 'Data Entry · EFCT (read) · Map' },
   { role: 'decision_maker', blurb: 'Reviews and approves submissions, reads analytics, exports reports, answers feedback.', screens: 'Overview · EFCT · AI-DSS · AI-RT · Exports · Feedback' },
   { role: 'researcher', blurb: 'Read-only access to scores across all pilot cities for cross-city research.', screens: 'Overview · Map' },
-  { role: 'citizen', blurb: 'Views public results for their municipality and submits feedback.', screens: 'Home · My Municipality · Map · Feedback' },
 ];
 
 type Module = { icon: LucideIcon; name: string; note: string };
@@ -103,7 +102,7 @@ const MODULES: Module[] = [
   { icon: FileBarChart2, name: 'AI-RT', note: 'AI-generated reports' },
   { icon: MapIcon, name: 'Map', note: 'Geographic visualisation' },
   { icon: Download, name: 'Exports', note: 'Official reports & Excel' },
-  { icon: MessageSquare, name: 'Feedback', note: 'Citizen → municipality channel' },
+  { icon: MessageSquare, name: 'Feedback', note: 'Municipal feedback inbox' },
   { icon: ShieldCheck, name: 'Admin Panel', note: 'Users, indicators, weights' },
 ];
 
@@ -173,7 +172,7 @@ export function SystemMap() {
             { k: String(CATEGORY_COUNT), v: 'Categories' },
             { k: String(TOTAL_INDICATORS), v: 'Indicators' },
             { k: String(PILOT_MUNICIPALITIES.length), v: 'Pilot cities' },
-            { k: '5', v: 'User roles' },
+            { k: '4', v: 'User roles' },
           ].map((s) => (
             <div key={s.v} className="rounded-xl bg-white/5 px-3 py-2.5 ring-1 ring-white/10">
               <p className="text-xl font-bold tabular-nums">{s.k}</p>
@@ -270,7 +269,7 @@ export function SystemMap() {
       </Section>
 
       {/* 4 — Roles */}
-      <Section n={4} icon={Users} title="Who does what" subtitle="Five roles, each with its own screens and permissions">
+      <Section n={4} icon={Users} title="Who does what" subtitle="Four roles, each with its own screens and permissions">
         <div className="grid gap-3 lg:grid-cols-2">
           {ROLES.map(({ role, blurb, screens }) => (
             <div key={role} className="flex gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">

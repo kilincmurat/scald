@@ -234,9 +234,9 @@ export default function LoginPage() {
           </form>
 
           <p className="mt-5 text-center text-sm text-slate-500">
-            Don&apos;t have an account?{' '}
-            <Link href="/register" className="font-semibold text-[#1056a0] hover:text-[#0d3b6e] transition">
-              Sign Up
+            Just want to see the results?{' '}
+            <Link href="/explore" className="font-semibold text-[#1056a0] hover:text-[#0d3b6e] transition">
+              Explore public city data →
             </Link>
           </p>
 

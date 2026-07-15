@@ -19,10 +19,7 @@ import {
   ClipboardList,
   X,
   ShieldCheck,
-  Users2,
   MessageSquare,
-  Home,
-  Building2,
   Download,
   Network,
 } from 'lucide-react';
@@ -91,15 +88,6 @@ function buildNav(role: Role, t: (k: string) => string): NavStructure {
           { href: '/ai-rt', label: t('aiRt'), icon: FileBarChart2 },
           { href: '/map', label: t('map'), icon: Map },
           { href: '/exports', label: 'Data Exports', icon: Download },
-        ],
-        bottom: [{ href: '/feedback', label: 'Feedback', icon: MessageSquare }],
-      };
-    case 'citizen':
-      return {
-        top: [
-          { href: '/public', label: 'Home', icon: Home, exact: true },
-          { href: '/my-municipality', label: 'My Municipality', icon: Building2 },
-          { href: '/map', label: t('map'), icon: Map },
         ],
         bottom: [{ href: '/feedback', label: 'Feedback', icon: MessageSquare }],
       };

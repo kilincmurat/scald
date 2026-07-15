@@ -9,14 +9,12 @@ export type Role =
   | 'admin'
   | 'data_entry'
   | 'decision_maker'
-  | 'citizen'
   | 'researcher';
 
 export const ROLE_LABELS: Record<Role, string> = {
   admin: 'Administrator',
   data_entry: 'Data Entry',
   decision_maker: 'Decision Maker',
-  citizen: 'Citizen',
   researcher: 'Researcher',
 };
 
@@ -24,7 +22,6 @@ export const ROLE_BADGE_COLOR: Record<Role, string> = {
   admin: 'bg-purple-100 text-purple-700 ring-purple-200',
   data_entry: 'bg-blue-100 text-blue-700 ring-blue-200',
   decision_maker: 'bg-emerald-100 text-emerald-700 ring-emerald-200',
-  citizen: 'bg-slate-100 text-slate-600 ring-slate-200',
   researcher: 'bg-indigo-100 text-indigo-700 ring-indigo-200',
 };
 
@@ -33,7 +30,6 @@ export const HOME_PATH: Record<Role, string> = {
   admin: '/admin',
   data_entry: '/data-entry',
   decision_maker: '/',
-  citizen: '/public',
   researcher: '/',
 };
 
@@ -75,13 +71,6 @@ const ACCESS_MATRIX: Record<Role, string[]> = {
     '/official-report',
     '/reports',
     '/feedback', // inbox
-    '/settings',
-  ],
-  citizen: [
-    '/public',
-    '/my-municipality',
-    '/map', // public layer
-    '/feedback', // submit form
     '/settings',
   ],
   researcher: [
@@ -132,7 +121,6 @@ export function seesAnalytics(role: Role): boolean {
 export function normaliseRole(raw: string | null | undefined): Role {
   if (raw === 'admin') return 'admin';
   if (raw === 'decision_maker') return 'decision_maker';
-  if (raw === 'citizen') return 'citizen';
   if (raw === 'researcher') return 'researcher';
   return 'data_entry';
 }

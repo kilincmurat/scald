@@ -2,7 +2,7 @@ import { type NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { canAccess, HOME_PATH, normaliseRole, type Role } from '@/lib/roles';
 
-const PUBLIC_PATHS = ['/login', '/register', '/prep-sheet', '/methodology'];
+const PUBLIC_PATHS = ['/login', '/explore', '/prep-sheet', '/methodology'];
 
 function isPublicPath(pathname: string): boolean {
   return PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`));
