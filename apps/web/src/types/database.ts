@@ -1,4 +1,4 @@
-export type UserRole = 'admin' | 'municipality' | 'data_entry' | 'decision_maker' | 'researcher';
+export type UserRole = 'admin' | 'data_entry' | 'decision_maker' | 'researcher';
 export type FeedbackStatus = 'new' | 'seen' | 'in_progress' | 'resolved' | 'dismissed';
 export type QualityLabel = 'validated' | 'estimated' | 'pilot';
 export type StrategyPriority = 'high' | 'medium' | 'low';
