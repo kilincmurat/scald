@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import {
@@ -13,7 +14,6 @@ import {
   Settings,
   ChevronRight,
   ChevronDown,
-  Sprout,
   PanelLeftClose,
   PanelLeftOpen,
   ClipboardList,
@@ -132,8 +132,15 @@ export function Sidebar({ collapsed, mobileOpen, onToggle, onMobileClose }: Side
       <div className="flex items-center justify-between flex-shrink-0 px-3 py-4">
         {!collapsed && (
           <Link href="/" className="flex items-center gap-3">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-500/20">
-              <Sprout className="h-5 w-5 text-emerald-400" />
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white p-0.5 shadow-sm ring-1 ring-black/5">
+              <Image
+                src="/small-logo.png"
+                alt="SCALD"
+                width={36}
+                height={36}
+                className="h-full w-full object-contain"
+                priority
+              />
             </div>
             <div>
               <p className="text-lg font-bold tracking-wide text-white leading-tight">SCALD</p>
@@ -145,9 +152,16 @@ export function Sidebar({ collapsed, mobileOpen, onToggle, onMobileClose }: Side
         {collapsed && (
           <Link
             href="/"
-            className="hidden lg:flex h-9 w-9 mx-auto items-center justify-center rounded-xl bg-emerald-500/20"
+            className="hidden lg:flex h-9 w-9 mx-auto items-center justify-center overflow-hidden rounded-xl bg-white p-0.5 shadow-sm ring-1 ring-black/5"
           >
-            <Sprout className="h-5 w-5 text-emerald-400" />
+            <Image
+              src="/small-logo.png"
+              alt="SCALD"
+              width={36}
+              height={36}
+              className="h-full w-full object-contain"
+              priority
+            />
           </Link>
         )}
 
