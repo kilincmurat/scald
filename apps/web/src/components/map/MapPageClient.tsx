@@ -30,18 +30,18 @@ const MapView = dynamic(() => import('./MapView').then((m) => m.MapView), {
   ),
 });
 
-// The 4 pilot partner municipalities from the SCALD KA220-ADU project
-// (matching the xlsx DATA SOURCE columns: KTU/KAVALA/TULCEA/UKLO/TRABZON).
-// KTU and TRABZON both correspond to Trabzon (academic + municipal).
+// The pilot partner municipalities from the SCALD KA220-ADU project — one
+// representative city per partner country (the two extra Trabzon districts,
+// Ortahisar & Yomra, share Trabzon's location so are not plotted separately).
 const PARTNERS_BASE = [
   {
     id: 'trabzon',
-    name: 'Trabzon',
+    name: 'Trabzon Büyükşehir',
     country: 'Turkey',
     countryCode: 'TR',
     lat: 41.0027,
     lng: 39.7168,
-    population: 807906,
+    population: 824352,
     partner: 'Trabzon Metropolitan Municipality · KTU',
   },
   {
@@ -49,9 +49,9 @@ const PARTNERS_BASE = [
     name: 'Kavala',
     country: 'Greece',
     countryCode: 'GR',
-    lat: 40.9396,
-    lng: 24.412,
-    population: 54027,
+    lat: 41.0131,
+    lng: 24.4046,
+    population: 66376,
     partner: 'Municipality of Kavala',
   },
   {
@@ -59,20 +59,20 @@ const PARTNERS_BASE = [
     name: 'Tulcea',
     country: 'Romania',
     countryCode: 'RO',
-    lat: 45.1892,
+    lat: 45.1667,
     lng: 28.8006,
     population: 65624,
     partner: 'Municipality of Tulcea',
   },
   {
-    id: 'uklo',
-    name: 'Bitola',
+    id: 'novaci',
+    name: 'Novaci',
     country: 'North Macedonia',
     countryCode: 'MK',
-    lat: 41.0297,
-    lng: 21.3325,
-    population: 74550,
-    partner: 'UKLO — St. Kliment Ohridski University',
+    lat: 41.0428,
+    lng: 21.4583,
+    population: 2648,
+    partner: 'Municipality of Novaci · UKLO',
   },
 ];
 
@@ -81,7 +81,7 @@ const PARTNERS_BASE = [
 const DEMO_SCORES: Record<string, Record<SetCode, number>> = {
   kavala: { ES: 61, SS: 58, MS: 54, ECS: 49 },
   tulcea: { ES: 55, SS: 51, MS: 48, ECS: 46 },
-  uklo: { ES: 48, SS: 52, MS: 44, ECS: 42 },
+  novaci: { ES: 48, SS: 52, MS: 44, ECS: 42 },
 };
 
 const SET_LAYERS: { id: 'total' | SetCode; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
