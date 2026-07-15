@@ -32,7 +32,7 @@ function fmtDate(d: Date): string {
 
 /**
  * Builds a multi-sheet .xlsx workbook and triggers a download.
- * Sheets: Summary · Sets · Categories · Indicators.
+ * Sheets: Summary (with the per-set breakdown) · Categories · Indicators.
  */
 export function downloadExcelReport(ctx: ExportContext): void {
   const wb = XLSX.utils.book_new();

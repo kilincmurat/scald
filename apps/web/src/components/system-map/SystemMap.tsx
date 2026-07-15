@@ -26,7 +26,7 @@ import {
   MessageSquare,
   Network,
   Building2,
-  Languages,
+  Monitor,
   Database,
   Sparkles,
   Users,
@@ -109,7 +109,7 @@ const MODULES: Module[] = [
 
 type ArchLayer = { icon: LucideIcon; label: string; detail: string };
 const ARCH: ArchLayer[] = [
-  { icon: Languages, label: 'Interface', detail: 'Next.js + React web app · 5 languages (TR · EN · EL · RO · MK)' },
+  { icon: Monitor, label: 'Interface', detail: 'Next.js + React web application (English)' },
   { icon: Database, label: 'Platform', detail: 'Supabase — Auth + PostgreSQL (PostGIS · pgvector) · per-municipality Row-Level Security' },
   { icon: Sparkles, label: 'Intelligence', detail: 'AI for strategy recommendations and report generation' },
 ];

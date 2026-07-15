@@ -131,7 +131,7 @@ export function ExportsView() {
           gradient="from-emerald-500 to-teal-600"
           title="Excel workbook"
           format=".xlsx"
-          description="Full data workbook with four sheets: summary, sets, categories, and every indicator with its raw value and score. Suitable for internal analysis, filtering, and further processing."
+          description="Full data workbook with three sheets: summary (with the per-set breakdown), categories, and every indicator with its raw value and score. Suitable for internal analysis, filtering, and further processing."
           bullets={[
             'Summary sheet — municipality, year, overall & set scores',
             'Categories sheet — 24 categories with weights',

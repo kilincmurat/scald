@@ -956,8 +956,8 @@
         {
           "code": "ES_WA10",
           "name": "Sewage disposal",
-          "unit": "",
-          "method": "",
+          "unit": "Level",
+          "method": "Predominant level of sewage/wastewater treatment before disposal; select the matching treatment stage (higher is better).",
           "thresholds": [
             "No data",
             "Untreated into waterways",
