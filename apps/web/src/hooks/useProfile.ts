@@ -12,6 +12,8 @@ export type Profile = {
   role: Role;
   municipalityId: string | null;
   municipality: Municipality | null;
+  universityId: string | null;
+  universityName: string | null;
 };
 
 export type ProfileState = {
@@ -43,7 +45,7 @@ export function useProfile(): ProfileState {
       }
       const { data, error: qerr } = await supabase
         .from('profiles')
-        .select('id, email, full_name, role, municipality_id')
+        .select('id, email, full_name, role, municipality_id, university_id')
         .eq('id', user.id)
         .maybeSingle();
       if (qerr) {
@@ -61,7 +63,21 @@ export function useProfile(): ProfileState {
         full_name: string | null;
         role: string | null;
         municipality_id: string | null;
+        university_id: string | null;
       };
+
+      // Researchers belong to a university (DB-driven), so resolve its name.
+      let universityName: string | null = null;
+      if (row.university_id) {
+        const { data: uni } = await supabase
+          .from('universities')
+          .select('name, name_en')
+          .eq('id', row.university_id)
+          .maybeSingle();
+        const u = uni as { name: string; name_en: string | null } | null;
+        universityName = u ? u.name_en || u.name : null;
+      }
+
       setProfile({
         id: row.id,
         email: row.email,
@@ -69,6 +85,8 @@ export function useProfile(): ProfileState {
         role: normaliseRole(row.role),
         municipalityId: row.municipality_id,
         municipality: getMunicipalityById(row.municipality_id),
+        universityId: row.university_id,
+        universityName,
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load profile');

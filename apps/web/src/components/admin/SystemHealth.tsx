@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { fetchHealthSnapshot, type HealthSnapshot } from '@/lib/admin-monitoring-service';
 import {
   Activity,
@@ -17,6 +18,7 @@ import {
   Send,
   MessageSquare,
   Scale,
+  ArrowLeft,
 } from 'lucide-react';
 import { clsx } from 'clsx';
 
@@ -61,18 +63,18 @@ export function SystemHealth() {
     <div className="p-4 lg:p-6 space-y-5">
       {/* Toolbar */}
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h2 className="text-lg font-bold text-slate-900">System health</h2>
-          <p className="text-xs text-slate-500">
-            Live probes against database, auth, and table row counts.
-            {snapshot?.timestamp && (
-              <span className="ml-2 text-slate-400">
-                · updated {new Date(snapshot.timestamp).toLocaleTimeString('en-GB')}
-              </span>
-            )}
-          </p>
-        </div>
+        <Link
+          href="/admin"
+          className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-slate-700"
+        >
+          <ArrowLeft className="h-4 w-4" /> Admin panel
+        </Link>
         <div className="flex items-center gap-2">
+          {snapshot?.timestamp && (
+            <span className="hidden text-[11px] text-slate-400 sm:inline">
+              updated {new Date(snapshot.timestamp).toLocaleTimeString('en-GB')}
+            </span>
+          )}
           <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs text-slate-700 shadow-sm">
             <input
               type="checkbox"

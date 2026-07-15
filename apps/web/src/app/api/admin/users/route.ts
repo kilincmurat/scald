@@ -13,10 +13,12 @@ import { createClient as createServerClient } from '@/lib/supabase/server';
  */
 
 const VALID_ROLES = ['admin', 'data_entry', 'decision_maker', 'researcher'] as const;
-
-// Belediyeye bağlı olmayan roller (kendi belediyesi yok — çok belediye / sistem).
-const MUNICIPALITY_EXEMPT_ROLES: readonly Role[] = ['admin', 'researcher'];
 type Role = (typeof VALID_ROLES)[number];
+
+// Belediyeye bağlı roller (kendi belediyesi var).
+function isMunicipalityRole(role: Role): boolean {
+  return role === 'data_entry' || role === 'decision_maker';
+}
 
 function service() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -65,6 +67,7 @@ export async function POST(req: Request) {
     full_name?: string;
     role?: Role;
     municipality_id?: string | null;
+    university_id?: string | null;
   };
   try {
     body = await req.json();
@@ -76,7 +79,6 @@ export async function POST(req: Request) {
   const password = body.password;
   const role = body.role;
   const fullName = body.full_name?.trim() ?? '';
-  const municipalityId = body.municipality_id ?? null;
 
   if (!email) return NextResponse.json({ error: 'Email required' }, { status: 400 });
   if (!password || password.length < 8) {
@@ -85,11 +87,19 @@ export async function POST(req: Request) {
   if (!role || !VALID_ROLES.includes(role)) {
     return NextResponse.json({ error: 'Invalid role' }, { status: 400 });
   }
-  if (!MUNICIPALITY_EXEMPT_ROLES.includes(role) && !municipalityId) {
-    return NextResponse.json(
-      { error: 'This role requires a municipality' },
-      { status: 400 },
-    );
+
+  // Institution is role-dependent and mutually exclusive:
+  //   data_entry / decision_maker → municipality
+  //   researcher                  → university
+  //   admin                       → neither (system-wide)
+  const municipalityId = isMunicipalityRole(role) ? body.municipality_id ?? null : null;
+  const universityId = role === 'researcher' ? body.university_id ?? null : null;
+
+  if (isMunicipalityRole(role) && !municipalityId) {
+    return NextResponse.json({ error: 'This role requires a municipality' }, { status: 400 });
+  }
+  if (role === 'researcher' && !universityId) {
+    return NextResponse.json({ error: 'Researchers require a university' }, { status: 400 });
   }
 
   // Create auth user
@@ -101,6 +111,7 @@ export async function POST(req: Request) {
       full_name: fullName,
       role,
       municipality_id: municipalityId,
+      university_id: universityId,
     },
   });
   if (createErr || !createRes.user) {
@@ -110,7 +121,7 @@ export async function POST(req: Request) {
     );
   }
 
-  // The DB trigger should have created a profile row, but role/municipality
+  // The DB trigger should have created a profile row, but role/institution
   // might not match (trigger reads user_metadata but user might have been
   // created before trigger update). Upsert to guarantee correctness.
   const userId = createRes.user.id;
@@ -123,6 +134,7 @@ export async function POST(req: Request) {
         full_name: fullName || null,
         role,
         municipality_id: municipalityId,
+        university_id: universityId,
       },
       { onConflict: 'id' },
     );

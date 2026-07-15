@@ -31,6 +31,21 @@ export interface Database {
         Insert: Omit<Database['public']['Tables']['municipalities']['Row'], 'id' | 'created_at' | 'updated_at'> & { id?: string };
         Update: Partial<Database['public']['Tables']['municipalities']['Insert']>;
       };
+      universities: {
+        Row: {
+          id: string;
+          name: string;
+          name_en: string | null;
+          country: string;
+          city: string | null;
+          website: string | null;
+          is_active: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: Omit<Database['public']['Tables']['universities']['Row'], 'id' | 'created_at' | 'updated_at'> & { id?: string };
+        Update: Partial<Database['public']['Tables']['universities']['Insert']>;
+      };
       profiles: {
         Row: {
           id: string;
@@ -38,6 +53,7 @@ export interface Database {
           full_name: string | null;
           role: UserRole;
           municipality_id: string | null;
+          university_id: string | null;
           is_active: boolean;
           created_at: string;
           updated_at: string;

@@ -11,6 +11,7 @@ import {
   Mail,
   Shield,
   Building2,
+  GraduationCap,
   LogOut,
   Loader2,
   KeyRound,
@@ -70,16 +71,30 @@ export default function SettingsPage() {
                     {ROLE_LABELS[profile.role]}
                   </span>
                 </Row>
-                <Row icon={<Building2 className="h-4 w-4 text-slate-400" />} label="Municipality">
-                  {profile.municipality ? (
-                    <span className="inline-flex items-center gap-1.5">
-                      <span className="text-base leading-none">{profile.municipality.flag}</span>
-                      {profile.municipality.name}, {profile.municipality.country}
-                    </span>
-                  ) : (
-                    <span className="text-slate-400">Not assigned</span>
-                  )}
-                </Row>
+                {profile.role === 'researcher' ? (
+                  <Row icon={<GraduationCap className="h-4 w-4 text-slate-400" />} label="University">
+                    {profile.universityName ? (
+                      profile.universityName
+                    ) : (
+                      <span className="text-slate-400">Not assigned</span>
+                    )}
+                  </Row>
+                ) : profile.role === 'admin' ? (
+                  <Row icon={<Building2 className="h-4 w-4 text-slate-400" />} label="Institution">
+                    <span className="text-slate-400">System-wide</span>
+                  </Row>
+                ) : (
+                  <Row icon={<Building2 className="h-4 w-4 text-slate-400" />} label="Municipality">
+                    {profile.municipality ? (
+                      <span className="inline-flex items-center gap-1.5">
+                        <span className="text-base leading-none">{profile.municipality.flag}</span>
+                        {profile.municipality.name}, {profile.municipality.country}
+                      </span>
+                    ) : (
+                      <span className="text-slate-400">Not assigned</span>
+                    )}
+                  </Row>
+                )}
               </dl>
             )}
           </section>

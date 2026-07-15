@@ -22,6 +22,7 @@ import {
   MessageSquare,
   Download,
   Network,
+  GraduationCap,
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import type { LucideIcon } from 'lucide-react';
@@ -169,7 +170,7 @@ export function Sidebar({ collapsed, mobileOpen, onToggle, onMobileClose }: Side
         </button>
       </div>
 
-      {/* Role + municipality badge */}
+      {/* Role + institution badge */}
       {!collapsed && profile && (
         <div className="mx-3 mb-2 flex flex-col gap-1.5">
           <span
@@ -180,11 +181,18 @@ export function Sidebar({ collapsed, mobileOpen, onToggle, onMobileClose }: Side
           >
             {ROLE_LABELS[role]}
           </span>
-          {municipality && (
+          {role === 'researcher' && profile.universityName ? (
             <span className="inline-flex items-center gap-1.5 text-[11px] text-slate-400">
-              <span className="text-base leading-none">{municipality.flag}</span>
-              <span>{municipality.name}</span>
+              <GraduationCap className="h-3.5 w-3.5 text-indigo-400" />
+              <span className="truncate">{profile.universityName}</span>
             </span>
+          ) : (
+            municipality && (
+              <span className="inline-flex items-center gap-1.5 text-[11px] text-slate-400">
+                <span className="text-base leading-none">{municipality.flag}</span>
+                <span>{municipality.name}</span>
+              </span>
+            )
           )}
         </div>
       )}

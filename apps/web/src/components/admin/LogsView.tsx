@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
 import {
   fetchActivityLog,
   type LogEntry,
@@ -22,6 +23,7 @@ import {
   Monitor,
   Globe,
   MapPin,
+  ArrowLeft,
 } from 'lucide-react';
 import { clsx } from 'clsx';
 
@@ -136,13 +138,12 @@ export function LogsView() {
   return (
     <div className="p-4 lg:p-6 space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h2 className="text-lg font-bold text-slate-900">Log management</h2>
-          <p className="text-xs text-slate-500">
-            Chronological trace of who did what across the SCALD platform. Filter by type,
-            municipality, or search actor/target.
-          </p>
-        </div>
+        <Link
+          href="/admin"
+          className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-slate-700"
+        >
+          <ArrowLeft className="h-4 w-4" /> Admin panel
+        </Link>
         <button
           type="button"
           onClick={() => void load()}

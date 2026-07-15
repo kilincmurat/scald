@@ -6,6 +6,7 @@ import { INDICATORS, TOTAL_INDICATORS } from '@/lib/scald-indicators';
 import {
   Users2,
   Building2,
+  GraduationCap,
   Sliders,
   Database,
   Activity,
@@ -30,6 +31,13 @@ export function AdminPanel() {
       title: 'Municipalities',
       desc: 'Manage municipalities, boundaries and population data.',
       bg: 'from-emerald-500 to-teal-600',
+    },
+    {
+      href: '/admin/universities',
+      icon: GraduationCap,
+      title: 'Universities',
+      desc: 'Define the institutions that researchers are affiliated with.',
+      bg: 'from-indigo-500 to-violet-600',
     },
     {
       href: '/admin/indicators',
