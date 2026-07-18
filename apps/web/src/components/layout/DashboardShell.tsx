@@ -3,9 +3,7 @@
 import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import { Sidebar } from './Sidebar';
-import { ChangePasswordPrompt } from './ChangePasswordPrompt';
-import { ConsentPrompt } from './ConsentPrompt';
-import { GuidedTour } from './GuidedTour';
+import { FirstRunFlow } from './FirstRunFlow';
 import { createClient } from '@/lib/supabase/client';
 import { useDataEntry } from '@/stores/data-entry';
 import { useThresholds } from '@/stores/thresholds';
@@ -100,11 +98,9 @@ export function DashboardShell({ children }: DashboardShellProps) {
         {children}
       </div>
 
-      {/* First-login flow, in order:
-          1) Terms of Use (required)  2) Guided tour (non-admin)  3) Password nudge */}
-      <ConsentPrompt />
-      <GuidedTour />
-      <ChangePasswordPrompt />
+      {/* One-time first-login flow: Terms → Guided tour → Password nudge.
+          A single shared profile drives the sequence (no reload needed). */}
+      <FirstRunFlow />
     </div>
   );
 }

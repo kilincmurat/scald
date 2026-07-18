@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { useProfile } from '@/hooks/useProfile';
 import { changePassword } from '@/lib/account-service';
 import { KeyRound, Eye, EyeOff, Loader2, Check, AlertCircle, ShieldCheck, X } from 'lucide-react';
 import { clsx } from 'clsx';
@@ -9,33 +8,24 @@ import { clsx } from 'clsx';
 /**
  * First-login nudge: when an admin created the account with a temporary
  * password (`must_change_password = true`), suggest the user set their own.
- * It is a *suggestion* — dismissible ("Remind me later") — but reappears on the
- * next sign-in until the password is actually changed (the DB flag clears).
+ * It is a *suggestion* — dismissible ("Remind me later", `onDismiss`) — but
+ * reappears on the next sign-in until the password is actually changed. On
+ * success `onDone` refreshes the shared profile so the flag clears. Rendered by
+ * FirstRunFlow (after Terms + tour) so the prompts never stack.
  */
-export function ChangePasswordPrompt() {
-  const { profile, loading, refresh } = useProfile();
-  const [dismissed, setDismissed] = useState(false);
-
+export function ChangePasswordPrompt({
+  onDone,
+  onDismiss,
+}: {
+  onDone: () => Promise<void> | void;
+  onDismiss: () => void;
+}) {
   const [pw, setPw] = useState('');
   const [confirm, setConfirm] = useState('');
   const [showPw, setShowPw] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
-
-  // Sequence the first-login prompts so they never stack: only nudge after the
-  // required Terms are accepted AND (for non-admins) the guided tour is done.
-  const tourResolved = profile ? profile.role === 'admin' || !!profile.tourCompletedAt : false;
-  if (
-    loading ||
-    !profile ||
-    !profile.termsAcceptedAt ||
-    !tourResolved ||
-    !profile.mustChangePassword ||
-    dismissed
-  ) {
-    return null;
-  }
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,9 +46,9 @@ export function ChangePasswordPrompt() {
         return;
       }
       setDone(true);
-      await refresh();
-      // Close shortly after the success confirmation.
-      setTimeout(() => setDismissed(true), 1200);
+      // Show the success state briefly, then refresh the shared profile
+      // (must_change_password is now false → FirstRunFlow unmounts this).
+      setTimeout(() => void onDone(), 1200);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not change password.');
     } finally {
@@ -90,7 +80,7 @@ export function ChangePasswordPrompt() {
           <button
             type="button"
             aria-label="Remind me later"
-            onClick={() => setDismissed(true)}
+            onClick={onDismiss}
             className="rounded-md p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
           >
             <X className="h-4 w-4" />
@@ -166,7 +156,7 @@ export function ChangePasswordPrompt() {
             <div className="flex items-center justify-end gap-2 pt-1">
               <button
                 type="button"
-                onClick={() => setDismissed(true)}
+                onClick={onDismiss}
                 className="rounded-lg border border-slate-200 px-3.5 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-50"
               >
                 Remind me later

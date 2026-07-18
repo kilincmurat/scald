@@ -20,7 +20,6 @@ import {
   ArrowLeft,
   ArrowRight,
 } from 'lucide-react';
-import { useProfile } from '@/hooks/useProfile';
 import { completeTour } from '@/lib/account-service';
 import type { Role } from '@/lib/roles';
 import { clsx } from 'clsx';
@@ -161,19 +160,17 @@ const TOURS: Record<Exclude<Role, 'admin'>, Step[]> = {
   ],
 };
 
-export function GuidedTour() {
-  const { profile, loading, refresh } = useProfile();
+export function GuidedTour({
+  role,
+  onDone,
+}: {
+  role: Exclude<Role, 'admin'>;
+  onDone: () => Promise<void> | void;
+}) {
   const [step, setStep] = useState(0);
   const [finishing, setFinishing] = useState(false);
-  const [closed, setClosed] = useState(false);
 
-  const role = profile?.role;
-  const isEligible =
-    !!profile && role !== 'admin' && !!role && !profile.tourCompletedAt && !!profile.termsAcceptedAt;
-
-  if (loading || !isEligible || closed) return null;
-
-  const steps = TOURS[role as Exclude<Role, 'admin'>];
+  const steps = TOURS[role];
   if (!steps || steps.length === 0) return null;
 
   const current = steps[step];
@@ -184,10 +181,9 @@ export function GuidedTour() {
     setFinishing(true);
     try {
       await completeTour();
-      await refresh();
+      await onDone();
     } finally {
       setFinishing(false);
-      setClosed(true);
     }
   };
 

@@ -2,27 +2,23 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useProfile } from '@/hooks/useProfile';
 import { acceptTerms } from '@/lib/account-service';
 import { createClient } from '@/lib/supabase/client';
 import { ScrollText, Loader2, AlertCircle, LogOut } from 'lucide-react';
 import { clsx } from 'clsx';
 
 /**
- * One-time, required acknowledgement of the platform Terms of Use. Shown on
- * first sign-in (when `terms_accepted_at` is null) before the user can work.
- * Unlike the password prompt it cannot be dismissed — the user must accept, or
- * sign out. Once accepted (timestamp stored) it never appears again.
+ * One-time, required acknowledgement of the platform Terms of Use. Rendered by
+ * FirstRunFlow when `terms_accepted_at` is null. Unlike the password prompt it
+ * cannot be dismissed — the user must accept, or sign out. `onDone` refreshes
+ * the shared profile so the next first-run step appears.
  */
-export function ConsentPrompt() {
+export function ConsentPrompt({ onDone }: { onDone: () => Promise<void> | void }) {
   const router = useRouter();
-  const { profile, loading, refresh } = useProfile();
   const [agreed, setAgreed] = useState(false);
   const [saving, setSaving] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  if (loading || !profile || profile.termsAcceptedAt) return null;
 
   const accept = async () => {
     if (!agreed) return;
@@ -34,7 +30,7 @@ export function ConsentPrompt() {
         setError(err);
         return;
       }
-      await refresh();
+      await onDone();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not save your acceptance.');
     } finally {
