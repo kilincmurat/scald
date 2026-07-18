@@ -55,6 +55,7 @@ export interface Database {
           municipality_id: string | null;
           university_id: string | null;
           is_active: boolean;
+          must_change_password: boolean;
           created_at: string;
           updated_at: string;
         };

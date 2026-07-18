@@ -135,6 +135,8 @@ export async function POST(req: Request) {
         role,
         municipality_id: municipalityId,
         university_id: universityId,
+        // Admin set a temporary password → prompt the user to change it on first sign-in.
+        must_change_password: true,
       },
       { onConflict: 'id' },
     );

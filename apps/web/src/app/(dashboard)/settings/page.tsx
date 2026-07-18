@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Header } from '@/components/layout/Header';
 import { useProfile } from '@/hooks/useProfile';
 import { createClient } from '@/lib/supabase/client';
+import { changePassword } from '@/lib/account-service';
 import { ROLE_BADGE_COLOR, ROLE_LABELS } from '@/lib/roles';
 import {
   User,
@@ -141,9 +142,8 @@ function PasswordSection() {
     }
     setSaving(true);
     try {
-      const supabase = createClient();
-      const { error: err } = await supabase.auth.updateUser({ password: pw });
-      if (err) throw err;
+      const { error: err } = await changePassword(pw);
+      if (err) throw new Error(err);
       setSuccess(true);
       setPw('');
       setConfirm('');

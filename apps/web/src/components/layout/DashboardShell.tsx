@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import { Sidebar } from './Sidebar';
+import { ChangePasswordPrompt } from './ChangePasswordPrompt';
 import { createClient } from '@/lib/supabase/client';
 import { useDataEntry } from '@/stores/data-entry';
 import { useThresholds } from '@/stores/thresholds';
@@ -96,6 +97,9 @@ export function DashboardShell({ children }: DashboardShellProps) {
 
         {children}
       </div>
+
+      {/* First-login nudge to replace the admin-set temporary password */}
+      <ChangePasswordPrompt />
     </div>
   );
 }
