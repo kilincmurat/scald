@@ -53,3 +53,22 @@ export async function acceptTerms(): Promise<{ error: string | null }> {
   if (error) return { error: error.message };
   return { error: null };
 }
+
+/**
+ * Mark the first-login guided tour as completed (finished or skipped) so it
+ * does not appear again for this user.
+ */
+export async function completeTour(): Promise<{ error: string | null }> {
+  const supabase = client();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: 'Not signed in.' };
+
+  const { error } = await supabase
+    .from('profiles')
+    .update({ tour_completed_at: new Date().toISOString() })
+    .eq('id', user.id);
+  if (error) return { error: error.message };
+  return { error: null };
+}

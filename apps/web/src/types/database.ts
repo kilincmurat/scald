@@ -57,6 +57,7 @@ export interface Database {
           is_active: boolean;
           must_change_password: boolean;
           terms_accepted_at: string | null;
+          tour_completed_at: string | null;
           created_at: string;
           updated_at: string;
         };

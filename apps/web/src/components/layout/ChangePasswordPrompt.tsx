@@ -23,9 +23,17 @@ export function ChangePasswordPrompt() {
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
 
-  // Wait until the required Terms of Use have been accepted so the two prompts
-  // never stack; then nudge (if the password is still the admin-set one).
-  if (loading || !profile || !profile.termsAcceptedAt || !profile.mustChangePassword || dismissed) {
+  // Sequence the first-login prompts so they never stack: only nudge after the
+  // required Terms are accepted AND (for non-admins) the guided tour is done.
+  const tourResolved = profile ? profile.role === 'admin' || !!profile.tourCompletedAt : false;
+  if (
+    loading ||
+    !profile ||
+    !profile.termsAcceptedAt ||
+    !tourResolved ||
+    !profile.mustChangePassword ||
+    dismissed
+  ) {
     return null;
   }
 
