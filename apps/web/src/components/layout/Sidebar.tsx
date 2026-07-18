@@ -297,6 +297,7 @@ export function Sidebar({ collapsed, mobileOpen, onToggle, onMobileClose }: Side
           )}
           <Link
             href="/settings"
+            data-tour="/settings"
             title={collapsed ? t('settings') : undefined}
             className={clsx(
               'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-400 transition-all hover:bg-slate-800 hover:text-white',
@@ -356,6 +357,7 @@ function NavRow({
     <li>
       <Link
         href={item.href}
+        data-tour={item.href}
         title={collapsed ? item.label : undefined}
         className={clsx(
           'group flex items-center gap-3 rounded-lg py-2.5 text-sm font-medium transition-all',
