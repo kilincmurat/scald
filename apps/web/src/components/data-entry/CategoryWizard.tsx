@@ -8,6 +8,8 @@ import { autoScore, isNumericIndicator, checkOutlier } from '@/lib/auto-score';
 import { useDataEntry } from '@/stores/data-entry';
 import { useThresholds, getEffectiveThresholds } from '@/stores/thresholds';
 import { useProfile } from '@/hooks/useProfile';
+import { useSubmission } from '@/hooks/useSubmission';
+import { useEffectiveMunicipality } from '@/hooks/useEffectiveMunicipality';
 import { canWriteDataEntry } from '@/lib/roles';
 import { YearPicker } from './YearPicker';
 import { clsx } from 'clsx';
@@ -64,7 +66,15 @@ export function CategoryWizard({ categoryCode }: { categoryCode: string }) {
   const isComplete = useDataEntry((s) => s.isCategoryComplete(categoryCode));
 
   const { profile } = useProfile();
-  const canWrite = profile ? canWriteDataEntry(profile.role) : true;
+  const { municipalityId } = useEffectiveMunicipality();
+  const { locked, submission } = useSubmission(municipalityId, selectedYear);
+  const role = profile?.role;
+  const isAdmin = role === 'admin';
+  // Admin can always edit. data_entry can edit only while the year is unlocked
+  // (not submitted/approved). Others (decision_maker, researcher) are read-only.
+  const canWrite = isAdmin || (role === 'data_entry' && !locked);
+  const lockedForDataEntry = role === 'data_entry' && locked;
+  const approvedLock = submission?.status === 'approved';
   const thresholdOverrides = useThresholds((s) => s.overrides);
   const effectiveThresholdsFor = (indicatorCode: string) =>
     getEffectiveThresholds(indicatorCode, thresholdOverrides);
@@ -221,7 +231,28 @@ export function CategoryWizard({ categoryCode }: { categoryCode: string }) {
           </div>
         </div>
 
-        {!canWrite && (
+        {lockedForDataEntry ? (
+          <div
+            className={clsx(
+              'mt-4 flex items-start gap-2.5 rounded-lg border px-3.5 py-3 text-xs',
+              approvedLock
+                ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
+                : 'border-amber-200 bg-amber-50 text-amber-800',
+            )}
+          >
+            <Lock className={clsx('mt-0.5 h-4 w-4 shrink-0', approvedLock ? 'text-emerald-500' : 'text-amber-500')} />
+            <div>
+              <p className="font-semibold">
+                {approvedLock ? 'Approved & locked' : 'Submitted — locked for review'}
+              </p>
+              <p className="mt-0.5">
+                {approvedLock
+                  ? 'This year’s data is approved and final. The values can no longer be edited — contact an administrator if a correction is needed.'
+                  : 'This year is submitted and waiting for the decision maker. Editing is locked until they approve or request changes.'}
+              </p>
+            </div>
+          </div>
+        ) : !canWrite ? (
           <div className="mt-4 flex items-start gap-2.5 rounded-lg border border-blue-100 bg-blue-50 px-3.5 py-3 text-xs text-blue-800">
             <Eye className="mt-0.5 h-4 w-4 shrink-0 text-blue-500" />
             <div>
@@ -232,7 +263,7 @@ export function CategoryWizard({ categoryCode }: { categoryCode: string }) {
               </p>
             </div>
           </div>
-        )}
+        ) : null}
 
         {/* Indicator list — all visible on one screen */}
         <div className="mt-5 space-y-4">

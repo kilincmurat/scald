@@ -10,6 +10,7 @@ import { YearPicker } from './YearPicker';
 import { SubmissionCard } from './SubmissionCard';
 import { DecisionMakerReview } from './DecisionMakerReview';
 import { useEffectiveMunicipality } from '@/hooks/useEffectiveMunicipality';
+import { useSubmission } from '@/hooks/useSubmission';
 import {
   Lock,
   CheckCircle2,
@@ -74,14 +75,21 @@ export function DataEntryDashboard() {
   const isUnlocked = useDataEntry((s) => s.isCategoryUnlocked);
   const syncStatus = useDataEntry((s) => s.syncStatus);
   const resetAll = useDataEntry((s) => s.reset);
+  const selectedYear = useDataEntry((s) => s.selectedYear);
 
   const { profile } = useProfile();
   const canWrite = profile ? canWriteDataEntry(profile.role) : false;
   const isReadOnly = !canWrite;
   const isDecisionMaker = profile?.role === 'decision_maker';
+  const isAdmin = profile?.role === 'admin';
 
   // Sync store to the effective municipality (admin picker aware).
   const { municipalityId: currentMunicipalityId } = useEffectiveMunicipality();
+
+  // Once a year is submitted/approved it is locked for the data-entry team;
+  // hide destructive actions (only an admin can override).
+  const { locked } = useSubmission(currentMunicipalityId, selectedYear);
+  const lockedForDataEntry = !isAdmin && locked;
 
   const setCodes: SetCode[] = ['ES', 'SS', 'MS', 'ECS'];
 
@@ -137,7 +145,7 @@ export function DataEntryDashboard() {
             <FileDown className="h-3.5 w-3.5" />
             <span>Preparation sheet</span>
           </Link>
-          {canWrite && (overall.done > 0 || Object.keys(completed).length > 0) && (
+          {canWrite && !lockedForDataEntry && (overall.done > 0 || Object.keys(completed).length > 0) && (
             <button
               onClick={() => setShowResetConfirm(true)}
               className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-[11px] font-medium text-slate-500 shadow-sm transition hover:border-red-200 hover:text-red-600"

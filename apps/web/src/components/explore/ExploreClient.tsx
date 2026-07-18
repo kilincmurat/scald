@@ -15,7 +15,6 @@ import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import Image from 'next/image';
 import {
-  Sprout,
   LogIn,
   Users,
   TrendingUp,
@@ -136,8 +135,15 @@ export function ExploreClient() {
       <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/85 backdrop-blur">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-3 lg:px-8">
           <div className="flex items-center gap-2.5">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500/15">
-              <Sprout className="h-5 w-5 text-emerald-600" />
+            <div className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-lg bg-white ring-1 ring-slate-200">
+              <Image
+                src="/small-logo.png"
+                alt="SCALD"
+                width={32}
+                height={32}
+                className="h-full w-full object-contain"
+                priority
+              />
             </div>
             <div className="leading-tight">
               <p className="text-sm font-bold">SCALD</p>

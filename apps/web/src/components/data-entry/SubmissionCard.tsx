@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useProfile } from '@/hooks/useProfile';
 import { useDataEntry, isYearEditable } from '@/stores/data-entry';
 import { useSubmission } from '@/hooks/useSubmission';
+import type { SubmissionStatus } from '@/lib/data-submission-service';
 import { useEffectiveMunicipality } from '@/hooks/useEffectiveMunicipality';
 import { canWriteDataEntry, canRespondFeedback } from '@/lib/roles';
 import {
@@ -18,6 +19,8 @@ import {
   X,
   Calculator,
   ArrowRight,
+  Undo2,
+  PencilLine,
 } from 'lucide-react';
 import { clsx } from 'clsx';
 
@@ -42,13 +45,14 @@ export function SubmissionCard() {
   const { municipalityId } = useEffectiveMunicipality();
   const year = useDataEntry((s) => s.selectedYear);
   const overall = useDataEntry((s) => s.overallProgress());
-  const { submission, loading, mutating, error, submit, approve } = useSubmission(
+  const { submission, loading, mutating, error, submit, approve, askRevision } = useSubmission(
     municipalityId,
     year,
   );
 
   const [showSubmit, setShowSubmit] = useState(false);
   const [showApprove, setShowApprove] = useState(false);
+  const [showRevision, setShowRevision] = useState(false);
 
   const role = profile?.role;
   const isDataEntry = role ? canWriteDataEntry(role) && role !== 'admin' : false;
@@ -72,7 +76,9 @@ export function SubmissionCard() {
             ? 'border-emerald-200 bg-gradient-to-br from-emerald-50 via-white to-teal-50'
             : status === 'submitted'
               ? 'border-amber-200 bg-amber-50/40'
-              : 'border-slate-200 bg-white',
+              : status === 'revision_requested'
+                ? 'border-orange-200 bg-orange-50/40'
+                : 'border-slate-200 bg-white',
         )}
       >
         <div className="flex items-center gap-2 border-b border-slate-100 bg-white/60 px-5 py-3">
@@ -163,17 +169,91 @@ export function SubmissionCard() {
               {(isDecisionMaker || isAdmin) && (
                 <div className="flex flex-col gap-2 border-t border-amber-200/60 pt-3 sm:flex-row sm:items-center sm:justify-between">
                   <p className="text-xs text-slate-600">
-                    Once you approve, this year can be used for calculation and official
-                    reporting.
+                    Approve to unlock calculation, or send it back to the data-entry team for
+                    changes.
+                  </p>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setShowRevision(true)}
+                      disabled={mutating}
+                      className="inline-flex items-center justify-center gap-2 rounded-lg border border-orange-300 bg-white px-3.5 py-2 text-sm font-semibold text-orange-700 shadow-sm transition hover:bg-orange-50 disabled:opacity-60"
+                    >
+                      <Undo2 className="h-4 w-4" />
+                      Request changes
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowApprove(true)}
+                      disabled={mutating}
+                      className="inline-flex items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:opacity-90 disabled:opacity-60"
+                    >
+                      <ShieldCheck className="h-4 w-4" />
+                      Review &amp; approve
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Changes requested — back with the data-entry team */}
+          {submission && status === 'revision_requested' && (
+            <div className="space-y-4">
+              <div className="flex items-start gap-3">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-orange-100 text-orange-600">
+                  <PencilLine className="h-5 w-5" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-sm font-bold text-slate-900">
+                    {isDataEntry || isAdmin
+                      ? 'Changes requested — please revise'
+                      : 'Sent back to the data-entry team'}
+                  </h3>
+                  <p className="mt-0.5 text-xs text-slate-600">
+                    {isDataEntry || isAdmin
+                      ? 'The decision maker asked for changes. Update the indicators below, then resubmit for review.'
+                      : 'The data-entry team has been asked to revise this year. You’ll be able to review again once they resubmit.'}
+                  </p>
+                  {submission.reviewed_at && (
+                    <p className="mt-1 text-[10px] text-slate-500">
+                      Returned on {formatDate(submission.reviewed_at)}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              <div className="rounded-lg border border-orange-200 bg-white p-3 text-xs">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-orange-700">
+                  Requested changes
+                </p>
+                <p className="mt-1.5 leading-relaxed text-slate-700">
+                  {submission.reviewer_note?.trim()
+                    ? submission.reviewer_note
+                    : 'No specific note was left — please review the entered values for accuracy.'}
+                </p>
+              </div>
+
+              {(isDataEntry || isAdmin) && (
+                <div className="flex flex-col gap-2 border-t border-orange-200/60 pt-3 sm:flex-row sm:items-center sm:justify-between">
+                  <p className="text-xs text-slate-600">
+                    {allComplete
+                      ? 'When you’re done, resubmit the data for review.'
+                      : `Fill all ${overall.total} required indicators to resubmit. (${overall.done} of ${overall.total} entered)`}
                   </p>
                   <button
                     type="button"
-                    onClick={() => setShowApprove(true)}
-                    disabled={mutating}
-                    className="inline-flex items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:opacity-90"
+                    onClick={() => setShowSubmit(true)}
+                    disabled={!allComplete || !yearEditable || mutating}
+                    className={clsx(
+                      'inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold shadow-sm transition',
+                      !allComplete || !yearEditable || mutating
+                        ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                        : 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white hover:opacity-90',
+                    )}
                   >
-                    <ShieldCheck className="h-4 w-4" />
-                    Review & approve
+                    <Send className="h-4 w-4" />
+                    Resubmit for review
                   </button>
                 </div>
               )}
@@ -240,6 +320,15 @@ export function SubmissionCard() {
                   }
                 />
               </div>
+
+              <div className="flex items-start gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-xs">
+                <Lock className="mt-0.5 h-3.5 w-3.5 shrink-0 text-slate-500" />
+                <p className="text-slate-600">
+                  {isAdmin
+                    ? 'This year is approved and locked for the municipality. As an administrator you can still amend the entered values if a correction is required.'
+                    : 'This year is approved and locked. The entered values can no longer be changed by the data-entry team or decision maker — contact an administrator if a correction is needed.'}
+                </p>
+              </div>
             </div>
           )}
 
@@ -280,11 +369,111 @@ export function SubmissionCard() {
           }}
         />
       )}
+
+      {showRevision && submission && (
+        <RequestRevisionDialog
+          submitting={mutating}
+          onClose={() => setShowRevision(false)}
+          onSubmit={async (note) => {
+            const res = await askRevision({ reviewerNote: note });
+            if (res.ok) setShowRevision(false);
+          }}
+        />
+      )}
     </>
   );
 }
 
-function StatusPill({ status }: { status: 'submitted' | 'approved' | null }) {
+function RequestRevisionDialog({
+  submitting,
+  onClose,
+  onSubmit,
+}: {
+  submitting: boolean;
+  onClose: () => void;
+  onSubmit: (note: string) => void;
+}) {
+  const [note, setNote] = useState('');
+  const canSend = note.trim().length > 0;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="revision-title"
+        className="w-full max-w-lg rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl"
+      >
+        <div className="flex items-start justify-between">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-500 text-white shadow-md">
+              <Undo2 className="h-5 w-5" />
+            </div>
+            <div>
+              <h3 id="revision-title" className="text-lg font-bold text-slate-900">
+                Request changes
+              </h3>
+              <p className="text-xs text-slate-500">
+                Send the data back to the data-entry team for revision.
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            aria-label="Close"
+            onClick={onClose}
+            className="rounded-md p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        <label className="mt-5 block">
+          <span className="text-xs font-medium text-slate-700">
+            What needs to change? <span className="text-red-500">*</span>
+          </span>
+          <textarea
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            rows={4}
+            maxLength={500}
+            placeholder="e.g., ES_GI3 looks off — please re-check the 2025 value and its unit."
+            className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none placeholder:text-slate-400 focus:border-orange-400 focus:ring-2 focus:ring-orange-100"
+          />
+          <span className="mt-1 block text-[10px] text-slate-400">
+            The data-entry team will see this note and be able to edit and resubmit.
+          </span>
+        </label>
+
+        <div className="mt-5 flex items-center justify-end gap-2">
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-50"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={() => onSubmit(note)}
+            disabled={!canSend || submitting}
+            className={clsx(
+              'inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold shadow-sm transition',
+              !canSend || submitting
+                ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                : 'bg-orange-600 text-white hover:bg-orange-700',
+            )}
+          >
+            {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Undo2 className="h-4 w-4" />}
+            {submitting ? 'Sending…' : 'Send back for changes'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function StatusPill({ status }: { status: SubmissionStatus | null }) {
   if (status === 'approved') {
     return (
       <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-emerald-700 ring-1 ring-emerald-200">
@@ -296,6 +485,13 @@ function StatusPill({ status }: { status: 'submitted' | 'approved' | null }) {
     return (
       <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-amber-700 ring-1 ring-amber-200">
         <Clock className="h-3 w-3" /> Awaiting review
+      </span>
+    );
+  }
+  if (status === 'revision_requested') {
+    return (
+      <span className="inline-flex items-center gap-1 rounded-full bg-orange-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-orange-700 ring-1 ring-orange-200">
+        <Undo2 className="h-3 w-3" /> Changes requested
       </span>
     );
   }

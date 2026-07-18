@@ -3,8 +3,10 @@
 import { useCallback, useEffect, useState } from 'react';
 import {
   approveSubmission,
+  requestRevision,
   fetchSubmission,
   submitData,
+  isSubmissionLocked,
   type SubmissionRow,
 } from '@/lib/data-submission-service';
 
@@ -84,5 +86,30 @@ export function useSubmission(municipalityId: string | null, year: number) {
     [submission],
   );
 
-  return { submission, loading, mutating, error, refresh, submit, approve };
+  const askRevision = useCallback(
+    async (args: { reviewerNote: string }) => {
+      if (!submission) return { ok: false as const };
+      setMutating(true);
+      setError(null);
+      try {
+        const { error: err, row } = await requestRevision({
+          submissionId: submission.id,
+          reviewerNote: args.reviewerNote,
+        });
+        if (err) {
+          setError(err);
+          return { ok: false as const, error: err };
+        }
+        setSubmission(row);
+        return { ok: true as const, row };
+      } finally {
+        setMutating(false);
+      }
+    },
+    [submission],
+  );
+
+  const locked = isSubmissionLocked(submission?.status);
+
+  return { submission, loading, mutating, error, locked, refresh, submit, approve, askRevision };
 }
