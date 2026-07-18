@@ -340,8 +340,8 @@ function InviteUserModal({
           university_id: role === 'researcher' ? universityId : null,
         }),
       });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.error ?? 'Failed');
+      const json = await res.json().catch(() => ({}) as { error?: string });
+      if (!res.ok) throw new Error(json.error ?? `Request failed (${res.status})`);
       onCreated();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed');

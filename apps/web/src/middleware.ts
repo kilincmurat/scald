@@ -13,6 +13,14 @@ export async function middleware(request: NextRequest) {
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   const { pathname } = request.nextUrl;
 
+  // API routes are never page-navigation and enforce their own auth
+  // (e.g. /api/admin/users → requireAdmin). The page-access matrix does not
+  // whitelist /api/*, so letting the middleware run here would redirect API
+  // calls to a page and break them (empty 405 → "Unexpected end of JSON input").
+  if (pathname.startsWith('/api')) {
+    return NextResponse.next();
+  }
+
   if (!supabaseUrl || !supabaseKey) {
     return NextResponse.next();
   }
@@ -67,6 +75,6 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    '/((?!_next|_vercel|favicon.ico|.*\\..*).*)',
+    '/((?!api|_next|_vercel|favicon.ico|.*\\..*).*)',
   ],
 };
