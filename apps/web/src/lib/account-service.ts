@@ -34,3 +34,22 @@ export async function changePassword(
   }
   return { error: null };
 }
+
+/**
+ * Record the signed-in user's one-time acceptance of the platform Terms of Use.
+ * Stores the acceptance timestamp so the consent prompt no longer appears.
+ */
+export async function acceptTerms(): Promise<{ error: string | null }> {
+  const supabase = client();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: 'Not signed in.' };
+
+  const { error } = await supabase
+    .from('profiles')
+    .update({ terms_accepted_at: new Date().toISOString() })
+    .eq('id', user.id);
+  if (error) return { error: error.message };
+  return { error: null };
+}

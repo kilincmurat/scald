@@ -15,6 +15,7 @@ export type Profile = {
   universityId: string | null;
   universityName: string | null;
   mustChangePassword: boolean;
+  termsAcceptedAt: string | null;
 };
 
 export type ProfileState = {
@@ -46,7 +47,7 @@ export function useProfile(): ProfileState {
       }
       const { data, error: qerr } = await supabase
         .from('profiles')
-        .select('id, email, full_name, role, municipality_id, university_id, must_change_password')
+        .select('id, email, full_name, role, municipality_id, university_id, must_change_password, terms_accepted_at')
         .eq('id', user.id)
         .maybeSingle();
       if (qerr) {
@@ -66,6 +67,7 @@ export function useProfile(): ProfileState {
         municipality_id: string | null;
         university_id: string | null;
         must_change_password: boolean | null;
+        terms_accepted_at: string | null;
       };
 
       // Researchers belong to a university (DB-driven), so resolve its name.
@@ -90,6 +92,7 @@ export function useProfile(): ProfileState {
         universityId: row.university_id,
         universityName,
         mustChangePassword: row.must_change_password ?? false,
+        termsAcceptedAt: row.terms_accepted_at,
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load profile');
