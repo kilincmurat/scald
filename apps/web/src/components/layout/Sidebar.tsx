@@ -108,8 +108,14 @@ function buildNav(role: Role, t: (k: string) => string): NavStructure {
 export function Sidebar({ collapsed, mobileOpen, onToggle, onMobileClose }: SidebarProps) {
   const t = useTranslations('navigation');
   const pathname = usePathname();
-  const { profile } = useProfile();
+  const { profile, loading } = useProfile();
   const role: Role = profile?.role ?? 'data_entry';
+  // Until the profile resolves we don't yet know the role. Render a skeleton
+  // instead of the data-entry default — otherwise an admin (or any non
+  // data-entry user) sees a ~1s flash of the wrong role's sidebar right after
+  // signing in. `roleKnown` is true once the profile arrives, or once loading
+  // finishes with no profile (demo / unconfigured fallback).
+  const roleKnown = !!profile || !loading;
   const municipality = profile?.municipality;
   const nav = buildNav(role, t);
   const [userScreensOpen, setUserScreensOpen] = useState(true);
@@ -214,6 +220,20 @@ export function Sidebar({ collapsed, mobileOpen, onToggle, onMobileClose }: Side
       <div className="mx-3 border-t border-slate-700/60" />
 
       <nav className="scrollbar-slim flex-1 overflow-y-auto px-2 py-3">
+        {!roleKnown && (
+          <ul className="space-y-1" aria-hidden>
+            {Array.from({ length: 6 }).map((_, i) => (
+              <li
+                key={i}
+                className="mx-1 h-10 animate-pulse rounded-lg bg-slate-800/70"
+                style={{ animationDelay: `${i * 60}ms` }}
+              />
+            ))}
+          </ul>
+        )}
+
+        {roleKnown && (
+        <>
         <ul className="space-y-1">
           {nav.top.map((item) => (
             <NavRow
@@ -288,7 +308,11 @@ export function Sidebar({ collapsed, mobileOpen, onToggle, onMobileClose }: Side
             ))}
           </ul>
         )}
+        </>
+        )}
 
+        {/* System / Settings — available to every role, shown even while the
+            role is still resolving. */}
         <div className="mt-4 border-t border-slate-700/50 pt-3">
           {!collapsed && (
             <p className="px-3 pb-2 text-[10px] font-semibold uppercase tracking-wider text-slate-500">
@@ -323,16 +347,25 @@ export function Sidebar({ collapsed, mobileOpen, onToggle, onMobileClose }: Side
           </button>
         ) : (
           <div className="rounded-lg bg-slate-800 p-3">
-            <p className="text-xs font-medium text-white">
-              {profile?.fullName || profile?.email?.split('@')[0] || t('demoMunicipality')}
-            </p>
-            <p className="mt-0.5 truncate text-[10px] text-slate-400">
-              {profile?.email || t('countryPopulation')}
-            </p>
-            <div className="mt-2 flex items-center gap-1.5">
-              <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-400" />
-              <span className="text-[10px] text-emerald-400">{t('connected')}</span>
-            </div>
+            {roleKnown ? (
+              <>
+                <p className="text-xs font-medium text-white">
+                  {profile?.fullName || profile?.email?.split('@')[0] || t('demoMunicipality')}
+                </p>
+                <p className="mt-0.5 truncate text-[10px] text-slate-400">
+                  {profile?.email || t('countryPopulation')}
+                </p>
+                <div className="mt-2 flex items-center gap-1.5">
+                  <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                  <span className="text-[10px] text-emerald-400">{t('connected')}</span>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="h-3 w-24 animate-pulse rounded bg-slate-700" />
+                <div className="mt-1.5 h-2.5 w-32 animate-pulse rounded bg-slate-700/70" />
+              </>
+            )}
           </div>
         )}
       </div>
