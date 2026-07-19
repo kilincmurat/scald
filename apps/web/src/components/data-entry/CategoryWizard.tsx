@@ -138,11 +138,14 @@ export function CategoryWizard({ categoryCode }: { categoryCode: string }) {
   const allScored = allRequiredScored;
   const nextCatCode = getNextCategoryCode(categoryCode);
 
-  // Manual score selection is only used for non-numeric (categorical) indicators
+  // Manual score selection is only used for non-numeric (descriptive / maturity)
+  // indicators. The chosen level IS the answer, so it doubles as the raw value —
+  // picking a level (via the dropdown or a card) sets both score and raw and
+  // highlights the matching card. No need to type anything first.
   const handleManualScore = (indicatorCode: string, score: number) => {
     if (!canWrite) return;
-    const raw = rawValues[indicatorCode]?.trim();
-    if (!raw) return;
+    const raw = String(score);
+    setRawValues((prev) => ({ ...prev, [indicatorCode]: raw }));
     saveEntry(indicatorCode, score, raw);
   };
 
@@ -472,72 +475,115 @@ function IndicatorRow({
           <div className="grid grid-cols-1 gap-3 lg:grid-cols-12">
             <div className="lg:col-span-3">
               <label className="block text-[11px] font-semibold text-slate-600">
-                Raw value {isOptional ? (
+                {isNumeric ? 'Raw value' : 'Level'} {isOptional ? (
                   <span className="text-purple-600">(optional)</span>
                 ) : (
                   <span className="text-red-500">*</span>
                 )}
               </label>
-              <input
-                type="text"
-                value={rawValue}
-                onChange={(e) => onRawChange(e.target.value)}
-                placeholder={indicator.unit}
-                required={!isOptional}
-                disabled={readOnly}
-                className={clsx(
-                  'mt-1 w-full rounded-lg border bg-slate-50 px-3 py-2 text-sm text-slate-900 placeholder-slate-400 outline-none transition focus:bg-white focus:ring-2',
-                  readOnly && 'cursor-not-allowed opacity-60',
-                  hasRaw
-                    ? isOptional
-                      ? 'border-purple-200 focus:border-purple-400 focus:ring-purple-200'
-                      : 'border-slate-200 focus:border-slate-400 focus:ring-slate-200'
-                    : isOptional
-                      ? 'border-purple-200 focus:border-purple-500 focus:ring-purple-500/20'
-                      : 'border-slate-200 focus:border-emerald-500 focus:ring-emerald-500/20',
-                )}
-              />
-              {!hasRaw && (
-                <p className={clsx(
-                  'mt-1 text-[10px]',
-                  isOptional ? 'text-purple-500' : 'text-slate-400',
-                )}>
-                  {isOptional ? 'Skip if unavailable' : 'Required'} · in{' '}
-                  <span className="font-medium">{indicator.unit}</span>
-                </p>
-              )}
-              {hasRaw && isComplete && isNumeric && (
-                <p className="mt-1 flex items-center gap-1 text-[10px] text-emerald-600">
-                  <Zap className="h-3 w-3" />
-                  Auto-scored: <span className="font-semibold">{currentScore}</span>
-                </p>
-              )}
-              {autoUnresolved && (
-                <p className="mt-1 flex items-start gap-1 text-[10px] text-amber-600">
-                  <AlertCircle className="mt-0.5 h-3 w-3 shrink-0" />
-                  Value doesn't match any threshold. Check the number.
-                </p>
-              )}
-              {outlier && (
-                <p className="mt-1 flex items-start gap-1 text-[10px] text-amber-600">
-                  <AlertCircle className="mt-0.5 h-3 w-3 shrink-0" />
-                  {outlier.severity === 'high'
-                    ? `Unusually high — well above the top band (>${outlier.hi}). You can still save, but please double-check the value and unit.`
-                    : `Unusually low — well below the expected range. You can still save, but please double-check the value and unit.`}
-                </p>
-              )}
-              {hasRaw && !isNumeric && (
-                <p className="mt-1 flex items-start gap-1 text-[10px] text-slate-500">
-                  <Info className="mt-0.5 h-3 w-3 shrink-0" />
-                  Descriptive indicator — click the matching level on the right.
-                </p>
+
+              {isNumeric ? (
+                <>
+                  <input
+                    type="text"
+                    value={rawValue}
+                    onChange={(e) => onRawChange(e.target.value)}
+                    placeholder={indicator.unit}
+                    required={!isOptional}
+                    disabled={readOnly}
+                    className={clsx(
+                      'mt-1 w-full rounded-lg border bg-slate-50 px-3 py-2 text-sm text-slate-900 placeholder-slate-400 outline-none transition focus:bg-white focus:ring-2',
+                      readOnly && 'cursor-not-allowed opacity-60',
+                      hasRaw
+                        ? 'border-slate-200 focus:border-slate-400 focus:ring-slate-200'
+                        : isOptional
+                          ? 'border-purple-200 focus:border-purple-500 focus:ring-purple-500/20'
+                          : 'border-slate-200 focus:border-emerald-500 focus:ring-emerald-500/20',
+                    )}
+                  />
+                  {!hasRaw && (
+                    <p className={clsx(
+                      'mt-1 text-[10px]',
+                      isOptional ? 'text-purple-500' : 'text-slate-400',
+                    )}>
+                      {isOptional ? 'Skip if unavailable' : 'Required'} · in{' '}
+                      <span className="font-medium">{indicator.unit}</span>
+                    </p>
+                  )}
+                  {hasRaw && isComplete && (
+                    <p className="mt-1 flex items-center gap-1 text-[10px] text-emerald-600">
+                      <Zap className="h-3 w-3" />
+                      Auto-scored: <span className="font-semibold">{currentScore}</span>
+                    </p>
+                  )}
+                  {autoUnresolved && (
+                    <p className="mt-1 flex items-start gap-1 text-[10px] text-amber-600">
+                      <AlertCircle className="mt-0.5 h-3 w-3 shrink-0" />
+                      Value doesn't match any threshold. Check the number.
+                    </p>
+                  )}
+                  {outlier && (
+                    <p className="mt-1 flex items-start gap-1 text-[10px] text-amber-600">
+                      <AlertCircle className="mt-0.5 h-3 w-3 shrink-0" />
+                      {outlier.severity === 'high'
+                        ? `Unusually high — well above the top band (>${outlier.hi}). You can still save, but please double-check the value and unit.`
+                        : `Unusually low — well below the expected range. You can still save, but please double-check the value and unit.`}
+                    </p>
+                  )}
+                </>
+              ) : (
+                <>
+                  {/* Descriptive / maturity indicator: the level IS the answer.
+                      Picking here sets the score and highlights the card; clicking
+                      a card updates this dropdown — two-way in sync. */}
+                  <select
+                    value={currentScore !== undefined ? String(currentScore) : ''}
+                    onChange={(e) => {
+                      if (e.target.value !== '') onManualScore(Number(e.target.value));
+                    }}
+                    disabled={readOnly}
+                    className={clsx(
+                      'mt-1 w-full rounded-lg border bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition focus:bg-white focus:ring-2',
+                      readOnly && 'cursor-not-allowed opacity-60',
+                      currentScore !== undefined
+                        ? 'border-slate-200 focus:border-slate-400 focus:ring-slate-200'
+                        : isOptional
+                          ? 'border-purple-200 focus:border-purple-500 focus:ring-purple-500/20'
+                          : 'border-slate-200 focus:border-emerald-500 focus:ring-emerald-500/20',
+                    )}
+                  >
+                    <option value="" disabled>
+                      Select level…
+                    </option>
+                    {indicator.thresholds.map((label, i) => (
+                      <option key={i} value={i}>
+                        {i} — {label || '—'}
+                      </option>
+                    ))}
+                  </select>
+                  {currentScore === undefined ? (
+                    <p className={clsx(
+                      'mt-1 flex items-start gap-1 text-[10px]',
+                      isOptional ? 'text-purple-500' : 'text-slate-400',
+                    )}>
+                      <Info className="mt-0.5 h-3 w-3 shrink-0" />
+                      {isOptional ? 'Skip if unavailable' : 'Pick the level'} — the card highlights
+                      automatically.
+                    </p>
+                  ) : (
+                    <p className="mt-1 flex items-center gap-1 text-[10px] text-emerald-600">
+                      <CheckCircle2 className="h-3 w-3" />
+                      Level <span className="font-semibold">{currentScore}</span> selected
+                    </p>
+                  )}
+                </>
               )}
             </div>
 
             <div className="lg:col-span-9">
               <label className="block text-[11px] font-semibold text-slate-600">
                 {isNumeric ? '0–5 score' : 'Select level (0 = none, 5 = best)'}
-                {!hasRaw && (
+                {isNumeric && !hasRaw && (
                   <span className="ml-2 text-[10px] font-normal text-slate-400">
                     — enter raw value first
                   </span>
@@ -551,8 +597,10 @@ function IndicatorRow({
               <div className="mt-1 grid grid-cols-6 gap-1.5">
                 {indicator.thresholds.map((thr, score) => {
                   const selected = currentScore === score;
-                  // Clickable only for categorical indicators, when we can write, and after raw is entered.
-                  const clickable = hasRaw && !isNumeric && !readOnly;
+                  // Descriptive/maturity cards are directly clickable (they set the
+                  // level + raw together). Numeric cards are display-only — the
+                  // score comes from the typed raw value.
+                  const clickable = !isNumeric && !readOnly;
                   const dimmed = !hasRaw || (isNumeric && !selected && currentScore !== undefined);
 
                   const inner = (
