@@ -4,10 +4,17 @@ import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { INDICATORS, type SetCode } from '@/lib/scald-indicators';
 import { useDataEntry } from '@/stores/data-entry';
+import { useEffectiveWeights } from '@/stores/weights';
 import { useProfile } from '@/hooks/useProfile';
 import { useSubmission } from '@/hooks/useSubmission';
 import { useEffectiveMunicipality } from '@/hooks/useEffectiveMunicipality';
 import { canRespondFeedback } from '@/lib/roles';
+import {
+  computeOverallScore,
+  computeSetScores,
+  computeCategoryScores,
+  scoreBand,
+} from '@/lib/scores';
 import { clsx } from 'clsx';
 import {
   ArrowLeft,
@@ -54,6 +61,7 @@ export function CalculateFootprint() {
   useEffect(() => setMounted(true), []);
 
   const entries = useDataEntry((s) => s.entries);
+  const weights = useEffectiveWeights();
   const overall = useDataEntry((s) => s.overallProgress());
   const year = useDataEntry((s) => s.selectedYear);
   const { profile } = useProfile();
@@ -70,66 +78,36 @@ export function CalculateFootprint() {
   const approved = submission?.status === 'approved';
   const awaitingReview = submission?.status === 'submitted';
 
-  // Compute set/category averages and overall score (0..100)
+  // Compute set/category scores and the overall score (0..100) using the SAME
+  // shared, set-weighted model as the Overview and the official report — so the
+  // number shown here always matches those screens (each set = 25%, category
+  // weights from admin config). The previous local flat per-indicator average
+  // diverged from Overview/report (e.g. 76 here vs 73 there).
   const result = useMemo(() => {
-    const setSums: Record<string, { sum: number; n: number }> = {
-      ES: { sum: 0, n: 0 },
-      SS: { sum: 0, n: 0 },
-      MS: { sum: 0, n: 0 },
-      ECS: { sum: 0, n: 0 },
-    };
-    const catSums: Record<string, { sum: number; n: number; setCode: string; name: string }> = {};
-    let overallSum = 0;
-    let overallN = 0;
-
-    for (const catCode of INDICATORS.order) {
-      const cat = INDICATORS.categories[catCode];
-      catSums[catCode] = { sum: 0, n: 0, setCode: cat.set, name: cat.name };
-      for (const ind of cat.indicators) {
-        const e = entries[ind.code];
-        if (e) {
-          const s = e.score;
-          catSums[catCode].sum += s;
-          catSums[catCode].n += 1;
-          setSums[cat.set].sum += s;
-          setSums[cat.set].n += 1;
-          overallSum += s;
-          overallN += 1;
-        }
-      }
-    }
-
-    const toPct = (sum: number, n: number) => (n === 0 ? 0 : Math.round((sum / (n * 5)) * 100));
+    const overallC = computeOverallScore(entries, weights);
+    const setC = computeSetScores(entries, weights);
+    const catC = computeCategoryScores(entries, weights);
     const setScores: Record<SetCode, number> = {
-      ES: toPct(setSums.ES.sum, setSums.ES.n),
-      SS: toPct(setSums.SS.sum, setSums.SS.n),
-      MS: toPct(setSums.MS.sum, setSums.MS.n),
-      ECS: toPct(setSums.ECS.sum, setSums.ECS.n),
+      ES: setC.ES.score,
+      SS: setC.SS.score,
+      MS: setC.MS.score,
+      ECS: setC.ECS.score,
     };
-    const overallScore = toPct(overallSum, overallN);
-    const catList = INDICATORS.order.map((code) => ({
-      code,
-      name: catSums[code].name,
-      setCode: catSums[code].setCode as SetCode,
-      pct: toPct(catSums[code].sum, catSums[code].n),
+    const catList = catC.map((c) => ({
+      code: c.code,
+      name: c.name,
+      setCode: c.setCode,
+      pct: c.score,
     }));
-
-    // Rough EF (gha/capita) estimate — better score → smaller footprint
-    // 100 → 2.5 gha (best), 0 → 8.0 gha (worst). Linear map.
-    const ef = +(8.0 - (overallScore / 100) * 5.5).toFixed(2);
-
-    // Rating band
-    const band =
-      overallScore >= 75
-        ? { label: 'Highly Sustainable', color: 'text-emerald-700', bg: 'bg-emerald-50', ring: 'ring-emerald-200' }
-        : overallScore >= 55
-        ? { label: 'On Track', color: 'text-lime-700', bg: 'bg-lime-50', ring: 'ring-lime-200' }
-        : overallScore >= 40
-        ? { label: 'Needs Improvement', color: 'text-amber-700', bg: 'bg-amber-50', ring: 'ring-amber-200' }
-        : { label: 'Critical', color: 'text-red-700', bg: 'bg-red-50', ring: 'ring-red-200' };
-
-    return { overallScore, setScores, catList, ef, band };
-  }, [entries]);
+    const b = scoreBand(overallC.score);
+    return {
+      overallScore: overallC.score,
+      setScores,
+      catList,
+      ef: overallC.ef,
+      band: { label: b.label, color: b.color, bg: b.bg, ring: b.ring },
+    };
+  }, [entries, weights]);
 
   // Run calculation animation
   const runCalculation = () => {

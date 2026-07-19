@@ -4,7 +4,13 @@ import { useState, useMemo, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import { useDataEntry } from '@/stores/data-entry';
 import { useEffectiveWeights } from '@/stores/weights';
+import { useEffectiveMunicipality } from '@/hooks/useEffectiveMunicipality';
 import { computeSetScores, SET_THEME } from '@/lib/scores';
+import {
+  fetchApprovedMunicipalityScores,
+  type MunicipalityEntries,
+} from '@/lib/data-entry-service';
+import { MUNICIPALITIES } from '@/lib/pilot-municipalities';
 import type { SetCode } from '@/lib/scald-indicators';
 import {
   Layers,
@@ -30,82 +36,6 @@ const MapView = dynamic(() => import('./MapView').then((m) => m.MapView), {
   ),
 });
 
-// The pilot partner municipalities from the SCALD KA220-ADU project — one
-// representative city per partner country (the two extra Trabzon districts,
-// Ortahisar & Yomra, share Trabzon's location so are not plotted separately).
-const PARTNERS_BASE = [
-  {
-    id: 'trabzon',
-    name: 'Trabzon Metropolitan',
-    country: 'Turkey',
-    countryCode: 'TR',
-    lat: 41.0027,
-    lng: 39.7168,
-    population: 824352,
-    partner: 'Trabzon Metropolitan Municipality · KTU',
-  },
-  {
-    id: 'ortahisar',
-    name: 'Ortahisar',
-    country: 'Turkey',
-    countryCode: 'TR',
-    lat: 41.005,
-    lng: 39.7226,
-    population: 330836,
-    partner: 'Ortahisar Municipality',
-  },
-  {
-    id: 'yomra',
-    name: 'Yomra',
-    country: 'Turkey',
-    countryCode: 'TR',
-    lat: 40.9539,
-    lng: 39.86,
-    population: 49721,
-    partner: 'Yomra Municipality',
-  },
-  {
-    id: 'kavala',
-    name: 'Kavala',
-    country: 'Greece',
-    countryCode: 'GR',
-    lat: 41.0131,
-    lng: 24.4046,
-    population: 66376,
-    partner: 'Municipality of Kavala',
-  },
-  {
-    id: 'tulcea',
-    name: 'Tulcea',
-    country: 'Romania',
-    countryCode: 'RO',
-    lat: 45.1667,
-    lng: 28.8006,
-    population: 65624,
-    partner: 'Municipality of Tulcea',
-  },
-  {
-    id: 'novaci',
-    name: 'Novaci',
-    country: 'North Macedonia',
-    countryCode: 'MK',
-    lat: 41.0428,
-    lng: 21.4583,
-    population: 2648,
-    partner: 'Municipality of Novaci · UKLO',
-  },
-];
-
-// Demo scores per municipality (pending real data). Structured per set.
-// Trabzon gets the user's actual score for a "this is my municipality" feel.
-const DEMO_SCORES: Record<string, Record<SetCode, number>> = {
-  ortahisar: { ES: 58, SS: 55, MS: 52, ECS: 50 },
-  yomra: { ES: 52, SS: 49, MS: 47, ECS: 45 },
-  kavala: { ES: 61, SS: 58, MS: 54, ECS: 49 },
-  tulcea: { ES: 55, SS: 51, MS: 48, ECS: 46 },
-  novaci: { ES: 48, SS: 52, MS: 44, ECS: 42 },
-};
-
 const SET_LAYERS: { id: 'total' | SetCode; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
   { id: 'total', label: 'Overall', icon: BarChart3 },
   { id: 'ES', label: 'Environmental', icon: MapIcon },
@@ -114,36 +44,54 @@ const SET_LAYERS: { id: 'total' | SetCode; label: string; icon: React.ComponentT
   { id: 'ECS', label: 'Economic', icon: MapIcon },
 ];
 
+const ZERO_SCORES: Record<SetCode, number> = { ES: 0, SS: 0, MS: 0, ECS: 0 };
+
 export function MapPageClient() {
-  const entries = useDataEntry((s) => s.entries);
+  const { municipalityId } = useEffectiveMunicipality();
+  const selectedYear = useDataEntry((s) => s.selectedYear);
   const weights = useEffectiveWeights();
-  const mySetScores = useMemo(() => computeSetScores(entries, weights), [entries, weights]);
+
+  // Real, current scores: the approved data for each municipality in the
+  // selected year. RLS scopes what we can read (researchers/admin see every
+  // partner; a decision maker sees only their own). Municipalities without
+  // approved data for the year simply show no score — no demo/placeholder.
+  const [approved, setApproved] = useState<MunicipalityEntries>({});
+  useEffect(() => {
+    let cancelled = false;
+    void fetchApprovedMunicipalityScores(selectedYear).then((data) => {
+      if (!cancelled) setApproved(data);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedYear]);
 
   const partners: PartnerMunicipality[] = useMemo(() => {
-    return PARTNERS_BASE.map((p) => {
-      const scores =
-        p.id === 'trabzon'
-          ? {
-              ES: mySetScores.ES.score,
-              SS: mySetScores.SS.score,
-              MS: mySetScores.MS.score,
-              ECS: mySetScores.ECS.score,
-            }
-          : DEMO_SCORES[p.id];
-
-      const values = [scores.ES, scores.SS, scores.MS, scores.ECS];
-      const withData = values.filter((v) => v > 0);
+    return MUNICIPALITIES.filter((m) => !m.demo).map((m) => {
+      const muniEntries = approved[m.id];
+      const ss = muniEntries ? computeSetScores(muniEntries, weights) : null;
+      const scores: Record<SetCode, number> = ss
+        ? { ES: ss.ES.score, SS: ss.SS.score, MS: ss.MS.score, ECS: ss.ECS.score }
+        : ZERO_SCORES;
+      const withData = [scores.ES, scores.SS, scores.MS, scores.ECS].filter((v) => v > 0);
       const total =
         withData.length === 0 ? 0 : Math.round(withData.reduce((s, v) => s + v, 0) / withData.length);
 
       return {
-        ...p,
+        id: m.id,
+        name: m.name,
+        country: m.country,
+        countryCode: m.countryCode,
+        lat: m.lat,
+        lng: m.lng,
+        population: m.population,
+        partner: `${m.region} · ${m.country}`,
         scores,
         total,
-        isMine: p.id === 'trabzon',
+        isMine: m.id === municipalityId,
       };
     });
-  }, [mySetScores]);
+  }, [approved, weights, municipalityId]);
 
   const [activeLayer, setActiveLayer] = useState<'total' | SetCode>('total');
   const [selectedCountries, setSelectedCountries] = useState<string[]>([]);
@@ -174,30 +122,32 @@ export function MapPageClient() {
     return m.scores[activeLayer];
   };
 
+  // Only municipalities that actually have a score for the active layer count
+  // toward the summary — municipalities with no approved data aren't "worst = 0".
+  const scored = useMemo(() => filtered.filter((m) => activeValue(m) > 0), [filtered, activeLayer]);
+
   const avgScore = useMemo(
     () =>
-      filtered.length === 0
+      scored.length === 0
         ? 0
-        : Math.round(filtered.reduce((s, m) => s + activeValue(m), 0) / filtered.length),
-    [filtered, activeLayer],
+        : Math.round(scored.reduce((s, m) => s + activeValue(m), 0) / scored.length),
+    [scored, activeLayer],
   );
 
   const bestCity = useMemo(
     () =>
-      filtered.reduce(
-        (best, m) => (activeValue(m) > (best ? activeValue(best) : 0) ? m : best),
-        filtered[0],
-      ),
-    [filtered, activeLayer],
+      scored.length === 0
+        ? undefined
+        : scored.reduce((best, m) => (activeValue(m) > activeValue(best) ? m : best), scored[0]),
+    [scored, activeLayer],
   );
 
   const worstCity = useMemo(
     () =>
-      filtered.reduce(
-        (worst, m) => (activeValue(m) < (worst ? activeValue(worst) : 101) ? m : worst),
-        filtered[0],
-      ),
-    [filtered, activeLayer],
+      scored.length === 0
+        ? undefined
+        : scored.reduce((worst, m) => (activeValue(m) < activeValue(worst) ? m : worst), scored[0]),
+    [scored, activeLayer],
   );
 
   return (
@@ -384,8 +334,9 @@ export function MapPageClient() {
         <div className="flex items-start gap-2 rounded-lg border border-slate-100 bg-slate-50 p-3">
           <Info className="mt-0.5 h-3.5 w-3.5 shrink-0 text-slate-400" />
           <p className="text-[10px] leading-relaxed text-slate-500">
-            Your municipality (Trabzon) uses live data from your entries. Partner cities show demo
-            data pending real submissions.
+            Scores are the official (approved) figures for the selected year — “—” means a
+            municipality hasn’t had its data approved yet. Cross-municipality comparison is visible
+            to researchers and admins; a decision maker sees their own municipality.
           </p>
         </div>
       </div>

@@ -110,6 +110,57 @@ export async function fetchServerSnapshot(municipalityId: string): Promise<Serve
   }
 }
 
+/** Per-municipality entry map for one year, shaped like the store's `entries`
+ * so `computeSetScores` can consume it directly. Only municipalities whose year
+ * is APPROVED are included — the map shows official scores only, matching the
+ * approval gate on the other result screens. RLS still scopes what the caller
+ * can read: researchers/admin see every municipality; a decision maker sees
+ * only their own. */
+export type MunicipalityEntries = Record<
+  string,
+  Record<string, { score: number; rawValue?: string; enteredAt: number }>
+>;
+
+export async function fetchApprovedMunicipalityScores(year: number): Promise<MunicipalityEntries> {
+  if (!isConfigured()) return {};
+  const supabase = scaldClient();
+  try {
+    const { data: subs } = await supabase
+      .from('scald_data_submissions')
+      .select('municipality_id')
+      .eq('year', year)
+      .eq('status', 'approved');
+    const ids = Array.from(
+      new Set(((subs ?? []) as Array<{ municipality_id: string }>).map((s) => s.municipality_id)),
+    );
+    if (ids.length === 0) return {};
+
+    const { data: rows } = await supabase
+      .from('scald_indicator_entries')
+      .select('municipality_id, indicator_code, score, raw_value')
+      .eq('year', year)
+      .in('municipality_id', ids);
+
+    const out: MunicipalityEntries = {};
+    for (const r of (rows ?? []) as Array<{
+      municipality_id: string;
+      indicator_code: string;
+      score: number;
+      raw_value: string;
+    }>) {
+      (out[r.municipality_id] ??= {})[r.indicator_code] = {
+        score: r.score,
+        rawValue: r.raw_value,
+        enteredAt: 0,
+      };
+    }
+    return out;
+  } catch (err) {
+    console.warn('[SCALD] fetchApprovedMunicipalityScores failed:', err);
+    return {};
+  }
+}
+
 export async function upsertEntry(
   municipalityId: string,
   indicatorCode: string,

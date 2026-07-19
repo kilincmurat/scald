@@ -6,9 +6,13 @@ import dynamic from 'next/dynamic';
 import { useDataEntry } from '@/stores/data-entry';
 import { useEffectiveWeights } from '@/stores/weights';
 import { useProfile } from '@/hooks/useProfile';
+import { useSubmission } from '@/hooks/useSubmission';
+import { canRespondFeedback } from '@/lib/roles';
 import { useEffectiveMunicipality } from '@/hooks/useEffectiveMunicipality';
-import { MUNICIPALITIES } from '@/lib/pilot-municipalities';
+import { MUNICIPALITIES, type Municipality } from '@/lib/pilot-municipalities';
 import { YearPicker } from '@/components/data-entry/YearPicker';
+import { CalculationPending } from '@/components/common/CalculationPending';
+import type { SubmissionStatus } from '@/lib/data-submission-service';
 import {
   computeCategoryScores,
   computeSetScores,
@@ -47,9 +51,19 @@ export function OverviewDashboard() {
   const completed = useDataEntry((s) => s.completed);
   const badges = useDataEntry((s) => s.badges);
 
-  const { canBrowseAll, municipality: viewingMunicipality } = useEffectiveMunicipality();
+  const { canBrowseAll, municipality: viewingMunicipality, municipalityId, isAdmin } =
+    useEffectiveMunicipality();
   const adminMuniId = useDataEntry((s) => s.adminMunicipalityId);
   const setAdminMuni = useDataEntry((s) => s.setAdminMunicipality);
+  const selectedYear = useDataEntry((s) => s.selectedYear);
+
+  // Scores are only "official" once the decision maker has approved (calculated)
+  // the year. Until then non-admins see a pending state instead of a computed
+  // profile — so nothing appears the instant data entry submits. Admins bypass.
+  const { submission, loading: submissionLoading } = useSubmission(municipalityId, selectedYear);
+  const role = profile?.role;
+  const canApprove = role ? canRespondFeedback(role) : false;
+  const official = isAdmin || submission?.status === 'approved';
 
   const weights = useEffectiveWeights();
   const setScores = useMemo(() => computeSetScores(entries, weights), [entries, weights]);
@@ -73,6 +87,31 @@ export function OverviewDashboard() {
 
   if (isEmpty) {
     return <EmptyState />;
+  }
+
+  // Wait until we know the approval status before deciding what to show — avoids
+  // flashing the "pending" state for data that is actually approved.
+  if (!isAdmin && submissionLoading) {
+    return (
+      <div className="p-4 lg:p-6">
+        <div className="h-40 rounded-xl bg-slate-100 animate-pulse" />
+      </div>
+    );
+  }
+
+  // Data exists but isn't approved/calculated yet → gate the scores.
+  if (!official) {
+    return (
+      <PendingOverview
+        viewingMunicipality={viewingMunicipality}
+        canBrowseAll={canBrowseAll}
+        adminMuniId={adminMuniId}
+        setAdminMuni={setAdminMuni}
+        submissionStatus={submission?.status}
+        canApprove={canApprove}
+        year={selectedYear}
+      />
+    );
   }
 
   const band = scoreBand(overall.score);
@@ -425,6 +464,61 @@ function IndicatorHighlights({
           })}
         </ul>
       )}
+    </div>
+  );
+}
+
+function PendingOverview({
+  viewingMunicipality,
+  canBrowseAll,
+  adminMuniId,
+  setAdminMuni,
+  submissionStatus,
+  canApprove,
+  year,
+}: {
+  viewingMunicipality: Municipality | null;
+  canBrowseAll: boolean;
+  adminMuniId: string | null;
+  setAdminMuni: (id: string) => void;
+  submissionStatus: SubmissionStatus | null | undefined;
+  canApprove: boolean;
+  year: number;
+}) {
+  return (
+    <div className="p-4 lg:p-6 space-y-5 lg:space-y-6">
+      {/* Keep the context bar so the user can still switch year / municipality. */}
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs shadow-sm">
+          <Building2 className="h-3.5 w-3.5 text-slate-400" />
+          <span className="text-slate-500">Viewing:</span>
+          {viewingMunicipality ? (
+            <span className="font-semibold text-slate-800">
+              {viewingMunicipality.flag} {viewingMunicipality.name}
+            </span>
+          ) : (
+            <span className="text-slate-400">No municipality</span>
+          )}
+        </div>
+        <div className="flex items-center gap-2">
+          <YearPicker size="sm" />
+          {canBrowseAll && (
+            <select
+              value={adminMuniId ?? MUNICIPALITIES[0]?.id ?? ''}
+              onChange={(e) => setAdminMuni(e.target.value)}
+              className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 shadow-sm outline-none focus:border-slate-400 focus:ring-2 focus:ring-slate-200"
+            >
+              {MUNICIPALITIES.map((m) => (
+                <option key={m.id} value={m.id}>
+                  {m.flag} {m.name} · {m.country}
+                </option>
+              ))}
+            </select>
+          )}
+        </div>
+      </div>
+
+      <CalculationPending status={submissionStatus} canApprove={canApprove} year={year} />
     </div>
   );
 }

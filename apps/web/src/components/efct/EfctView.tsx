@@ -5,8 +5,12 @@ import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { useDataEntry } from '@/stores/data-entry';
 import { useEffectiveWeights } from '@/stores/weights';
+import { useProfile } from '@/hooks/useProfile';
+import { useSubmission } from '@/hooks/useSubmission';
+import { canRespondFeedback } from '@/lib/roles';
 import { useEffectiveMunicipality } from '@/hooks/useEffectiveMunicipality';
 import { YearPicker } from '@/components/data-entry/YearPicker';
+import { CalculationPending } from '@/components/common/CalculationPending';
 import {
   computeCategoryScores,
   computeOverallScore,
@@ -40,7 +44,14 @@ const SET_ORDER: SetCode[] = ['ES', 'SS', 'MS', 'ECS'];
 export function EfctView() {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
-  useEffectiveMunicipality();
+  const { municipalityId, isAdmin } = useEffectiveMunicipality();
+
+  const { profile } = useProfile();
+  const selectedYear = useDataEntry((s) => s.selectedYear);
+  const { submission, loading: submissionLoading } = useSubmission(municipalityId, selectedYear);
+  const canApprove = profile?.role ? canRespondFeedback(profile.role) : false;
+  // Footprint results are only official once the year is approved/calculated.
+  const official = isAdmin || submission?.status === 'approved';
 
   const entries = useDataEntry((s) => s.entries);
   const weights = useEffectiveWeights();
@@ -82,6 +93,27 @@ export function EfctView() {
             <ClipboardList className="h-4 w-4" /> Go to data entry
           </Link>
         </div>
+      </div>
+    );
+  }
+
+  // Wait until the approval status is known before gating (avoids a flash).
+  if (!isAdmin && submissionLoading) {
+    return (
+      <div className="p-4 lg:p-6">
+        <div className="h-40 rounded-xl bg-slate-100 animate-pulse" />
+      </div>
+    );
+  }
+
+  // Data exists but the year isn't approved/calculated yet → gate the results.
+  if (!official) {
+    return (
+      <div className="p-4 lg:p-6 space-y-5">
+        <div className="flex items-center justify-end">
+          <YearPicker size="sm" label="Reporting year" />
+        </div>
+        <CalculationPending status={submission?.status} canApprove={canApprove} year={selectedYear} />
       </div>
     );
   }

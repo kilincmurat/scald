@@ -17,13 +17,17 @@ import {
  */
 export function useSubmission(municipalityId: string | null, year: number) {
   const [submission, setSubmission] = useState<SubmissionRow | null>(null);
-  const [loading, setLoading] = useState(false);
+  // Starts true: the hook always fetches on mount, so consumers that gate on the
+  // approval status (e.g. Overview/EFCT) can show a skeleton until it's known
+  // instead of briefly flashing a "not approved" state for approved data.
+  const [loading, setLoading] = useState(true);
   const [mutating, setMutating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const refresh = useCallback(async () => {
     if (!municipalityId) {
       setSubmission(null);
+      setLoading(false);
       return;
     }
     setLoading(true);
