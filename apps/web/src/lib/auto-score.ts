@@ -142,6 +142,29 @@ function thresholdNumbers(raw: string): number[] {
   return num !== null ? [num] : [];
 }
 
+/**
+ * Derive whether HIGHER or LOWER raw values score better, purely from the
+ * numeric thresholds — no hand-maintained flags. Compares a representative
+ * value of the weakest scoring band (1) with the best band (5): if band 5's
+ * numbers are lower, the indicator is inverse ("lower is better", e.g. response
+ * time, pollution incidents, per-capita consumption). Returns null for
+ * categorical/maturity indicators or when it can't be determined. Used only to
+ * render a human hint — it never affects the computed score.
+ */
+export function scoringDirection(thresholds: string[]): 'higher' | 'lower' | null {
+  const repr = (i: number): number | null => {
+    const nums = thresholdNumbers(thresholds[i] ?? '');
+    if (nums.length === 0) return null;
+    return nums.reduce((a, b) => a + b, 0) / nums.length;
+  };
+  const weak = repr(1);
+  const best = repr(5);
+  if (weak === null || best === null) return null;
+  if (best > weak) return 'higher';
+  if (best < weak) return 'lower';
+  return null;
+}
+
 export type OutlierWarning = { severity: 'high' | 'low'; lo: number; hi: number };
 
 /**

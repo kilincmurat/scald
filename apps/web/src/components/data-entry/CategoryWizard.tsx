@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { INDICATORS, getNextCategoryCode, type Indicator, type SetCode } from '@/lib/scald-indicators';
-import { autoScore, isNumericIndicator, checkOutlier } from '@/lib/auto-score';
+import { autoScore, isNumericIndicator, checkOutlier, scoringDirection } from '@/lib/auto-score';
 import { useDataEntry } from '@/stores/data-entry';
 import { useThresholds, getEffectiveThresholds } from '@/stores/thresholds';
 import { useProfile } from '@/hooks/useProfile';
@@ -22,6 +22,8 @@ import {
   Zap,
   AlertCircle,
   Eye,
+  TrendingUp,
+  TrendingDown,
 } from 'lucide-react';
 
 const SET_GRADIENT: Record<SetCode, string> = {
@@ -376,6 +378,8 @@ function IndicatorRow({
   const hasRaw = rawValue.trim().length > 0;
   const isComplete = currentScore !== undefined && hasRaw;
   const isNumeric = isNumericIndicator(indicator.thresholds);
+  // Derived from the thresholds — flags inverse indicators (lower value = better).
+  const direction = isNumeric ? scoringDirection(indicator.thresholds) : null;
   const autoUnresolved =
     isNumeric && hasRaw && currentScore === undefined;
   // Advisory only — does not block saving.
@@ -436,12 +440,31 @@ function IndicatorRow({
 
       {expanded && (
         <div className="p-4 pt-3 space-y-3">
-          {indicator.method && (
-            <div className="flex items-start gap-2 rounded-lg border border-slate-100 bg-slate-50 px-3 py-2">
-              <Info className="mt-0.5 h-3.5 w-3.5 shrink-0 text-slate-400" />
-              <p className="text-[11px] leading-relaxed text-slate-600 whitespace-pre-line">
-                {indicator.method}
-              </p>
+          {(indicator.method || direction) && (
+            <div className="flex flex-col gap-2 rounded-lg border border-slate-100 bg-slate-50 px-3 py-2">
+              {indicator.method && (
+                <div className="flex items-start gap-2">
+                  <Info className="mt-0.5 h-3.5 w-3.5 shrink-0 text-slate-400" />
+                  <p className="text-[11px] leading-relaxed text-slate-600 whitespace-pre-line">
+                    {indicator.method}
+                  </p>
+                </div>
+              )}
+              {direction === 'higher' && (
+                <div className="flex items-center gap-1.5 text-[11px] font-medium text-emerald-700">
+                  <TrendingUp className="h-3.5 w-3.5 shrink-0" />
+                  <span>Higher is better — a larger value scores higher.</span>
+                </div>
+              )}
+              {direction === 'lower' && (
+                <div className="flex items-start gap-1.5 rounded-md bg-amber-50 px-2 py-1 text-[11px] font-medium text-amber-700 ring-1 ring-amber-200">
+                  <TrendingDown className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                  <span>
+                    Inverse indicator — <strong>lower is better</strong>. A smaller value scores
+                    higher (e.g. {indicator.thresholds[5] || 'the lowest band'} = 5).
+                  </span>
+                </div>
+              )}
             </div>
           )}
 
