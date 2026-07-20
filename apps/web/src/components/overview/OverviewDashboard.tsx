@@ -24,9 +24,8 @@ import {
   SET_THEME,
   timeAgo,
 } from '@/lib/scores';
-import { INDICATORS, type SetCode } from '@/lib/scald-indicators';
+import { type SetCode } from '@/lib/scald-indicators';
 import {
-  ArrowRight,
   ClipboardList,
   Download,
   Sparkles,
@@ -84,7 +83,21 @@ export function OverviewDashboard() {
   }
 
   if (isEmpty) {
-    return <EmptyState />;
+    // No data for the selected municipality/year. Keep the context bar so the
+    // user can switch municipality/year (previously the selector vanished and
+    // they were stranded), and tailor the message to the role — nobody who
+    // reaches the Overview (admin / decision maker / researcher) is a data
+    // entry user, so we never show a "Start Data Entry" call to action here.
+    return (
+      <EmptyOverview
+        viewingMunicipality={viewingMunicipality}
+        canBrowseAll={canBrowseAll}
+        adminMuniId={adminMuniId}
+        setAdminMuni={setAdminMuni}
+        role={role}
+        year={selectedYear}
+      />
+    );
   }
 
   // Wait until we know the approval status before deciding what to show — avoids
@@ -117,35 +130,12 @@ export function OverviewDashboard() {
   return (
     <div className="p-4 lg:p-6 space-y-5 lg:space-y-6">
       {/* Municipality context + admin selector */}
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs shadow-sm">
-          <Building2 className="h-3.5 w-3.5 text-slate-400" />
-          <span className="text-slate-500">Viewing:</span>
-          {viewingMunicipality ? (
-            <span className="font-semibold text-slate-800">
-              {viewingMunicipality.flag} {viewingMunicipality.name}
-            </span>
-          ) : (
-            <span className="text-slate-400">No municipality</span>
-          )}
-        </div>
-        <div className="flex items-center gap-2">
-          <YearPicker size="sm" />
-          {canBrowseAll && (
-            <select
-              value={adminMuniId ?? MUNICIPALITIES[0]?.id ?? ''}
-              onChange={(e) => setAdminMuni(e.target.value)}
-              className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 shadow-sm outline-none focus:border-slate-400 focus:ring-2 focus:ring-slate-200"
-            >
-              {MUNICIPALITIES.map((m) => (
-                <option key={m.id} value={m.id}>
-                  {m.flag} {m.name} · {m.country}
-                </option>
-              ))}
-            </select>
-          )}
-        </div>
-      </div>
+      <ContextBar
+        viewingMunicipality={viewingMunicipality}
+        canBrowseAll={canBrowseAll}
+        adminMuniId={adminMuniId}
+        setAdminMuni={setAdminMuni}
+      />
 
       {/* Overall Score Hero */}
       <section
@@ -481,61 +471,114 @@ function PendingOverview({
   return (
     <div className="p-4 lg:p-6 space-y-5 lg:space-y-6">
       {/* Keep the context bar so the user can still switch year / municipality. */}
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs shadow-sm">
-          <Building2 className="h-3.5 w-3.5 text-slate-400" />
-          <span className="text-slate-500">Viewing:</span>
-          {viewingMunicipality ? (
-            <span className="font-semibold text-slate-800">
-              {viewingMunicipality.flag} {viewingMunicipality.name}
-            </span>
-          ) : (
-            <span className="text-slate-400">No municipality</span>
-          )}
-        </div>
-        <div className="flex items-center gap-2">
-          <YearPicker size="sm" />
-          {canBrowseAll && (
-            <select
-              value={adminMuniId ?? MUNICIPALITIES[0]?.id ?? ''}
-              onChange={(e) => setAdminMuni(e.target.value)}
-              className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 shadow-sm outline-none focus:border-slate-400 focus:ring-2 focus:ring-slate-200"
-            >
-              {MUNICIPALITIES.map((m) => (
-                <option key={m.id} value={m.id}>
-                  {m.flag} {m.name} · {m.country}
-                </option>
-              ))}
-            </select>
-          )}
-        </div>
-      </div>
+      <ContextBar
+        viewingMunicipality={viewingMunicipality}
+        canBrowseAll={canBrowseAll}
+        adminMuniId={adminMuniId}
+        setAdminMuni={setAdminMuni}
+      />
 
       <CalculationPending status={submissionStatus} canApprove={canApprove} year={year} />
     </div>
   );
 }
 
-function EmptyState() {
+/**
+ * Municipality + year context bar shown at the top of the Overview. Kept in one
+ * place so the score view, the pending view and the empty view all render the
+ * exact same selector — the empty/pending states used to drop it, which
+ * stranded admins/researchers on a screen with no way to switch municipality.
+ */
+function ContextBar({
+  viewingMunicipality,
+  canBrowseAll,
+  adminMuniId,
+  setAdminMuni,
+}: {
+  viewingMunicipality: Municipality | null;
+  canBrowseAll: boolean;
+  adminMuniId: string | null;
+  setAdminMuni: (id: string) => void;
+}) {
   return (
-    <div className="p-6">
+    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+      <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs shadow-sm">
+        <Building2 className="h-3.5 w-3.5 text-slate-400" />
+        <span className="text-slate-500">Viewing:</span>
+        {viewingMunicipality ? (
+          <span className="font-semibold text-slate-800">
+            {viewingMunicipality.flag} {viewingMunicipality.name}
+          </span>
+        ) : (
+          <span className="text-slate-400">No municipality</span>
+        )}
+      </div>
+      <div className="flex items-center gap-2">
+        <YearPicker size="sm" />
+        {canBrowseAll && (
+          <select
+            value={adminMuniId ?? MUNICIPALITIES[0]?.id ?? ''}
+            onChange={(e) => setAdminMuni(e.target.value)}
+            className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 shadow-sm outline-none focus:border-slate-400 focus:ring-2 focus:ring-slate-200"
+          >
+            {MUNICIPALITIES.map((m) => (
+              <option key={m.id} value={m.id}>
+                {m.flag} {m.name} · {m.country}
+              </option>
+            ))}
+          </select>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Shown when the selected municipality/year has no indicators entered. The
+ * Overview is only reachable by admin / decision maker / researcher — none of
+ * whom do data entry — so this is an informational state, never a "Start Data
+ * Entry" call to action. The context bar stays visible so browsing users can
+ * switch to a municipality/year that does have data.
+ */
+function EmptyOverview({
+  viewingMunicipality,
+  canBrowseAll,
+  adminMuniId,
+  setAdminMuni,
+  role,
+  year,
+}: {
+  viewingMunicipality: Municipality | null;
+  canBrowseAll: boolean;
+  adminMuniId: string | null;
+  setAdminMuni: (id: string) => void;
+  role: string | undefined;
+  year: number;
+}) {
+  const muniName = viewingMunicipality?.name ?? 'this municipality';
+  const message =
+    role === 'decision_maker'
+      ? `The data entry team hasn't submitted any indicators for ${muniName} in ${year} yet. Once they submit and you approve, the assessment will appear here.`
+      : canBrowseAll
+      ? `No indicators have been entered for ${muniName} in ${year} yet. Use the selector above to view another municipality or year.`
+      : `No indicators have been entered for ${year} yet.`;
+
+  return (
+    <div className="p-4 lg:p-6 space-y-5 lg:space-y-6">
+      {/* Keep the context bar so the user can still switch year / municipality. */}
+      <ContextBar
+        viewingMunicipality={viewingMunicipality}
+        canBrowseAll={canBrowseAll}
+        adminMuniId={adminMuniId}
+        setAdminMuni={setAdminMuni}
+      />
+
       <div className="mx-auto max-w-2xl rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm lg:p-12">
-        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-lg">
+        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-slate-400 to-slate-500 text-white shadow">
           <ClipboardList className="h-8 w-8" />
         </div>
-        <h2 className="mt-5 text-xl font-bold text-slate-900 lg:text-2xl">
-          Welcome to SCALD
-        </h2>
-        <p className="mx-auto mt-2 max-w-md text-sm text-slate-500">
-          Start by entering data for your municipality. Fill in 152 indicators across 24 categories
-          — the overview, ecological footprint, and reports will all update automatically.
-        </p>
-        <Link
-          href="/data-entry"
-          className="mt-6 inline-flex items-center gap-2 rounded-lg bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800"
-        >
-          Start Data Entry <ArrowRight className="h-4 w-4" />
-        </Link>
+        <h2 className="mt-5 text-xl font-bold text-slate-900 lg:text-2xl">No data for {year} yet</h2>
+        <p className="mx-auto mt-2 max-w-md text-sm text-slate-500">{message}</p>
       </div>
     </div>
   );
