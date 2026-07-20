@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { INDICATORS, getNextCategoryCode, type Indicator, type SetCode } from '@/lib/scald-indicators';
 import { autoScore, isNumericIndicator, checkOutlier, scoringDirection } from '@/lib/auto-score';
-import { useDataEntry } from '@/stores/data-entry';
+import { useDataEntry, isYearEditable } from '@/stores/data-entry';
 import { useThresholds, getEffectiveThresholds } from '@/stores/thresholds';
 import { useProfile } from '@/hooks/useProfile';
 import { useSubmission } from '@/hooks/useSubmission';
@@ -73,8 +73,11 @@ export function CategoryWizard({ categoryCode }: { categoryCode: string }) {
   const role = profile?.role;
   const isAdmin = role === 'admin';
   // Admin can always edit. data_entry can edit only while the year is unlocked
-  // (not submitted/approved). Others (decision_maker, researcher) are read-only.
-  const canWrite = isAdmin || (role === 'data_entry' && !locked);
+  // (not submitted/approved) AND the reporting year is still editable (only
+  // completed years accept data — same rule the submit button enforces). Others
+  // (decision_maker, researcher) are read-only.
+  const yearEditable = isYearEditable(selectedYear);
+  const canWrite = isAdmin || (role === 'data_entry' && !locked && yearEditable);
   const lockedForDataEntry = role === 'data_entry' && locked;
   const approvedLock = submission?.status === 'approved';
   const thresholdOverrides = useThresholds((s) => s.overrides);

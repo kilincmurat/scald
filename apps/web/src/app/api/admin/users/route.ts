@@ -15,11 +15,6 @@ import { createClient as createServerClient } from '@/lib/supabase/server';
 const VALID_ROLES = ['admin', 'data_entry', 'decision_maker', 'researcher'] as const;
 type Role = (typeof VALID_ROLES)[number];
 
-// Belediyeye bağlı roller (kendi belediyesi var).
-function isMunicipalityRole(role: Role): boolean {
-  return role === 'data_entry' || role === 'decision_maker';
-}
-
 function service() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -88,19 +83,10 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Invalid role' }, { status: 400 });
   }
 
-  // Institution is role-dependent and mutually exclusive:
-  //   data_entry / decision_maker → municipality
-  //   researcher                  → university
-  //   admin                       → neither (system-wide)
-  const municipalityId = isMunicipalityRole(role) ? body.municipality_id ?? null : null;
-  const universityId = role === 'researcher' ? body.university_id ?? null : null;
-
-  if (isMunicipalityRole(role) && !municipalityId) {
-    return NextResponse.json({ error: 'This role requires a municipality' }, { status: 400 });
-  }
-  if (role === 'researcher' && !universityId) {
-    return NextResponse.json({ error: 'Researchers require a university' }, { status: 400 });
-  }
+  // Affiliation is optional and independent of role — a user may belong to a
+  // municipality, a university, both, or neither. Admins are always system-wide.
+  const municipalityId = role === 'admin' ? null : body.municipality_id ?? null;
+  const universityId = role === 'admin' ? null : body.university_id ?? null;
 
   // Create auth user
   const { data: createRes, error: createErr } = await admin.auth.admin.createUser({

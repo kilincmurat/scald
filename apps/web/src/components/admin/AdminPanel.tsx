@@ -77,7 +77,7 @@ export function AdminPanel() {
           icon={<Building2 className="h-3.5 w-3.5 text-emerald-500" />}
           label="Municipalities"
           value={MUNICIPALITIES.length}
-          sub="Turkey · Greece · Romania · N. Macedonia"
+          sub="Türkiye · Greece · Romania · N. Macedonia"
         />
         <StatCard
           icon={<Database className="h-3.5 w-3.5 text-blue-500" />}

@@ -27,7 +27,7 @@ export const MUNICIPALITIES: Municipality[] = [
   {
     id: 'a1a1a1a1-a1a1-a1a1-a1a1-a1a1a1a1a1a1',
     name: 'Trabzon Metropolitan Municipality',
-    country: 'Turkey',
+    country: 'Türkiye',
     countryCode: 'TR',
     flag: '🇹🇷',
     region: 'Black Sea',
@@ -38,7 +38,7 @@ export const MUNICIPALITIES: Municipality[] = [
   {
     id: 'b1b1b1b1-b1b1-b1b1-b1b1-b1b1b1b1b1b1',
     name: 'Ortahisar Municipality',
-    country: 'Turkey',
+    country: 'Türkiye',
     countryCode: 'TR',
     flag: '🇹🇷',
     region: 'Black Sea',
@@ -49,7 +49,7 @@ export const MUNICIPALITIES: Municipality[] = [
   {
     id: 'b2b2b2b2-b2b2-b2b2-b2b2-b2b2b2b2b2b2',
     name: 'Yomra Municipality',
-    country: 'Turkey',
+    country: 'Türkiye',
     countryCode: 'TR',
     flag: '🇹🇷',
     region: 'Black Sea',

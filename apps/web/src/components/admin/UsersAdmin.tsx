@@ -3,7 +3,11 @@
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { createBrowserClient } from '@supabase/ssr';
-import { MUNICIPALITIES, getMunicipalityById } from '@/lib/pilot-municipalities';
+import {
+  fetchMunicipalities,
+  municipalityFlag,
+  type DbMunicipality,
+} from '@/lib/municipalities-service';
 import { fetchUniversities, type University } from '@/lib/universities-service';
 import { ROLE_LABELS, ROLE_BADGE_COLOR, type Role } from '@/lib/roles';
 import {
@@ -33,11 +37,6 @@ type ProfileRow = {
   created_at: string;
 };
 
-/** Roles that belong to a municipality (as opposed to a university, or nothing). */
-function isMunicipalityRole(role: Role): boolean {
-  return role === 'data_entry' || role === 'decision_maker';
-}
-
 function client() {
   return createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -48,6 +47,7 @@ function client() {
 export function UsersAdmin() {
   const [rows, setRows] = useState<ProfileRow[]>([]);
   const [universities, setUniversities] = useState<University[]>([]);
+  const [municipalities, setMunicipalities] = useState<DbMunicipality[]>([]);
   const [loading, setLoading] = useState(true);
   const [q, setQ] = useState('');
   const [roleFilter, setRoleFilter] = useState<'all' | Role>('all');
@@ -59,18 +59,20 @@ export function UsersAdmin() {
     setLoading(true);
     try {
       const supabase = client();
-      const [{ data }, unis] = await Promise.all([
+      const [{ data }, unis, munis] = await Promise.all([
         supabase
           .from('profiles')
           .select('id, email, full_name, role, municipality_id, university_id, is_active, created_at')
           .order('created_at', { ascending: false }),
         fetchUniversities().catch(() => [] as University[]),
+        fetchMunicipalities().catch(() => [] as DbMunicipality[]),
       ]);
       setRows(((data as ProfileRow[] | null) ?? []).map((p) => ({
         ...p,
         role: (p.role as Role) ?? 'data_entry',
       })));
       setUniversities(unis);
+      setMunicipalities(munis);
     } finally {
       setLoading(false);
     }
@@ -83,6 +85,10 @@ export function UsersAdmin() {
   const universitiesById = useMemo(
     () => Object.fromEntries(universities.map((u) => [u.id, u])) as Record<string, University>,
     [universities],
+  );
+  const municipalitiesById = useMemo(
+    () => Object.fromEntries(municipalities.map((m) => [m.id, m])) as Record<string, DbMunicipality>,
+    [municipalities],
   );
 
   const filtered = useMemo(() => {
@@ -186,7 +192,7 @@ export function UsersAdmin() {
                   </tr>
                 ) : (
                   filtered.map((r) => {
-                    const m = getMunicipalityById(r.municipality_id);
+                    const m = r.municipality_id ? municipalitiesById[r.municipality_id] : null;
                     const uni = r.university_id ? universitiesById[r.university_id] : null;
                     return (
                       <tr
@@ -215,19 +221,20 @@ export function UsersAdmin() {
                         <td className="hidden px-4 py-3 lg:table-cell">
                           {r.role === 'admin' ? (
                             <span className="text-slate-400">System-wide</span>
-                          ) : r.role === 'researcher' ? (
-                            uni ? (
-                              <span className="inline-flex items-center gap-1.5 text-slate-700">
-                                <GraduationCap className="h-3.5 w-3.5 text-indigo-500" />
-                                {uni.name_en || uni.name}
-                              </span>
-                            ) : (
-                              <span className="text-slate-400">No university</span>
-                            )
-                          ) : m ? (
-                            <span className="inline-flex items-center gap-1.5 text-slate-700">
-                              <span>{m.flag}</span>
-                              {m.name}
+                          ) : m || uni ? (
+                            <span className="inline-flex flex-wrap items-center gap-x-3 gap-y-1">
+                              {m && (
+                                <span className="inline-flex items-center gap-1.5 text-slate-700">
+                                  <span>{municipalityFlag(m.country)}</span>
+                                  {m.name_en || m.name}
+                                </span>
+                              )}
+                              {uni && (
+                                <span className="inline-flex items-center gap-1.5 text-slate-700">
+                                  <GraduationCap className="h-3.5 w-3.5 text-indigo-500" />
+                                  {uni.name_en || uni.name}
+                                </span>
+                              )}
                             </span>
                           ) : (
                             <span className="text-slate-400">—</span>
@@ -269,6 +276,7 @@ export function UsersAdmin() {
       {editing && (
         <EditUserModal
           row={editing}
+          municipalities={municipalities}
           universities={universities}
           onClose={() => setEditing(null)}
           onSaved={() => {
@@ -280,6 +288,7 @@ export function UsersAdmin() {
 
       {inviting && (
         <InviteUserModal
+          municipalities={municipalities}
           universities={universities}
           onClose={() => setInviting(false)}
           onCreated={() => {
@@ -304,25 +313,31 @@ export function UsersAdmin() {
 }
 
 function InviteUserModal({
+  municipalities,
   universities,
   onClose,
   onCreated,
 }: {
+  municipalities: DbMunicipality[];
   universities: University[];
   onClose: () => void;
   onCreated: () => void;
 }) {
   const activeUniversities = useMemo(() => universities.filter((u) => u.is_active), [universities]);
+  const activeMunicipalities = useMemo(
+    () => municipalities.filter((m) => m.is_active),
+    [municipalities],
+  );
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [role, setRole] = useState<Role>('data_entry');
-  const [municipalityId, setMunicipalityId] = useState<string>(MUNICIPALITIES[0]?.id ?? '');
-  const [universityId, setUniversityId] = useState<string>(activeUniversities[0]?.id ?? '');
+  // Affiliation is optional and independent of role — a user can belong to a
+  // municipality, a university, both, or neither. (No rule forces a municipality.)
+  const [municipalityId, setMunicipalityId] = useState<string>('');
+  const [universityId, setUniversityId] = useState<string>('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  const needsUniversity = role === 'researcher' && !universityId;
 
   const submit = async () => {
     setBusy(true);
@@ -336,8 +351,8 @@ function InviteUserModal({
           password,
           full_name: fullName.trim(),
           role,
-          municipality_id: isMunicipalityRole(role) ? municipalityId : null,
-          university_id: role === 'researcher' ? universityId : null,
+          municipality_id: municipalityId || null,
+          university_id: universityId || null,
         }),
       });
       const json = await res.json().catch(() => ({}) as { error?: string });
@@ -408,54 +423,60 @@ function InviteUserModal({
               ))}
             </select>
           </div>
-          {isMunicipalityRole(role) && (
-            <div>
-              <label className="mb-1 block text-[11px] font-semibold text-slate-600">Municipality</label>
-              <select
-                value={municipalityId}
-                onChange={(e) => setMunicipalityId(e.target.value)}
-                className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-200"
-              >
-                {MUNICIPALITIES.map((m) => (
-                  <option key={m.id} value={m.id}>
-                    {m.flag} {m.name} · {m.country}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
-
-          {role === 'researcher' && (
-            <div>
-              <label className="mb-1 block text-[11px] font-semibold text-slate-600">University</label>
-              {activeUniversities.length === 0 ? (
-                <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-[11px] text-amber-700">
-                  No universities defined yet. Create one first in Admin Panel → Universities.
-                </p>
-              ) : (
-                <select
-                  value={universityId}
-                  onChange={(e) => setUniversityId(e.target.value)}
-                  className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-200"
-                >
-                  {activeUniversities.map((u) => (
-                    <option key={u.id} value={u.id}>
-                      {u.name_en || u.name}
-                      {u.city ? ` · ${u.city}` : ''}
-                    </option>
-                  ))}
-                </select>
-              )}
-              <p className="mt-1 text-[10px] text-slate-400">
-                Researchers are affiliated with a university, not a municipality.
-              </p>
-            </div>
-          )}
-
-          {role === 'admin' && (
+          {role === 'admin' ? (
             <p className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-[11px] text-slate-500">
               Administrators are system-wide and not affiliated with any institution.
             </p>
+          ) : (
+            <>
+              <div>
+                <label className="mb-1 block text-[11px] font-semibold text-slate-600">
+                  Municipality <span className="font-normal text-slate-400">(optional)</span>
+                </label>
+                <select
+                  value={municipalityId}
+                  onChange={(e) => setMunicipalityId(e.target.value)}
+                  className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-200"
+                >
+                  <option value="">— None —</option>
+                  {activeMunicipalities.map((m) => (
+                    <option key={m.id} value={m.id}>
+                      {municipalityFlag(m.country)} {m.name_en || m.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="mb-1 block text-[11px] font-semibold text-slate-600">
+                  University <span className="font-normal text-slate-400">(optional)</span>
+                </label>
+                {activeUniversities.length === 0 ? (
+                  <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-[11px] text-amber-700">
+                    No universities defined yet. Create one in Admin Panel → Universities.
+                  </p>
+                ) : (
+                  <select
+                    value={universityId}
+                    onChange={(e) => setUniversityId(e.target.value)}
+                    className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-200"
+                  >
+                    <option value="">— None —</option>
+                    {activeUniversities.map((u) => (
+                      <option key={u.id} value={u.id}>
+                        {u.name_en || u.name}
+                        {u.city ? ` · ${u.city}` : ''}
+                      </option>
+                    ))}
+                  </select>
+                )}
+              </div>
+
+              <p className="text-[10px] text-slate-400">
+                Assign a municipality and/or a university — both optional. A user doesn’t have to
+                belong to a municipality.
+              </p>
+            </>
           )}
 
           {error && (
@@ -474,7 +495,7 @@ function InviteUserModal({
           </button>
           <button
             onClick={submit}
-            disabled={busy || !email.trim() || password.length < 8 || needsUniversity}
+            disabled={busy || !email.trim() || password.length < 8}
             className="inline-flex items-center gap-1.5 rounded-lg bg-slate-900 px-3 py-2 text-xs font-semibold text-white transition hover:bg-slate-800 disabled:opacity-50"
           >
             {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Plus className="h-3.5 w-3.5" />}
@@ -575,11 +596,13 @@ function DeleteUserModal({
 
 function EditUserModal({
   row,
+  municipalities,
   universities,
   onClose,
   onSaved,
 }: {
   row: ProfileRow;
+  municipalities: DbMunicipality[];
   universities: University[];
   onClose: () => void;
   onSaved: () => void;
@@ -592,12 +615,15 @@ function EditUserModal({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Active universities, plus the currently-assigned one even if it went inactive.
+  // Active institutions, plus the currently-assigned one even if it went inactive.
   const editableUniversities = useMemo(
     () => universities.filter((u) => u.is_active || u.id === row.university_id),
     [universities, row.university_id],
   );
-  const needsUniversity = role === 'researcher' && !universityId;
+  const editableMunicipalities = useMemo(
+    () => municipalities.filter((m) => m.is_active || m.id === row.municipality_id),
+    [municipalities, row.municipality_id],
+  );
 
   const save = async () => {
     setBusy(true);
@@ -608,8 +634,8 @@ function EditUserModal({
         .from('profiles')
         .update({
           role,
-          municipality_id: isMunicipalityRole(role) ? municipalityId || null : null,
-          university_id: role === 'researcher' ? universityId || null : null,
+          municipality_id: municipalityId || null,
+          university_id: universityId || null,
           full_name: fullName.trim() || null,
           is_active: isActive,
         })
@@ -662,59 +688,60 @@ function EditUserModal({
             </select>
           </div>
 
-          {isMunicipalityRole(role) && (
-            <div>
-              <label className="mb-1 block text-[11px] font-semibold text-slate-600">Municipality</label>
-              <select
-                value={municipalityId}
-                onChange={(e) => setMunicipalityId(e.target.value)}
-                className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-200"
-              >
-                <option value="">— Select municipality —</option>
-                {MUNICIPALITIES.map((m) => (
-                  <option key={m.id} value={m.id}>
-                    {m.flag} {m.name} · {m.country}
-                  </option>
-                ))}
-              </select>
-              <p className="mt-1 text-[10px] text-slate-400">
-                Data entry and decision maker roles require a municipality.
-              </p>
-            </div>
-          )}
-
-          {role === 'researcher' && (
-            <div>
-              <label className="mb-1 block text-[11px] font-semibold text-slate-600">University</label>
-              {editableUniversities.length === 0 ? (
-                <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-[11px] text-amber-700">
-                  No universities defined yet. Create one first in Admin Panel → Universities.
-                </p>
-              ) : (
-                <select
-                  value={universityId}
-                  onChange={(e) => setUniversityId(e.target.value)}
-                  className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-200"
-                >
-                  <option value="">— Select university —</option>
-                  {editableUniversities.map((u) => (
-                    <option key={u.id} value={u.id}>
-                      {u.name_en || u.name}
-                      {u.is_active ? '' : ' · inactive'}
-                    </option>
-                  ))}
-                </select>
-              )}
-              <p className="mt-1 text-[10px] text-slate-400">
-                Researchers are affiliated with a university, not a municipality.
-              </p>
-            </div>
-          )}
-
-          {role === 'admin' && (
+          {role === 'admin' ? (
             <p className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-[11px] text-slate-500">
               Administrators are system-wide and not affiliated with any institution.
             </p>
+          ) : (
+            <>
+              <div>
+                <label className="mb-1 block text-[11px] font-semibold text-slate-600">
+                  Municipality <span className="font-normal text-slate-400">(optional)</span>
+                </label>
+                <select
+                  value={municipalityId}
+                  onChange={(e) => setMunicipalityId(e.target.value)}
+                  className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-200"
+                >
+                  <option value="">— None —</option>
+                  {editableMunicipalities.map((m) => (
+                    <option key={m.id} value={m.id}>
+                      {municipalityFlag(m.country)} {m.name_en || m.name}
+                      {m.is_active ? '' : ' · inactive'}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="mb-1 block text-[11px] font-semibold text-slate-600">
+                  University <span className="font-normal text-slate-400">(optional)</span>
+                </label>
+                {editableUniversities.length === 0 ? (
+                  <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-[11px] text-amber-700">
+                    No universities defined yet. Create one in Admin Panel → Universities.
+                  </p>
+                ) : (
+                  <select
+                    value={universityId}
+                    onChange={(e) => setUniversityId(e.target.value)}
+                    className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-200"
+                  >
+                    <option value="">— None —</option>
+                    {editableUniversities.map((u) => (
+                      <option key={u.id} value={u.id}>
+                        {u.name_en || u.name}
+                        {u.is_active ? '' : ' · inactive'}
+                      </option>
+                    ))}
+                  </select>
+                )}
+              </div>
+
+              <p className="text-[10px] text-slate-400">
+                A user can belong to a municipality and/or a university — both optional.
+              </p>
+            </>
           )}
 
           <label className="flex cursor-pointer items-center justify-between rounded-lg border border-slate-200 px-3 py-2">
@@ -747,7 +774,7 @@ function EditUserModal({
           </button>
           <button
             onClick={save}
-            disabled={busy || needsUniversity}
+            disabled={busy}
             className="inline-flex items-center gap-1.5 rounded-lg bg-slate-900 px-3 py-2 text-xs font-semibold text-white transition hover:bg-slate-800 disabled:opacity-50"
           >
             {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}

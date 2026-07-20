@@ -27,7 +27,7 @@ const features = [
   {
     icon: Globe2,
     title: 'EU Partnership',
-    desc: 'Built for the 4-country partnership across Turkey, Greece, Romania, and North Macedonia',
+    desc: 'Built for the 4-country partnership across Türkiye, Greece, Romania, and North Macedonia',
   },
 ];
 

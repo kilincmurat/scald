@@ -28,7 +28,7 @@ import { INDICATORS, type SetCode } from '@/lib/scald-indicators';
 import {
   ArrowRight,
   ClipboardList,
-  Calculator,
+  Download,
   Sparkles,
   TrendingUp,
   TrendingDown,
@@ -48,8 +48,6 @@ export function OverviewDashboard() {
 
   const { profile } = useProfile();
   const entries = useDataEntry((s) => s.entries);
-  const completed = useDataEntry((s) => s.completed);
-  const badges = useDataEntry((s) => s.badges);
 
   const { canBrowseAll, municipality: viewingMunicipality, municipalityId, isAdmin } =
     useEffectiveMunicipality();
@@ -115,7 +113,6 @@ export function OverviewDashboard() {
   }
 
   const band = scoreBand(overall.score);
-  const completedCats = INDICATORS.order.filter((c) => completed[c]).length;
 
   return (
     <div className="p-4 lg:p-6 space-y-5 lg:space-y-6">
@@ -208,43 +205,39 @@ export function OverviewDashboard() {
             </div>
           </div>
 
-          {/* Progress */}
+          {/* Assessment status + next steps. This is the official (approved)
+              result dashboard for decision makers / researchers — not a data
+              entry screen — so the actions point to the footprint and reports,
+              not "continue data entry" / "recalculate". */}
           <div className="border-t border-slate-200/70 pt-4 lg:col-span-1 lg:border-t-0 lg:border-l lg:pl-6 lg:pt-0">
             <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-500">
-              <ClipboardList className="h-3.5 w-3.5 text-blue-500" /> Progress
+              <ClipboardList className="h-3.5 w-3.5 text-blue-500" /> Assessment
             </div>
-            <div className="mt-2 flex items-center gap-3">
-              <div>
-                <p className="text-2xl font-bold text-slate-900">
-                  {completedCats}
-                  <span className="text-sm font-normal text-slate-400"> / 24</span>
-                </p>
-                <p className="text-[10px] uppercase tracking-wider text-slate-400">Categories</p>
-              </div>
-              <div className="h-8 w-px bg-slate-200" />
-              <div>
-                <p className="text-2xl font-bold text-slate-900">
-                  {badges.length}
-                  <span className="text-sm font-normal text-slate-400"> / 4</span>
-                </p>
-                <p className="text-[10px] uppercase tracking-wider text-slate-400">Sets Done</p>
-              </div>
+            <div className="mt-2">
+              <p className="text-2xl font-bold text-slate-900">
+                {overall.entered}
+                <span className="text-sm font-normal text-slate-400"> / {overall.total}</span>
+              </p>
+              <p className="text-[10px] uppercase tracking-wider text-slate-400">Indicators scored</p>
+              {submission?.status === 'approved' && (
+                <span className="mt-2 inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 ring-1 ring-emerald-200">
+                  <CheckCircle2 className="h-3 w-3" /> Approved
+                </span>
+              )}
             </div>
             <div className="mt-3 flex flex-col gap-2 sm:flex-row">
               <Link
-                href="/data-entry"
+                href="/efct"
                 className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-slate-900 px-3 py-2 text-xs font-semibold text-white transition hover:bg-slate-800"
               >
-                <ClipboardList className="h-3.5 w-3.5" /> Continue Data Entry
+                <Trees className="h-3.5 w-3.5" /> Ecological Footprint
               </Link>
-              {allComplete && (
-                <Link
-                  href="/data-entry/calculate"
-                  className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-600 px-3 py-2 text-xs font-semibold text-white transition hover:opacity-90"
-                >
-                  <Calculator className="h-3.5 w-3.5" /> Recalculate
-                </Link>
-              )}
+              <Link
+                href="/exports"
+                className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-600 px-3 py-2 text-xs font-semibold text-white transition hover:opacity-90"
+              >
+                <Download className="h-3.5 w-3.5" /> Reports
+              </Link>
             </div>
           </div>
         </div>
