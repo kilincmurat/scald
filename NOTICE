@@ -1,0 +1,45 @@
+SCALD — Data-driven Decision Support Ecosystem for Local Governments
+Copyright (c) 2024–2026 SCALD Consortium
+
+This software is licensed under the European Union Public Licence v. 1.2
+(EUPL-1.2). See the LICENSE file for the full text.
+
+Co-funded by the Erasmus+ Programme of the European Union
+(Key Action KA220-ADU — Cooperation Partnerships in Adult Education).
+
+------------------------------------------------------------------------
+Third-party components
+------------------------------------------------------------------------
+This product bundles or depends on the following open-source components.
+Each remains under its own licence; copies of those licences are retained
+by the respective packages under node_modules / the Python environment.
+
+Frontend (apps/web):
+  next                     MIT        (Vercel, Inc.)
+  react, react-dom         MIT        (Meta Platforms, Inc.)
+  tailwindcss              MIT
+  zustand                  MIT
+  @tanstack/react-query    MIT
+  @radix-ui/*              MIT
+  react-hook-form          MIT
+  @hookform/resolvers      MIT
+  zod                      MIT
+  date-fns                 MIT
+  axios                    MIT
+  clsx, tailwind-merge     MIT
+  lucide-react             ISC
+  next-intl                MIT
+  maplibre-gl              BSD-3-Clause
+  react-map-gl             MIT
+  echarts, echarts-for-react   Apache-2.0
+  exceljs                  MIT
+  xlsx (SheetJS CE)        Apache-2.0
+  @supabase/supabase-js    MIT
+  @supabase/ssr            MIT
+
+Backend (apps/api, apps/ai-service):
+  fastapi                  MIT
+  (see each service's dependency manifest for the complete list)
+
+Map tiles / styles are served by a self-hostable MapLibre-compatible
+source; no proprietary Mapbox SDK or Mapbox-hosted service is used.

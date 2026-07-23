@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "description": "SCALD - Data-driven Decision Support Ecosystem for Local Governments",
+  "license": "EUPL-1.2",
   "workspaces": [
     "apps/*",
     "packages/*"

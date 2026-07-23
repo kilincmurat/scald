@@ -74,9 +74,6 @@ importers:
       lucide-react:
         specifier: ^0.400.0
         version: 0.400.0(react@19.2.4)
-      mapbox-gl:
-        specifier: ^3.5.0
-        version: 3.21.0
       maplibre-gl:
         specifier: ^4.7.1
         version: 4.7.1
@@ -114,9 +111,6 @@ importers:
       '@playwright/test':
         specifier: ^1.45.0
         version: 1.59.1
-      '@types/mapbox-gl':
-        specifier: ^3.0.0
-        version: 3.5.0
       '@types/node':
         specifier: ^20.0.0
         version: 20.19.39

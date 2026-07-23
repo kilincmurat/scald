@@ -2,6 +2,7 @@
   "name": "@scald/web",
   "version": "0.1.0",
   "private": true,
+  "license": "EUPL-1.2",
   "scripts": {
     "dev": "next dev --port 3000",
     "build": "next build",
@@ -30,7 +31,6 @@
     "echarts-for-react": "^3.0.2",
     "exceljs": "^4.4.0",
     "lucide-react": "^0.400.0",
-    "mapbox-gl": "^3.5.0",
     "maplibre-gl": "^4.7.1",
     "next": "^15.0.0",
     "next-intl": "^3.15.0",
@@ -45,7 +45,6 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.45.0",
-    "@types/mapbox-gl": "^3.0.0",
     "@types/node": "^20.0.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
