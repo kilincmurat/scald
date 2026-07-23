@@ -17,8 +17,8 @@ Monorepo managed with pnpm workspaces and Turborepo:
 - `apps/ai-service` — AI decision-support / recommendation service
 - PostgreSQL (self-hosted) with row-level security
 
-The stack is designed to be **self-hosted and portable** — deployable on a
-partner's own infrastructure without any cloud-only managed services.
+The stack is **self-hosted** — it runs on the hosting institution's own
+infrastructure (KTÜ) with no dependency on cloud-only managed services.
 
 ## Licence
 
@@ -37,13 +37,13 @@ EU-funded tool for public administrations.
 
 ## Data protection (GDPR)
 
-SCALD is self-hosted so that each operator remains in control of its data.
-The system stores municipal indicator data (non-personal) and a small set of
-user-account details (name, e-mail, role — personal data). Operators are
-responsible for providing a privacy notice, establishing a lawful basis and
-records of processing, and — where an instance hosts personal data of users in
-other countries — putting the appropriate data-processing agreements and
-transfer safeguards in place.
+SCALD is self-hosted, keeping data under the direct control of the hosting
+institution. The system stores municipal indicator data (non-personal) and a
+small set of user-account details (name, e-mail, role — personal data). The
+operator is responsible for providing a privacy notice, establishing a lawful
+basis and records of processing, and — because a single instance may hold
+personal data of users from several partner countries — putting the appropriate
+data-processing agreements and transfer safeguards in place.
 
 ## Funding
 
