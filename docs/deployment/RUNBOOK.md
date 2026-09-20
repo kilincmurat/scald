@@ -52,6 +52,31 @@ gerekiyor, uygulamanın kendisi için değil.
 **Doğrula:** `dig +short scald.ktu.edu.tr` ve `dig +short api.scald.ktu.edu.tr`
 ikisi de VM'in IP'sini dönmeli.
 
+### 0.1 İnternet çıkışı — sunucuya girer girmez yapın
+
+Kurulum, Docker Hub'dan hazır paketler ve npm'den kütüphaneler indirir.
+Üniversite sunucularında dışarı çıkış sık sık kısıtlıdır ve bu, kurulumun
+ortasında fark edilirse saat kaybettirir. İlk iş bunu test edin:
+
+```bash
+docker pull hello-world                      # Docker Hub erişimi
+curl -sI https://registry.npmjs.org | head -1   # npm erişimi
+curl -sI https://acme-v02.api.letsencrypt.org/directory | head -1  # sertifika
+```
+
+Üçü de başarılı olmalı. **Biri başarısızsa kuruluma başlamayın** — önce
+BİDB'den çıkış izni ya da proxy bilgisi isteyin. Çıkış açılmayacaksa
+alternatif: paketleri dışarıdaki bir makinede hazırlayıp (`docker save`)
+sunucuya `scp` ile taşımak; bu durumda 6. adım sunucuda değil, o makinede
+yapılır.
+
+> **Mimari uyumu.** Paketi başka bir makinede hazırlayacaksanız, o makine
+> ile sunucunun işlemci mimarisi aynı olmalı. Apple Silicon Mac `arm64`,
+> tipik sunucu `amd64`'tür — Mac'te hazırlanan paket sunucuda çalışmaz.
+> Çözüm, build komutuna `--platform linux/amd64` eklemek (Mac'te taklit
+> modunda çalışır, 3-5 dakika yerine 10-15 dakika sürer). Sunucunun
+> mimarisini `uname -m` ile öğrenin.
+
 ---
 
 ## 1. Depoyu al
