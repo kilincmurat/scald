@@ -1,0 +1,14 @@
+**/node_modules
+**/.next
+**/.turbo
+.git
+.claude
+*.log
+**/.env.local
+**/.env
+docs
+infrastructure/monitoring
+*.pdf
+*.xlsx
+logo.jpeg
+small-logo.png

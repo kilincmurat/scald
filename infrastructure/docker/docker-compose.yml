@@ -1,3 +1,17 @@
+# ⚠️ ESKİ / KULLANILMIYOR — canlıya alma için BUNU KULLANMAYIN.
+#
+# Bu dosya projenin ilk mimarisinden kalma (FastAPI + Celery + MinIO + Alembic).
+# Web uygulaması o mimariden vazgeçti: apps/web artık doğrudan Supabase'e
+# konuşuyor, apps/api ve apps/ai-service'i hiç çağırmıyor. Buradaki `api`,
+# `ai-service` ve `celery-worker` servisleri var olmayan Dockerfile'lara işaret
+# ettiği için `docker compose up` ilk adımda hata verir.
+#
+# Canlı ortam için:  docker-compose.prod.yml
+# Yerel geliştirme için:  apps/web && pnpm dev  (uzak Supabase'e bağlanır)
+#
+# Silmek yerine bırakıldı: apps/api içindeki EFCT hesaplama servisleri ileride
+# geri getirilirse referans olacak.
+
 version: '3.9'
 
 services:

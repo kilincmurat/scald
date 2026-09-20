@@ -1,0 +1,62 @@
+# ============================================================
+# SCALD — production stack (KTÜ self-hosted)
+#
+# This file runs the SCALD web app + a TLS-terminating reverse proxy.
+# Supabase (Postgres, GoTrue, PostgREST, Storage, Studio) runs as its OWN
+# compose stack from the upstream supabase/docker repo; both stacks join the
+# external `scald_net` network so the web container can reach Kong internally.
+#
+#   docker network create scald_net          # once, before either stack
+#
+#   cd supabase/docker && docker compose up -d       # Supabase stack
+#   cd infrastructure/docker && docker compose -f docker-compose.prod.yml up -d
+#
+# Caddy (not nginx+certbot) terminates TLS: it obtains and renews Let's Encrypt
+# certificates on its own, which removes the certbot renewal cron and the
+# nginx-reload-after-renewal step — fewer moving parts to get wrong.
+# ============================================================
+
+services:
+  web:
+    image: scald-web:${SCALD_VERSION:-latest}
+    container_name: scald_web
+    restart: unless-stopped
+    environment:
+      # Runtime-only secret. The NEXT_PUBLIC_* values are NOT here on purpose —
+      # they are baked into the image at build time (see apps/web/Dockerfile).
+      SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY:?set in .env}
+      NODE_ENV: production
+    expose:
+      - "3000"
+    networks:
+      - scald_net
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/methodology').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+  proxy:
+    image: caddy:2-alpine
+    container_name: scald_proxy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data      # certificates — MUST persist or you will hit
+      - caddy_config:/config  # Let's Encrypt rate limits on every restart
+    depends_on:
+      - web
+    networks:
+      - scald_net
+
+volumes:
+  caddy_data:
+  caddy_config:
+
+networks:
+  scald_net:
+    external: true

@@ -21,12 +21,22 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  if (!supabaseUrl || !supabaseKey) {
+  // Public pages render without a session; /explore degrades to an empty
+  // state on its own when Supabase is unreachable.
+  if (isPublicPath(pathname)) {
     return NextResponse.next();
   }
 
-  if (isPublicPath(pathname)) {
-    return NextResponse.next();
+  // Fail CLOSED on missing configuration. Letting requests through here would
+  // serve every protected page to an anonymous visitor — and a missing/typo'd
+  // env var is exactly the failure mode of a fresh deployment. 503 also names
+  // the cause, instead of the app looking half-broken.
+  if (!supabaseUrl || !supabaseKey) {
+    return new NextResponse(
+      'SCALD is not configured: NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY are missing. ' +
+        'These are baked in at build time — rebuild the image with them set.',
+      { status: 503, headers: { 'content-type': 'text/plain; charset=utf-8' } },
+    );
   }
 
   const response = NextResponse.next({ request });

@@ -1,0 +1,22 @@
+# SCALD reverse proxy. Replace the two hostnames before first start —
+# Caddy requests a certificate for whatever is written here.
+
+scald.ktu.edu.tr {
+	encode gzip zstd
+
+	# The app itself. HSTS is set here rather than in next.config.ts because
+	# it must only be sent once TLS actually terminates in front of the app.
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+	}
+
+	reverse_proxy web:3000
+}
+
+# Supabase API + Studio. Studio has no auth of its own in the self-hosted
+# stack — Kong's basic auth is the only gate, so keep DASHBOARD_PASSWORD
+# strong and consider restricting this host to the university network.
+api.scald.ktu.edu.tr {
+	encode gzip zstd
+	reverse_proxy kong:8000
+}

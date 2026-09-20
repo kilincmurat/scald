@@ -58,6 +58,24 @@ CREATE POLICY "public reads pilot municipalities"
   USING (is_pilot = TRUE);
 
 -- ------------------------------------------------------------
+-- 3a) 002'deki user_id tabanlı policy'ler önce düşürülmeli.
+-- Postgres, bir policy'nin USING/WITH CHECK ifadesinde geçen kolonun
+-- DROP edilmesine izin vermez; bu DROP'lar aşağıdaki
+-- "DROP COLUMN user_id" adımlarından ÖNCE gelmek zorunda.
+-- (Yenileri 6. bölümde municipality_id üzerinden kurulur.)
+-- ------------------------------------------------------------
+DROP POLICY IF EXISTS "Users read own entries"        ON scald_indicator_entries;
+DROP POLICY IF EXISTS "Users insert own entries"      ON scald_indicator_entries;
+DROP POLICY IF EXISTS "Users update own entries"      ON scald_indicator_entries;
+DROP POLICY IF EXISTS "Users delete own entries"      ON scald_indicator_entries;
+DROP POLICY IF EXISTS "Users read own completions"    ON scald_category_completions;
+DROP POLICY IF EXISTS "Users insert own completions"  ON scald_category_completions;
+DROP POLICY IF EXISTS "Users delete own completions"  ON scald_category_completions;
+DROP POLICY IF EXISTS "Users read own badges"         ON scald_set_badges;
+DROP POLICY IF EXISTS "Users insert own badges"       ON scald_set_badges;
+DROP POLICY IF EXISTS "Users delete own badges"       ON scald_set_badges;
+
+-- ------------------------------------------------------------
 -- 3) scald_indicator_entries: municipality scoping + entered_by audit
 -- ------------------------------------------------------------
 ALTER TABLE scald_indicator_entries
