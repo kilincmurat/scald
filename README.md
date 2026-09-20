@@ -20,6 +20,13 @@ Monorepo managed with pnpm workspaces and Turborepo:
 The stack is **self-hosted** — it runs on the hosting institution's own
 infrastructure (KTÜ) with no dependency on cloud-only managed services.
 
+## Deployment
+
+The stack is deployed on the hosting institution's own server with Docker
+Compose. Step-by-step instructions, including data migration from the
+development environment and the pre-launch checklist, are in
+[docs/deployment/RUNBOOK.md](docs/deployment/RUNBOOK.md).
+
 ## Licence
 
 The source code is licensed under the **European Union Public Licence v. 1.2
