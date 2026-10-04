@@ -227,60 +227,96 @@ psql "$DATABASE_URL" -c "SELECT count(*) FROM schema_migrations;"   # 22
 
 ## 5. Veriyi taşı
 
-Cloud'da bugüne kadar girilmiş veri ve kullanıcı hesapları taşınacak.
-İki tablo grubu önemli: `public` şeması (uygulama verisi) ve `auth.users`
-(hesaplar).
+Cloud'da bugüne kadar girilmiş veri ve kullanıcı hesapları taşınacak:
+`public` şeması (uygulama verisi) ve `auth.users` (hesaplar).
+
+Bu bölümün tamamı prova edildi — iki Supabase Postgres örneği arasında
+dump alınıp yüklendi ve satır sayıları birebir eşleşti. Aşağıdaki
+komutlar o provanın sonucudur; **kendi kafanıza göre `pg_dump`
+çalıştırmayın**, aşağıdaki bayraklar şart (gerekçeleri yanlarında).
 
 ### 5.1 Cloud'dan dump al
 
-Supabase Dashboard → Settings → Database → Connection string (URI, "Session
-pooler" değil **direct connection**) alın.
+Supabase Dashboard → Settings → Database → Connection string → URI.
+Mümkünse **Direct connection**; IPv4 sorunu çıkarsa Session pooler da
+olur, ama **transaction pooler (port 6543) `pg_dump` ile çalışmaz**.
 
 ```bash
-export CLOUD_URL="postgresql://postgres:<sifre>@db.<proje>.supabase.co:5432/postgres"
-
-# Uygulama verisi (sadece satırlar — şema zaten 4. adımda kuruldu)
-pg_dump "$CLOUD_URL" --data-only --schema=public \
-  --exclude-table=schema_migrations \
-  --no-owner --no-privileges -f ~/scald-public-data.sql
-
-# Kullanıcı hesapları
-pg_dump "$CLOUD_URL" --data-only --table=auth.users \
-  --no-owner --no-privileges -f ~/scald-auth-users.sql
+cd /opt/scald
+CLOUD_URL="postgresql://postgres:<sifre>@db.<proje>.supabase.co:5432/postgres" \
+  ./scripts/cloud-dump.sh
 ```
+
+Script iki dosya üretir (`~/scald-yedek-<tarih>/` altına) ve ne taşıdığını
+özetler. Yerelde `pg_dump` yoksa Docker'dan kullanır.
+
+Elle çalıştırmak isterseniz kritik bayraklar şunlar:
+
+```bash
+pg_dump "$CLOUD_URL" --data-only --no-owner --no-privileges \
+  --inserts --on-conflict-do-nothing --rows-per-insert=500 \
+  --table=auth.users -f ~/scald-auth-users.sql
+```
+
+> **Neden `--inserts --on-conflict-do-nothing`?** Migration'lar
+> belediyeleri, üniversiteleri ve bazı profilleri kendileri seed ediyor.
+> Varsayılan `COPY` biçimindeki bir dump hedefte birincil anahtar
+> çakışmasına düşüyor ve **o noktada tüm yükleme duruyor** — provada
+> `municipalities` ilk satırda patladı, ardındaki hiçbir tablo
+> yüklenmedi, `profiles` ve girdiler sıfır kaldı. `ON CONFLICT DO
+> NOTHING` ile migration'ın kurduğu satır korunur, cloud'dan gelen yeni
+> satırlar eklenir.
 
 ### 5.2 Self-hosted'a yükle
 
-Sıra önemli: hesaplar önce gelmeli, çünkü `public.profiles.id` →
-`auth.users.id` foreign key'i var.
+Sıra önemli: hesaplar önce, çünkü `public.profiles.id` → `auth.users.id`
+foreign key'i var.
 
 ```bash
-# profiles'ı auth.users'a bağlayan trigger yüklemede araya girer, geçici kapat
-psql "$DATABASE_URL" -c "ALTER TABLE auth.users DISABLE TRIGGER USER;"
-psql "$DATABASE_URL" -f ~/scald-auth-users.sql
-psql "$DATABASE_URL" -c "ALTER TABLE auth.users ENABLE TRIGGER USER;"
-
-psql "$DATABASE_URL" -f ~/scald-public-data.sql
+psql "$DATABASE_URL" -v ON_ERROR_STOP=1 <<'SQL'
+SET session_replication_role = replica;
+\i /root/scald-yedek-<tarih>/scald-auth-users.sql
+\i /root/scald-yedek-<tarih>/scald-public-data.sql
+SQL
 ```
 
-**Doğrula:**
+> **`ALTER TABLE auth.users DISABLE TRIGGER USER` KULLANMAYIN.** Bu
+> komut Supabase'de `must be owner of table users` hatası verir —
+> `auth.users`'ın sahibi `postgres` değil, `supabase_auth_admin`.
+> Yerine `session_replication_role = replica` kullanılıyor; aynı işi
+> görür (oturum boyunca trigger'ları susturur) ve `postgres` rolünün
+> yetkisi buna yeter.
+>
+> Trigger'ı susturmak şart: `handle_new_user`, `auth.users`'a eklenen her
+> satır için `profiles`'a bir kayıt açar. Susturulmazsa dump'tan gelen
+> gerçek profil satırları çakışır ve roller/belediye bağları kaybolur.
+
+**Doğrula** — kaynak ve hedefte aynı sorguyu çalıştırıp karşılaştırın:
 
 ```bash
 psql "$DATABASE_URL" -c "
-SELECT (SELECT count(*) FROM auth.users)                  AS hesap,
-       (SELECT count(*) FROM profiles)                    AS profil,
-       (SELECT count(*) FROM scald_indicator_entries)     AS girdi,
-       (SELECT count(*) FROM municipalities)              AS belediye;"
+SELECT (SELECT count(*) FROM auth.users)              AS hesap,
+       (SELECT count(*) FROM profiles)                AS profil,
+       (SELECT count(*) FROM scald_indicator_entries) AS girdi,
+       (SELECT count(*) FROM scald_data_submissions)  AS gonderim,
+       (SELECT count(*) FROM municipalities)          AS belediye;"
 ```
 
-Sayılar cloud'daki ile aynı olmalı — cloud'da da aynı sorguyu çalıştırıp
-karşılaştırın.
+Roller ve belediye bağlarının korunduğunu da görün:
 
-> **Şifreler taşınır.** GoTrue şifreleri `auth.users.encrypted_password`
-> içinde bcrypt ile tutar; `JWT_SECRET` yalnızca token imzalar, şifre
-> hash'lerini etkilemez. Yani kullanıcılar mevcut şifreleriyle girebilmeli.
-> **Yine de 8. adımda gerçek bir hesapla test edin** — çalışmazsa
-> Studio'dan şifre sıfırlama maili gönderirsiniz (~10 kişi).
+```bash
+psql "$DATABASE_URL" -c "
+SELECT p.email, p.role, m.name
+  FROM profiles p LEFT JOIN municipalities m ON m.id = p.municipality_id
+ ORDER BY p.role::text;"
+```
+
+> **Şifreler taşınır — test edildi.** GoTrue şifreleri
+> `auth.users.encrypted_password` içinde bcrypt ile tutar; `JWT_SECRET`
+> yalnızca token imzalar. Provada bir hesaba şifre verilip taşındı ve
+> hedefte doğru şifre kabul, yanlış şifre ret edildi. Kullanıcılar mevcut
+> şifreleriyle girebilir; `JWT_SECRET` değişimi yalnızca açık oturumları
+> düşürür. Yine de 8. adımda gerçek bir hesapla giriş yapın.
 
 ---
 
@@ -464,6 +500,9 @@ kaybolur.
 | `migrate.sh: FAILED` | Bir migration patladı | Hata mesajını okuyun; veritabanı önceki migration'da kaldı, düzeltip tekrar çalıştırın (uygulananlar atlanır) |
 | Kullanıcı ekleme "Server not configured" | `SUPABASE_SERVICE_ROLE_KEY` compose `.env`'inde yok | 7. adımdaki `.env`'i kontrol edin, `web` konteynerini recreate edin |
 | `/explore`'da onaysız veri görünüyor | Migration 022 uygulanmamış | `./scripts/migrate.sh` çalıştırın |
+| Veri yüklerken `must be owner of table users` | `DISABLE TRIGGER` kullanılmış | `SET session_replication_role = replica` (bkz. 5.2) |
+| Veri yükleme `duplicate key ... municipalities_pkey` ile duruyor | Dump `COPY` biçiminde alınmış | `--inserts --on-conflict-do-nothing` ile yeniden alın (5.1) |
+| Yükleme bitti ama `profiles` boş | Yukarıdaki çakışma yüklemeyi ortada kesmiş | Dump'ı 5.1'deki bayraklarla yenileyip 5.2'yi tekrarlayın |
 | Şifre sıfırlama maili gelmiyor | SMTP ayarları yanlış | `docker compose logs auth \| grep -i smtp` |
 
 ---
