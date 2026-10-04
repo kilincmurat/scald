@@ -16,12 +16,6 @@
     },
     "lint": {
       "outputs": []
-    },
-    "db:migrate": {
-      "cache": false
-    },
-    "db:seed": {
-      "cache": false
     }
   }
 }

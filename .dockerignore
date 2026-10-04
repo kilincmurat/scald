@@ -1,3 +1,6 @@
+# Build context'i küçült. Desenler repo köküne göre eşleşir ve özyinelemeli
+# DEĞİLDİR: "small-logo.png" yalnızca kökteki dosyayı dışlar,
+# apps/web/public/ altındaki görseller image'a girmeye devam eder.
 **/node_modules
 **/.next
 **/.turbo
@@ -7,8 +10,7 @@
 **/.env.local
 **/.env
 docs
-infrastructure/monitoring
+# Kökte duran çalışma dosyaları — uygulamanın parçası değiller
 *.pdf
 *.xlsx
-logo.jpeg
 small-logo.png
