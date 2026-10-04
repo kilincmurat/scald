@@ -48,6 +48,22 @@ node --version            # yoksa: sudo apt install -y nodejs
 `psql` ve `node` yalnızca kurulum sırasında (migration + anahtar üretimi)
 gerekiyor, uygulamanın kendisi için değil.
 
+**Docker kurulu değilse** (Ubuntu 22.04):
+
+```bash
+curl -fsSL https://get.docker.com | sudo sh
+sudo usermod -aG docker $USER      # sudo'suz docker için
+newgrp docker                      # ya da oturumu kapatıp açın
+docker run --rm hello-world        # doğrulama
+```
+
+> **Bu adım `sudo` ister.** BİDB'ye gönderilen kurulum notunda "root
+> gerekmiyor, kullanıcılar sadece Docker komutlarına yetkili olsun"
+> deniyor — bu, Docker'ın **önceden kurulmuş geldiğini** varsayar. VM'de
+> Docker yoksa ve sudo yetkiniz de yoksa kurulum burada durur ve BİDB
+> beklenir. **Sunucuya ilk girişte kontrol edin**, gerekirse yetkiyi
+> önceden isteyin.
+
 **Doğrula:** `dig +short scald.ktu.edu.tr` ve `dig +short api.scald.ktu.edu.tr`
 ikisi de VM'in IP'sini dönmeli.
 
