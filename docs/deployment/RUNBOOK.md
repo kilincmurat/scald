@@ -16,9 +16,8 @@ Tahmini süre: **4–6 saat** (ilk kurulum). Domain ve firewall hazırsa.
 | Giriş | Caddy — TLS sonlandırma + reverse proxy | `docker-compose.prod.yml` |
 
 `apps/api` ve `apps/ai-service` **canlıya alınmaz.** Web uygulaması onları
-hiç çağırmıyor (kodda tek bir referans yok); eski mimariden kalma. Aynı
-şekilde `infrastructure/docker/docker-compose.yml` de eskidir, kullanmayın —
-dosyanın başında uyarı var.
+hiç çağırmıyor (kodda tek bir referans yok); eski mimariden kalma. Canlı
+ortamda çalışan tek compose dosyası `infrastructure/docker/docker-compose.prod.yml`.
 
 ---
 
