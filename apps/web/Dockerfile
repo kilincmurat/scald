@@ -22,7 +22,6 @@ RUN corepack enable && corepack prepare pnpm@9.0.0 --activate
 RUN printf 'node-linker=hoisted\n' > /app/.npmrc
 COPY pnpm-workspace.yaml pnpm-lock.yaml package.json ./
 COPY apps/web/package.json apps/web/
-COPY packages/ packages/
 RUN pnpm install --frozen-lockfile --filter @scald/web...
 
 # ---------- build ----------

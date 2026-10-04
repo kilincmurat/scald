@@ -15,9 +15,8 @@ Tahmini süre: **4–6 saat** (ilk kurulum). Domain ve firewall hazırsa.
 | Uygulama | Next.js web (`apps/web`) | `scald-web` Docker image |
 | Giriş | Caddy — TLS sonlandırma + reverse proxy | `docker-compose.prod.yml` |
 
-`apps/api` ve `apps/ai-service` **canlıya alınmaz.** Web uygulaması onları
-hiç çağırmıyor (kodda tek bir referans yok); eski mimariden kalma. Canlı
-ortamda çalışan tek compose dosyası `infrastructure/docker/docker-compose.prod.yml`.
+Repoda canlıya alınan tek uygulama `apps/web`. Canlı ortamda çalışan tek
+compose dosyası `infrastructure/docker/docker-compose.prod.yml`.
 
 ---
 
@@ -384,9 +383,6 @@ Bu maddeler koddan yapılamaz, elle doğrulanır.
       ```
       Açıksa kapatın — internete bakan bir Postgres, RLS'i tamamen atlayan
       `postgres` kullanıcısıyla parola denemesine açık demektir.
-- [ ] **`apps/api` / `apps/ai-service` açık değil.** Bu runbook onları
-      çalıştırmıyor; başka bir compose dosyasıyla da ayağa kaldırmayın
-      (endpoint bazlı rol/belediye kontrolü henüz yok).
 - [ ] **Cloud projesini duraklat.** Geçiş doğrulandıktan sonra Supabase
       Dashboard'dan cloud projesini pause edin — iki canlı veritabanı
       arasında veri ayrışması en kötü senaryo.

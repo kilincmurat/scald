@@ -19,9 +19,6 @@ Canlıda üç şey çalışır:
 | Uygulama | Next.js web — repodaki `apps/web`, Docker image olarak |
 | Giriş | Caddy — HTTPS sonlandırma ve yönlendirme |
 
-`apps/api` ve `apps/ai-service` klasörleri **kurulmaz** — eski mimariden
-kalma, web uygulaması onları hiç çağırmıyor.
-
 Süre: ilk kurulum için **4–6 saat** (domain ve firewall hazırsa).
 
 ## Başlamadan önce proje sorumlusundan isteyin

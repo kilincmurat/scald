@@ -13,9 +13,8 @@ research.
 Monorepo managed with pnpm workspaces and Turborepo:
 
 - `apps/web` — Next.js 15 (App Router) / React 19 / TypeScript / Tailwind front end
-- `apps/api` — FastAPI service
-- `apps/ai-service` — AI decision-support / recommendation service
-- PostgreSQL (self-hosted) with row-level security
+- Supabase (self-hosted) — PostgreSQL with row-level security, authentication
+  and the REST API the front end talks to
 
 The stack is **self-hosted** — it runs on the hosting institution's own
 infrastructure (KTÜ) with no dependency on cloud-only managed services.

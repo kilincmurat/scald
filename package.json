@@ -5,8 +5,7 @@
   "description": "SCALD - Data-driven Decision Support Ecosystem for Local Governments",
   "license": "EUPL-1.2",
   "workspaces": [
-    "apps/*",
-    "packages/*"
+    "apps/*"
   ],
   "scripts": {
     "dev": "turbo dev",
