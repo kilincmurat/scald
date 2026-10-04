@@ -237,9 +237,25 @@ komutlar o provanın sonucudur; **kendi kafanıza göre `pg_dump`
 
 ### 5.1 Cloud'dan dump al
 
-Supabase Dashboard → Settings → Database → Connection string → URI.
-Mümkünse **Direct connection**; IPv4 sorunu çıkarsa Session pooler da
-olur, ama **transaction pooler (port 6543) `pg_dump` ile çalışmaz**.
+Bağlantı adresini Supabase Dashboard → (üstte) **Connect** → **Direct —
+Connection string** altından alın.
+
+> **Direct connection büyük olasılıkla çalışmayacak.** Supabase'in
+> `db.<ref>.supabase.co` adresi artık yalnızca IPv6 (AAAA kaydı var, A
+> kaydı yok); IPv4 bir makineden ya da Docker içinden çözülemiyor ve
+> `could not translate host name ... No address associated with hostname`
+> hatası alırsınız. Bu projede denendi ve böyle oldu.
+>
+> Onun yerine **Session pooler** kullanın — IPv4 üzerinden çalışır:
+> ```
+> postgresql://postgres.<proje-ref>@aws-1-<bölge>.pooler.supabase.com:5432/postgres
+> ```
+> Kullanıcı adı `postgres` değil **`postgres.<proje-ref>`** olur. Bölge
+> ve `aws-0`/`aws-1` ön eki projeden projeye değişir; yanlışsa sunucu
+> `tenant/user not found` der, doğru olanı Dashboard'daki Connect
+> ekranının "Session pooler" sekmesinde yazar.
+>
+> **Transaction pooler (port 6543) `pg_dump` ile çalışmaz**, onu seçmeyin.
 
 ```bash
 cd /opt/scald
@@ -257,6 +273,16 @@ pg_dump "$CLOUD_URL" --data-only --no-owner --no-privileges \
   --inserts --on-conflict-do-nothing --rows-per-insert=500 \
   --table=auth.users -f ~/scald-auth-users.sql
 ```
+
+> **`auth.users` neden `pg_dump` ile alınmıyor?** GoTrue'nun `auth.users`
+> şeması sürümden sürüme kolon ekliyor — bu projenin cloud'unda 35 kolon
+> çıktı, eski bir self-hosted şemasında 21. Düz bir `pg_dump` çıktısı
+> hedefte `INSERT has more expressions than target columns`, sabit kolon
+> listeli bir INSERT ise `column ... does not exist` ile patlıyor. Script
+> bunun yerine her satırı JSON'a çevirip `jsonb_populate_record` ile
+> yüklüyor: hedef tabloda karşılığı olmayan alanlar sessizce atlanıyor.
+> İki sürüm arasında (35 → 21 kolon) prova edildi, 8 hesap eksiksiz
+> taşındı ve bcrypt şifre hash'leri korundu.
 
 > **Neden `--inserts --on-conflict-do-nothing`?** Migration'lar
 > belediyeleri, üniversiteleri ve bazı profilleri kendileri seed ediyor.
@@ -309,6 +335,23 @@ psql "$DATABASE_URL" -c "
 SELECT p.email, p.role, m.name
   FROM profiles p LEFT JOIN municipalities m ON m.id = p.municipality_id
  ORDER BY p.role::text;"
+```
+
+**Çiftlenme kontrolü** — `ON CONFLICT DO NOTHING` kimlik (id) bazlı
+çalışır. Migration'ın seed ettiği bir kayıt ile cloud'daki karşılığı
+FARKLI id taşıyorsa ikisi de kalır. Bu projede `universities` tablosunda
+tam olarak bu oldu: aynı üniversite iki satır. Yükleme sonrası kontrol
+edin ve kullanılmayanı silin:
+
+```bash
+psql "$DATABASE_URL" -c "
+SELECT u.id, u.name,
+       (SELECT count(*) FROM profiles p WHERE p.university_id = u.id) AS bagli_profil
+  FROM universities u ORDER BY u.name;"
+# Aynı isim birden fazla satırdaysa, bagli_profil = 0 olanı silin.
+
+psql "$DATABASE_URL" -c "
+SELECT name, count(*) FROM municipalities GROUP BY name HAVING count(*) > 1;"
 ```
 
 > **Şifreler taşınır — test edildi.** GoTrue şifreleri

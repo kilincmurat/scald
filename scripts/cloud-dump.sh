@@ -47,9 +47,25 @@ TARGET="${OUT_IN_CMD:-$OUT}"
 DUMP_OPTS=(--data-only --no-owner --no-privileges
            --inserts --on-conflict-do-nothing --rows-per-insert=500)
 
+# auth.users: pg_dump DEĞİL, satır başına JSON + jsonb_populate_record.
+# Sebep: GoTrue'nun auth.users şeması sürümden sürüme kolon ekliyor —
+# cloud'da 35 kolon görüldü, eski bir self-hosted şemasında 21. Sabit
+# kolon listeli bir INSERT hedefte "column ... does not exist" ile
+# patlıyor, düz pg_dump ise "INSERT has more expressions than target
+# columns" veriyor. jsonb_populate_record, hedef tabloda KARŞILIĞI
+# OLMAYAN anahtarları sessizce atlar; böylece hedefin GoTrue sürümü
+# kaynaktan eski de olsa yükleme çalışır, ortak alanlar taşınır.
 echo "→ Hesaplar (auth.users)"
-"${PGD[@]}" "$CLOUD_URL" "${DUMP_OPTS[@]}" --table=auth.users \
-  -f "$TARGET/scald-auth-users.sql"
+if [ -n "${OUT_IN_CMD:-}" ]; then
+  PSQL=(docker run --rm -i -v "$OUT:/out" supabase/postgres:17.6.1.136 psql)
+else
+  PSQL=(psql)
+fi
+"${PSQL[@]}" "$CLOUD_URL" -tA -o "$TARGET/scald-auth-users.sql" -c "
+SELECT format(
+  'INSERT INTO auth.users SELECT (jsonb_populate_record(NULL::auth.users, %L::jsonb)).* ON CONFLICT (id) DO NOTHING;',
+  to_jsonb(u))
+FROM auth.users u ORDER BY created_at;"
 
 echo "→ Uygulama verisi (public şeması)"
 "${PGD[@]}" "$CLOUD_URL" "${DUMP_OPTS[@]}" --schema=public \
