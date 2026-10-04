@@ -22,14 +22,10 @@ infrastructure (KTÜ) with no dependency on cloud-only managed services.
 ## Deployment
 
 The stack is deployed on the hosting institution's own server with Docker
-Compose.
-
-- **Setting it up for the first time?** Start with
-  [docs/deployment/BASLANGIC.md](docs/deployment/BASLANGIC.md) — a one-page
-  orientation covering what you need from the project owner before you begin.
-- **Full procedure:** [docs/deployment/RUNBOOK.md](docs/deployment/RUNBOOK.md)
-  — step by step, with a verification command after every stage, data
-  migration, pre-launch checklist and a troubleshooting table.
+Compose. The full procedure is in
+[docs/deployment/RUNBOOK.md](docs/deployment/RUNBOOK.md) — step by step, with
+a verification command after every stage, data migration from the development
+environment, a pre-launch checklist and a troubleshooting table.
 
 ## Licence
 
