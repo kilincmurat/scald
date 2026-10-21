@@ -42,7 +42,12 @@ function applyToDocument(s: A11yState) {
   root.dataset.a11yFont = String(s.fontStep);
   root.dataset.a11yContrast = s.highContrast ? 'high' : 'normal';
   root.dataset.a11yDyslexia = s.dyslexia ? 'on' : 'off';
-  root.dataset.a11yMotion = s.reduceMotion ? 'reduce' : 'normal';
+  // Write only an explicit "reduce". Writing "normal" for the default state
+  // (the widget never touched) stopped the OS prefers-reduced-motion rule in
+  // globals.css from ever matching, so every visitor got full motion even
+  // with reduced motion switched on in their OS (WCAG 2.3.3).
+  if (s.reduceMotion) root.dataset.a11yMotion = 'reduce';
+  else delete root.dataset.a11yMotion;
   root.dataset.a11yLinks = s.underlineLinks ? 'underline' : 'normal';
   root.dataset.a11yCursor = s.bigCursor ? 'big' : 'normal';
 }

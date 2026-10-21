@@ -70,8 +70,12 @@ export function DashboardShell({ children }: DashboardShellProps) {
         onMobileClose={() => setMobileOpen(false)}
       />
 
+      {/* min-w-0: a flex item won't shrink below its content's min width.
+          The page header truncates its subtitle with nowrap, whose min width
+          is the full text — without this the whole page grew past a phone's
+          width and scrolled sideways on every dashboard screen. */}
       <div
-        className="flex flex-1 flex-col transition-all duration-300 lg:pl-[var(--sidebar-w)]"
+        className="flex min-w-0 flex-1 flex-col transition-all duration-300 lg:pl-[var(--sidebar-w)]"
         style={
           {
             ['--sidebar-w' as string]: collapsed ? '64px' : '256px',
