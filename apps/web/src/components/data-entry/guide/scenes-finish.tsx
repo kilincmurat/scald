@@ -344,7 +344,7 @@ const FAQ = [
   },
   {
     q: 'Can two of us enter data at the same time?',
-    a: 'Yes, but agree who fills which categories. If two people type into the same indicator, the last value typed is kept.',
+    a: 'No — each municipality has one data-entry user, who enters and submits all its values. If two people type into the same indicator, the last value typed silently replaces the other. Colleagues can still help by collecting the numbers: send them the Preparation sheet.',
   },
   {
     q: 'An amber message says changes are “not saved to the server yet”.',
