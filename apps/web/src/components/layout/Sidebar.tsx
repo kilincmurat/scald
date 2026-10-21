@@ -62,6 +62,7 @@ function buildNav(role: Role, t: (k: string) => string): NavStructure {
         ],
         userScreens: [
           { href: '/data-entry', label: t('dataEntry'), icon: ClipboardList },
+          { href: '/data-entry/guide', label: t('dataEntryGuide'), icon: GraduationCap },
           { href: '/efct', label: t('efct'), icon: Leaf },
           { href: '/ai-dss', label: t('aiDss'), icon: BrainCircuit },
           { href: '/ai-rt', label: t('aiRt'), icon: FileBarChart2 },
@@ -74,6 +75,7 @@ function buildNav(role: Role, t: (k: string) => string): NavStructure {
       return {
         top: [
           { href: '/data-entry', label: t('dataEntry'), icon: ClipboardList },
+          { href: '/data-entry/guide', label: t('dataEntryGuide'), icon: GraduationCap },
           { href: '/efct', label: t('efct'), icon: Leaf, badge: 'read' },
           { href: '/map', label: t('map'), icon: Map },
         ],
@@ -120,9 +122,13 @@ export function Sidebar({ collapsed, mobileOpen, onToggle, onMobileClose }: Side
   const nav = buildNav(role, t);
   const [userScreensOpen, setUserScreensOpen] = useState(true);
 
+  const allHrefs = [...nav.top, ...(nav.userScreens ?? []), ...nav.bottom].map((i) => i.href);
   const isActive = (href: string, exact?: boolean) => {
     if (exact) return pathname === href;
-    return pathname.startsWith(href);
+    if (!pathname.startsWith(href)) return false;
+    // The most specific tab owns the path: on /data-entry/guide only the
+    // guide tab lights up, not the /data-entry tab as well.
+    return !allHrefs.some((h) => h !== href && h.startsWith(href) && pathname.startsWith(h));
   };
 
   return (

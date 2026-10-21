@@ -18,6 +18,7 @@ import {
   X,
   ArrowLeft,
   ArrowRight,
+  GraduationCap,
 } from 'lucide-react';
 import { completeTour } from '@/lib/account-service';
 import type { Role } from '@/lib/roles';
@@ -41,6 +42,13 @@ const TOURS: Record<Exclude<Role, 'admin'>, Step[]> = {
       tag: 'Data Entry',
       title: 'Your workspace',
       body: 'Enter indicators here — grouped into 4 sets and 24 categories, per reporting year. Type a value and it is auto-scored 0–5. When all required indicators are filled, submit for review; once approved (or while under review) the data is locked.',
+    },
+    {
+      target: '/data-entry/guide',
+      icon: GraduationCap,
+      tag: 'Data Entry Guide',
+      title: 'New to this? Start here',
+      body: 'A step-by-step guide with short animations: how to read an indicator card, type a value, convert it to the right unit, and submit. You can try every step without saving anything. Open it any time from here.',
     },
     {
       target: '/efct',

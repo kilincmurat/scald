@@ -12,6 +12,7 @@ import { SubmissionCard } from './SubmissionCard';
 import { DecisionMakerReview } from './DecisionMakerReview';
 import { useEffectiveMunicipality } from '@/hooks/useEffectiveMunicipality';
 import { useSubmission } from '@/hooks/useSubmission';
+import { hasSeenGuide } from './guide/DataEntryGuide';
 import {
   Lock,
   CheckCircle2,
@@ -23,6 +24,8 @@ import {
   RotateCcw,
   Eye,
   FileDown,
+  GraduationCap,
+  X,
 } from 'lucide-react';
 import { clsx } from 'clsx';
 
@@ -64,10 +67,32 @@ const SET_THEME: Record<
   },
 };
 
+const GUIDE_HINT_DISMISSED = 'scald-guide-hint-dismissed';
+
 export function DataEntryDashboard() {
   const [mounted, setMounted] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
-  useEffect(() => setMounted(true), []);
+  // Suggest the guide to someone who has never opened it. Read after mount —
+  // localStorage doesn't exist during server rendering.
+  const [showGuideHint, setShowGuideHint] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+    let dismissed = false;
+    try {
+      dismissed = localStorage.getItem(GUIDE_HINT_DISMISSED) === '1';
+    } catch {
+      /* storage unavailable — show the hint */
+    }
+    setShowGuideHint(!dismissed && !hasSeenGuide());
+  }, []);
+  const dismissGuideHint = () => {
+    setShowGuideHint(false);
+    try {
+      localStorage.setItem(GUIDE_HINT_DISMISSED, '1');
+    } catch {
+      /* storage unavailable — it just reappears next visit */
+    }
+  };
 
   const overall = useDataEntry((s) => s.overallProgress());
   const badges = useDataEntry((s) => s.badges);
@@ -172,6 +197,15 @@ export function DataEntryDashboard() {
           <SyncStatusPill status={syncStatus} initialized={!!currentMunicipalityId} />
         </div>
         <div className="flex items-center gap-2">
+          {canWrite && (
+            <Link
+              href="/data-entry/guide"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-sky-200 bg-sky-50 px-2.5 py-1.5 text-[11px] font-medium text-sky-700 shadow-sm transition hover:bg-sky-100"
+            >
+              <GraduationCap className="h-3.5 w-3.5" />
+              <span>How to enter data</span>
+            </Link>
+          )}
           <Link
             href="/prep-sheet"
             target="_blank"
@@ -193,6 +227,35 @@ export function DataEntryDashboard() {
           )}
         </div>
       </div>
+
+      {canWrite && showGuideHint && (
+        <div className="relative flex flex-col gap-4 rounded-2xl border-2 border-sky-200 bg-gradient-to-r from-sky-50 to-white p-5 sm:flex-row sm:items-center">
+          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-sky-500 text-white shadow">
+            <GraduationCap className="h-6 w-6" />
+          </span>
+          <div className="flex-1 pr-6">
+            <p className="text-base font-bold text-slate-900">New to data entry? Take the guided tour first.</p>
+            <p className="mt-0.5 text-sm text-slate-600">
+              About 10 minutes, with short animations — how to read a card, type a value, convert it to the right
+              unit, and submit. You can try every step without saving anything.
+            </p>
+          </div>
+          <Link
+            href="/data-entry/guide"
+            className="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-xl bg-sky-600 px-5 py-2.5 text-sm font-semibold text-white shadow transition hover:bg-sky-700"
+          >
+            Open the guide <ChevronRight className="h-4 w-4" />
+          </Link>
+          <button
+            type="button"
+            onClick={dismissGuideHint}
+            aria-label="Hide this suggestion"
+            className="absolute right-3 top-3 rounded-lg p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+      )}
 
       {/* HUD: Overall Progress · Sets Completed */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">

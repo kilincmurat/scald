@@ -24,6 +24,7 @@ import {
   Eye,
   TrendingUp,
   TrendingDown,
+  GraduationCap,
 } from 'lucide-react';
 
 const SET_GRADIENT: Record<SetCode, string> = {
@@ -40,7 +41,7 @@ const SET_ACCENT: Record<SetCode, { text: string; bg: string; border: string }> 
   ECS: { text: 'text-orange-700', bg: 'bg-orange-50', border: 'border-orange-200' },
 };
 
-const SCORE_COLORS = [
+export const SCORE_COLORS = [
   'bg-slate-300',
   'bg-red-400',
   'bg-orange-400',
@@ -48,7 +49,7 @@ const SCORE_COLORS = [
   'bg-lime-400',
   'bg-emerald-500',
 ];
-const SCORE_LABELS = ['No data', 'Very Weak', 'Weak', 'Moderate', 'Good', 'Excellent'];
+export const SCORE_LABELS = ['No data', 'Very Weak', 'Weak', 'Moderate', 'Good', 'Excellent'];
 
 export function CategoryWizard({ categoryCode }: { categoryCode: string }) {
   const router = useRouter();
@@ -187,7 +188,17 @@ export function CategoryWizard({ categoryCode }: { categoryCode: string }) {
           >
             <ArrowLeft className="h-4 w-4" /> All categories
           </Link>
-          <YearPicker size="sm" label="Reporting year" />
+          <div className="flex items-center gap-3">
+            {canWrite && (
+              <Link
+                href="/data-entry/guide#card"
+                className="inline-flex items-center gap-1.5 text-sm font-medium text-sky-600 hover:text-sky-800"
+              >
+                <GraduationCap className="h-4 w-4" /> How do I fill this in?
+              </Link>
+            )}
+            <YearPicker size="sm" label="Reporting year" />
+          </div>
         </div>
 
         {/* Progress header */}
@@ -356,7 +367,9 @@ export function CategoryWizard({ categoryCode }: { categoryCode: string }) {
   );
 }
 
-function IndicatorRow({
+/** One indicator card. Exported so the data-entry guide can show the real
+ * card in a sandbox; `data-guide` attributes let it highlight a part. */
+export function IndicatorRow({
   indicator,
   index,
   setCode,
@@ -418,17 +431,17 @@ function IndicatorRow({
 
         <div className="flex-1 min-w-0">
           <div className="flex flex-wrap items-center gap-2">
-            <span className={clsx('rounded px-1.5 py-0.5 text-[10px] font-bold', accent.bg, accent.text)}>
+            <span data-guide="code" className={clsx('rounded px-1.5 py-0.5 text-[10px] font-bold', accent.bg, accent.text)}>
               {indicator.code}
             </span>
             {isOptional && (
-              <span className="rounded-full bg-purple-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-purple-700 ring-1 ring-purple-200">
+              <span data-guide="optional" className="rounded-full bg-purple-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-purple-700 ring-1 ring-purple-200">
                 Optional
               </span>
             )}
-            <h3 className="text-sm font-semibold text-slate-900">{indicator.name}</h3>
+            <h3 data-guide="name" className="text-sm font-semibold text-slate-900">{indicator.name}</h3>
           </div>
-          <p className="mt-1 text-xs text-slate-500">
+          <p data-guide="unit" className="mt-1 text-xs text-slate-500">
             <span className="font-medium text-slate-700">Unit:</span> {indicator.unit}
             {indicator.normalisation && (
               <span className="ml-2 text-slate-400">· {indicator.normalisation}</span>
@@ -447,7 +460,7 @@ function IndicatorRow({
       {expanded && (
         <div className="p-4 pt-3 space-y-3">
           {(indicator.method || direction) && (
-            <div className="flex flex-col gap-2 rounded-lg border border-slate-100 bg-slate-50 px-3 py-2">
+            <div data-guide="method" className="flex flex-col gap-2 rounded-lg border border-slate-100 bg-slate-50 px-3 py-2">
               {indicator.method && (
                 <div className="flex items-start gap-2">
                   <Info className="mt-0.5 h-3.5 w-3.5 shrink-0 text-slate-400" />
@@ -463,7 +476,7 @@ function IndicatorRow({
                 </div>
               )}
               {direction === 'lower' && (
-                <div className="flex items-start gap-1.5 rounded-md bg-amber-50 px-2 py-1 text-[11px] font-medium text-amber-700 ring-1 ring-amber-200">
+                <div data-guide="direction" className="flex items-start gap-1.5 rounded-md bg-amber-50 px-2 py-1 text-[11px] font-medium text-amber-700 ring-1 ring-amber-200">
                   <TrendingDown className="mt-0.5 h-3.5 w-3.5 shrink-0" />
                   <span>
                     Inverse indicator — <strong>lower is better</strong>. A smaller value scores
@@ -476,7 +489,7 @@ function IndicatorRow({
 
           {/* Raw + Scores in a flex row */}
           <div className="grid grid-cols-1 gap-3 lg:grid-cols-12">
-            <div className="lg:col-span-3">
+            <div data-guide="value" className="lg:col-span-3">
               <label className="block text-[11px] font-semibold text-slate-600">
                 {isNumeric ? 'Raw value' : 'Level'} {isOptional ? (
                   <span className="text-purple-600">(optional)</span>
@@ -583,7 +596,7 @@ function IndicatorRow({
               )}
             </div>
 
-            <div className="lg:col-span-9">
+            <div data-guide="scores" className="lg:col-span-9">
               <label className="block text-[11px] font-semibold text-slate-600">
                 {isNumeric ? '0–5 score' : 'Select level (0 = none, 5 = best)'}
                 {isNumeric && !hasRaw && (
