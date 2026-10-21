@@ -87,7 +87,8 @@ export function WelcomeScene() {
         </Callout>
         <Callout kind="tip">
           <strong>No need to finish in one sitting.</strong> Close the page and come back tomorrow — your values
-          will be waiting, as long as the badge at the top says <em>Synced with server</em> when you leave.
+          will be waiting. (If an amber message says changes are waiting to be saved, keep the page open until
+          it disappears.)
         </Callout>
       </div>
 
@@ -121,10 +122,7 @@ const SCREEN_PARTS = [
   {
     id: 'saved',
     title: '“Synced with server”',
-    // Accurate to the current behaviour: a failed save is NOT retried, and the
-    // next page load replaces local values with the server's. So the safe
-    // instruction is to re-type, not to wait.
-    body: 'Green means your values are safely saved on the server. If it turns amber (“Offline”), your last change has NOT reached the server — do not close or refresh the page. Check your internet connection, then type that value again until the badge is green.',
+    body: 'Green means everything is saved on the server. If the connection drops, an amber message says how many changes are waiting — they are kept on this computer and sent automatically when the connection returns. Keep the page open until the message goes away.',
   },
   {
     id: 'progress',
@@ -174,7 +172,7 @@ export function ScreenScene() {
                 <FileDown className="h-3 w-3" /> Preparation sheet
               </span>
               <span className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2 py-1 font-medium text-slate-400">
-                <RotateCcw className="h-3 w-3" /> Reset all
+                <RotateCcw className="h-3 w-3" /> Clear {MIN_YEAR}
               </span>
             </div>
           </div>
@@ -230,9 +228,9 @@ export function ScreenScene() {
       </ol>
 
       <Callout kind="warn">
-        <strong>Don’t press “Reset all”.</strong> It permanently deletes every value you have entered — for
-        every year that is not yet submitted, not only the year on screen. You never need it for normal work:
-        to correct a value, just type over it.
+        <strong>“Clear {MIN_YEAR}” deletes the whole year.</strong> It removes every value for the year on
+        screen, and asks you to type the year before it does. You never need it for normal work: to change a
+        value, type over it; to remove one, empty its box.
       </Callout>
     </div>
   );

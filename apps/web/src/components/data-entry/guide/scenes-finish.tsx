@@ -309,7 +309,7 @@ export function ReviewScene() {
 const MISTAKES = [
   {
     title: 'Typing 0 when you don’t know',
-    body: '0 is a real value, not “no data”. For indicators where lower is better — consumption, pollution, losses — 0 is the BEST possible score. If you don’t have a number, leave the card empty and ask your coordinator.',
+    body: '0 is a real value, not “no data”. For indicators where lower is better — consumption, pollution, losses — 0 is the BEST possible score. If you don’t have the number, press “I don’t have this number” under the box instead: it records “No data”, which scores 0.',
   },
   {
     title: 'A total where the card asks “per 10,000 people”',
@@ -317,17 +317,15 @@ const MISTAKES = [
   },
   {
     title: 'A dot between thousands',
-    body: 'Type 49721, not 49.721 — the dot is read as a decimal point. Use a dot only for decimals: 0.6.',
+    body: 'Type 49721, not 49.721 — the dot is read as a decimal point. If you slip, the card usually notices and offers a one-click fix. Use a dot only for decimals: 0.6.',
   },
   {
     title: 'The wrong reporting year',
-    // Emptying a box does not delete a saved value (the form ignores an empty
-    // input), so a value under the wrong year can't be removed by the user.
-    body: 'Check the year box at the top before you start. A value saved under the wrong year can be typed over but not removed, so it has to be sorted out by your coordinator.',
+    body: 'Check the year box at the top before you start. If you typed values under the wrong year, remove them there (empty the box, or press the × in it) and type them again under the right year.',
   },
   {
-    title: 'Pressing “Reset all”',
-    body: 'It permanently deletes your values for every year not yet submitted. You never need it — type over a value to change it.',
+    title: 'Clearing a whole year by accident',
+    body: 'The “Clear” button next to the Preparation sheet deletes every value of the year on screen. It asks you to type the year first — do so only if you really mean to start that year again.',
   },
 ] as const;
 
@@ -349,8 +347,16 @@ const FAQ = [
     a: 'Yes, but agree who fills which categories. If two people type into the same indicator, the last value typed is kept.',
   },
   {
-    q: 'The badge at the top turned amber (“Offline”).',
-    a: 'Your last change has not reached the server. Don’t close or refresh the page. Check your internet connection, then type that value again until the badge turns green.',
+    q: 'An amber message says changes are “not saved to the server yet”.',
+    a: 'The connection dropped. Your changes are kept on this computer and sent automatically when it comes back — or press “Try again now”. Keep the page open until the message disappears.',
+  },
+  {
+    q: 'How do I remove a value I typed by mistake?',
+    a: 'Empty the box (or press the small × inside it) and click somewhere else. For a level, press “Clear” next to the selected level. This works until you submit.',
+  },
+  {
+    q: 'I can’t find the number for a required indicator.',
+    a: 'First ask the department that would hold it. If it really doesn’t exist, press “I don’t have this number” under the box. That records “No data” (it scores 0) and lets you submit. Never type 0 instead.',
   },
   {
     q: 'I submitted, then noticed a mistake.',

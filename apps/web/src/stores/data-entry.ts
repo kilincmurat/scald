@@ -7,9 +7,14 @@ import { autoScore, isNumericIndicator } from '@/lib/auto-score';
 import {
   fetchServerSnapshot,
   upsertEntry,
+  deleteEntry,
   upsertCategoryCompletion,
+  deleteCategoryCompletion,
   upsertBadge,
-  deleteAllMunicipalityData,
+  deleteBadge,
+  deleteYearData,
+  lookupIndicatorCategory,
+  SaveError,
 } from '@/lib/data-entry-service';
 
 export type IndicatorEntry = {
@@ -63,11 +68,24 @@ export type DataEntryState = {
 
   syncStatus: SyncStatus;
   lastSyncedAt: number | null;
+  /**
+   * Indicator writes that have not reached the server yet, keyed
+   * municipality:year:code so the latest write to an indicator wins.
+   * Persisted: a value typed while offline survives a reload and is sent when
+   * the connection returns instead of being overwritten by the server copy.
+   */
+  pending: Record<string, PendingWrite>;
+  /** Why the last write was refused by the server, for the status badge. */
+  lastError: string | null;
 
   // actions
   setAdminMunicipality: (municipalityId: string | null) => void;
   setYear: (year: number) => void;
   saveEntry: (indicatorCode: string, score: number, rawValue?: string) => void;
+  /** Remove an indicator's value (the user emptied the box). */
+  clearEntry: (indicatorCode: string) => void;
+  /** Retry every pending write; called on reconnect and on a timer. */
+  flushPending: () => Promise<void>;
   /**
    * Re-derive stored scores of numeric indicators in the selected year from
    * their raw values and the current thresholds; returns the codes it fixed.
@@ -80,12 +98,34 @@ export type DataEntryState = {
   categoryProgress: (categoryCode: string) => { done: number; total: number; pct: number };
   overallProgress: () => { done: number; total: number; pct: number };
   level: () => { level: number; xpInLevel: number; xpForNext: number };
+  /** Delete every value of the SELECTED year (not other years). */
   reset: () => void;
 
   // Server integration
   loadMunicipality: (municipalityId: string) => Promise<void>;
   clearLocal: () => void;
 };
+
+export type PendingWrite =
+  | { op: 'upsert'; municipalityId: string; year: number; code: string; score: number; raw: string }
+  | { op: 'delete'; municipalityId: string; year: number; code: string };
+
+const pendingKey = (w: { municipalityId: string; year: number; code: string }) =>
+  `${w.municipalityId}:${w.year}:${w.code}`;
+
+function sendWrite(w: PendingWrite): Promise<void> {
+  return w.op === 'upsert'
+    ? upsertEntry(w.municipalityId, w.code, w.score, w.raw, w.year)
+    : deleteEntry(w.municipalityId, w.code, w.year);
+}
+
+/** Human message for a write the server refused (not a connection problem). */
+function refusalMessage(err: unknown): string {
+  const msg = err instanceof Error ? err.message : String(err);
+  return /row-level security|permission/i.test(msg)
+    ? 'The server refused a change — this year may be locked. Reload the page.'
+    : `A change could not be saved: ${msg}`;
+}
 
 const XP_PER_INDICATOR = 10;
 const XP_PER_CATEGORY_BONUS = 50;
@@ -134,7 +174,55 @@ const emptyState = {
 
 export const useDataEntry = create<DataEntryState>()(
   persist(
-    (set, get) => ({
+    (set, get) => {
+      // Writes currently in flight (not persisted — a reload has none).
+      let inflight = 0;
+      let flushing = false;
+
+      const statusAfter = (pending: Record<string, PendingWrite>, lastError: string | null): SyncStatus =>
+        inflight > 0 ? 'syncing' : Object.keys(pending).length > 0 || lastError ? 'error' : 'idle';
+
+      /** Record the outcome of one write. A write is dropped from the queue
+       * only if it is still the queued one — a newer value typed meanwhile
+       * stays queued — and only when it succeeded or was refused for good. */
+      const settle = (w: PendingWrite, err: unknown) => {
+        inflight = Math.max(0, inflight - 1);
+        const transient = err instanceof SaveError && err.transient;
+        set((st) => {
+          const pending = { ...st.pending };
+          const key = pendingKey(w);
+          if (pending[key] === w && !transient) delete pending[key];
+          const lastError = !err ? null : transient ? st.lastError : refusalMessage(err);
+          return {
+            pending,
+            lastError,
+            syncStatus: statusAfter(pending, lastError),
+            lastSyncedAt: err ? st.lastSyncedAt : Date.now(),
+          };
+        });
+      };
+
+      /** Queue a write, then try to send it right away. */
+      const submit = (w: PendingWrite) => {
+        inflight++;
+        set((st) => ({ pending: { ...st.pending, [pendingKey(w)]: w }, syncStatus: 'syncing' }));
+        sendWrite(w).then(
+          () => settle(w, null),
+          (err) => settle(w, err),
+        );
+      };
+
+      /** Completion/badge writes are derived state — not queued, but a refusal
+       * is still surfaced instead of vanishing. */
+      const noteFailure = (err: unknown) => {
+        if (err instanceof SaveError && err.transient) return;
+        set((st) => {
+          const lastError = refusalMessage(err);
+          return { lastError, syncStatus: statusAfter(st.pending, lastError) };
+        });
+      };
+
+      return {
       ...emptyState,
       municipalityId: null,
       adminMunicipalityId: null,
@@ -142,6 +230,8 @@ export const useDataEntry = create<DataEntryState>()(
       hydrated: false,
       syncStatus: 'idle',
       lastSyncedAt: null,
+      pending: {},
+      lastError: null,
 
       setAdminMunicipality: (id) => {
         set({ adminMunicipalityId: id });
@@ -175,10 +265,82 @@ export const useDataEntry = create<DataEntryState>()(
         });
 
         if (trimmed && municipalityId) {
-          set({ syncStatus: 'syncing' });
-          upsertEntry(municipalityId, indicatorCode, score, trimmed, year)
-            .then(() => set({ syncStatus: 'idle', lastSyncedAt: Date.now() }))
-            .catch(() => set({ syncStatus: 'error' }));
+          submit({ op: 'upsert', municipalityId, year, code: indicatorCode, score, raw: trimmed });
+        }
+      },
+
+      clearEntry: (indicatorCode) => {
+        const s = get();
+        const year = s.selectedYear;
+        const municipalityId = s.municipalityId;
+        const yearEntries = s.entriesByYear[year] ?? {};
+        if (!yearEntries[indicatorCode]) return;
+
+        const nextYearEntries = { ...yearEntries };
+        delete nextYearEntries[indicatorCode];
+        const entriesByYear = { ...s.entriesByYear, [year]: nextYearEntries };
+
+        // Emptying a REQUIRED indicator means its category is no longer
+        // complete — and neither is the set's badge. Optional ones never
+        // counted towards completion, so they change nothing here.
+        let completedByYear = s.completedByYear;
+        let badgesByYear = s.badgesByYear;
+        const lookup = lookupIndicatorCategory(indicatorCode);
+        const indicator = lookup
+          ? INDICATORS.categories[lookup.category].indicators.find((i) => i.code === indicatorCode)
+          : undefined;
+        const yearCompleted = s.completedByYear[year] ?? {};
+        const uncomplete = !!(lookup && indicator && !indicator.optional && yearCompleted[lookup.category]);
+        const yearBadges = s.badgesByYear[year] ?? [];
+        const dropBadge = uncomplete && !!lookup && yearBadges.includes(lookup.set);
+        if (uncomplete && lookup) {
+          const c = { ...yearCompleted };
+          delete c[lookup.category];
+          completedByYear = { ...completedByYear, [year]: c };
+          if (dropBadge) badgesByYear = { ...badgesByYear, [year]: yearBadges.filter((b) => b !== lookup.set) };
+        }
+
+        set({
+          entriesByYear,
+          completedByYear,
+          badgesByYear,
+          entries: nextYearEntries,
+          completed: completedByYear[year] ?? {},
+          badges: badgesByYear[year] ?? [],
+          xp: xpFromYearScoped(entriesByYear, completedByYear, badgesByYear),
+        });
+
+        if (municipalityId) {
+          submit({ op: 'delete', municipalityId, year, code: indicatorCode });
+          if (uncomplete && lookup) {
+            deleteCategoryCompletion(municipalityId, lookup.category, year).catch(noteFailure);
+            if (dropBadge) deleteBadge(municipalityId, lookup.set, year).catch(noteFailure);
+          }
+        }
+      },
+
+      flushPending: async () => {
+        if (flushing) return;
+        const queued = Object.values(get().pending);
+        if (queued.length === 0) return;
+        flushing = true;
+        try {
+          for (const w of queued) {
+            // Superseded by a newer value while we were sending others.
+            if (get().pending[pendingKey(w)] !== w) continue;
+            inflight++;
+            set({ syncStatus: 'syncing' });
+            try {
+              await sendWrite(w);
+              settle(w, null);
+            } catch (err) {
+              settle(w, err);
+              // Still offline: the rest would fail the same way. Next trigger retries.
+              if (err instanceof SaveError && err.transient) break;
+            }
+          }
+        } finally {
+          flushing = false;
         }
       },
 
@@ -221,7 +383,7 @@ export const useDataEntry = create<DataEntryState>()(
         });
 
         if (municipalityId) {
-          upsertCategoryCompletion(municipalityId, categoryCode, year).catch(() => {});
+          upsertCategoryCompletion(municipalityId, categoryCode, year).catch(noteFailure);
         }
 
         const setCode = INDICATORS.categories[categoryCode]?.set;
@@ -237,7 +399,7 @@ export const useDataEntry = create<DataEntryState>()(
             badgesByYear: nextBadgesByYear,
             xp: s2.xp + XP_PER_SET_BONUS,
           }));
-          if (municipalityId) upsertBadge(municipalityId, setCode, year).catch(() => {});
+          if (municipalityId) upsertBadge(municipalityId, setCode, year).catch(noteFailure);
         }
       },
 
@@ -278,9 +440,42 @@ export const useDataEntry = create<DataEntryState>()(
       level: () => xpToLevel(get().xp),
 
       reset: () => {
-        const municipalityId = get().municipalityId;
-        set({ ...emptyState });
-        if (municipalityId) deleteAllMunicipalityData(municipalityId).catch(() => {});
+        const s = get();
+        const year = s.selectedYear;
+        const municipalityId = s.municipalityId;
+        const entriesByYear = { ...s.entriesByYear };
+        const completedByYear = { ...s.completedByYear };
+        const badgesByYear = { ...s.badgesByYear };
+        delete entriesByYear[year];
+        delete completedByYear[year];
+        delete badgesByYear[year];
+        // Queued writes for this year would re-create what was just deleted.
+        const pending = Object.fromEntries(
+          Object.entries(s.pending).filter(([, w]) => !(w.municipalityId === municipalityId && w.year === year)),
+        );
+        set({
+          entriesByYear,
+          completedByYear,
+          badgesByYear,
+          entries: {},
+          completed: {},
+          badges: [],
+          pending,
+          xp: xpFromYearScoped(entriesByYear, completedByYear, badgesByYear),
+        });
+        if (municipalityId) {
+          deleteYearData(municipalityId, year).catch((err) => {
+            // A failed delete leaves the values on the server: say so, or the
+            // user believes they are gone until the next reload brings them back.
+            set((st) => {
+              const lastError =
+                err instanceof SaveError && err.transient
+                  ? 'Could not reach the server — the year was NOT cleared. Try again when online.'
+                  : refusalMessage(err);
+              return { lastError, syncStatus: statusAfter(st.pending, lastError) };
+            });
+          });
+        }
       },
 
       loadMunicipality: async (municipalityId) => {
@@ -288,7 +483,8 @@ export const useDataEntry = create<DataEntryState>()(
         set({ municipalityId, syncStatus: 'loading' });
         const snapshot = await fetchServerSnapshot(municipalityId);
         if (!snapshot) {
-          set({ syncStatus: 'idle' });
+          // Keep what is on screen and say we couldn't reach the server.
+          set({ syncStatus: 'error' });
           return;
         }
 
@@ -315,6 +511,15 @@ export const useDataEntry = create<DataEntryState>()(
           badgesByYear[y].push(row.set_code);
         }
 
+        // Writes that never reached the server are newer than its copy: lay
+        // them on top instead of letting the snapshot erase them.
+        for (const w of Object.values(get().pending)) {
+          if (w.municipalityId !== municipalityId) continue;
+          const yearEntries = (entriesByYear[w.year] ??= {});
+          if (w.op === 'upsert') yearEntries[w.code] = { score: w.score, rawValue: w.raw, enteredAt: Date.now() };
+          else delete yearEntries[w.code];
+        }
+
         const currentYear = get().selectedYear;
         set({
           entriesByYear,
@@ -324,9 +529,10 @@ export const useDataEntry = create<DataEntryState>()(
           completed: completedByYear[currentYear] ?? {},
           badges: badgesByYear[currentYear] ?? [],
           xp: xpFromYearScoped(entriesByYear, completedByYear, badgesByYear),
-          syncStatus: 'idle',
+          syncStatus: statusAfter(get().pending, get().lastError),
           lastSyncedAt: Date.now(),
         });
+        void get().flushPending();
       },
 
       clearLocal: () => {
@@ -335,9 +541,13 @@ export const useDataEntry = create<DataEntryState>()(
           municipalityId: null,
           syncStatus: 'idle',
           lastSyncedAt: null,
+          // Signed out: queued writes must not be sent under the next user.
+          pending: {},
+          lastError: null,
         });
       },
-    }),
+      };
+    },
     {
       name: 'scald-data-entry',
       version: 3,
@@ -385,7 +595,18 @@ export const useDataEntry = create<DataEntryState>()(
         completed: state.completed,
         badges: state.badges,
         xp: state.xp,
+        pending: state.pending,
       }),
     },
   ),
 );
+
+// Retry queued writes when the connection returns, and periodically while
+// any are waiting (the 'online' event alone misses captive portals and
+// server-side outages).
+if (typeof window !== 'undefined') {
+  window.addEventListener('online', () => void useDataEntry.getState().flushPending());
+  setInterval(() => {
+    if (Object.keys(useDataEntry.getState().pending).length > 0) void useDataEntry.getState().flushPending();
+  }, 20_000);
+}

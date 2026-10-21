@@ -4,7 +4,15 @@ import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { INDICATORS, getNextCategoryCode, type Indicator, type SetCode } from '@/lib/scald-indicators';
-import { autoScore, isNumericIndicator, checkOutlier, scoringDirection } from '@/lib/auto-score';
+import {
+  autoScore,
+  isNumericIndicator,
+  checkOutlier,
+  scoringDirection,
+  ambiguousNumber,
+  isNoData,
+  NO_DATA_VALUE,
+} from '@/lib/auto-score';
 import { useDataEntry, isYearEditable } from '@/stores/data-entry';
 import { useThresholds, getEffectiveThresholds } from '@/stores/thresholds';
 import { useProfile } from '@/hooks/useProfile';
@@ -12,6 +20,7 @@ import { useSubmission } from '@/hooks/useSubmission';
 import { useEffectiveMunicipality } from '@/hooks/useEffectiveMunicipality';
 import { canWriteDataEntry } from '@/lib/roles';
 import { YearPicker } from './YearPicker';
+import { SyncBanner } from './SyncStatus';
 import { clsx } from 'clsx';
 import {
   ArrowLeft,
@@ -25,6 +34,8 @@ import {
   TrendingUp,
   TrendingDown,
   GraduationCap,
+  X,
+  CircleSlash,
 } from 'lucide-react';
 
 const SET_GRADIENT: Record<SetCode, string> = {
@@ -63,6 +74,7 @@ export function CategoryWizard({ categoryCode }: { categoryCode: string }) {
   const entries = useDataEntry((s) => s.entries);
   const selectedYear = useDataEntry((s) => s.selectedYear);
   const saveEntry = useDataEntry((s) => s.saveEntry);
+  const clearEntry = useDataEntry((s) => s.clearEntry);
   const completeCategory = useDataEntry((s) => s.completeCategory);
   const isUnlocked = useDataEntry((s) => s.isCategoryUnlocked(categoryCode));
   const categoryProgress = useDataEntry((s) => s.categoryProgress(categoryCode));
@@ -171,6 +183,24 @@ export function CategoryWizard({ categoryCode }: { categoryCode: string }) {
     }
   };
 
+  const handleClear = (indicatorCode: string) => {
+    if (!canWrite) return;
+    setRawValues((prev) => {
+      const next = { ...prev };
+      delete next[indicatorCode];
+      return next;
+    });
+    clearEntry(indicatorCode);
+  };
+
+  // An honest "no data" (V6: None/No data → 0) instead of the 0 people type,
+  // which is the best score on lower-is-better indicators.
+  const handleNoData = (indicatorCode: string) => {
+    if (!canWrite) return;
+    setRawValues((prev) => ({ ...prev, [indicatorCode]: NO_DATA_VALUE }));
+    saveEntry(indicatorCode, 0, NO_DATA_VALUE);
+  };
+
   const handleFinish = () => {
     if (!allScored) return;
     completeCategory(categoryCode);
@@ -250,6 +280,10 @@ export function CategoryWizard({ categoryCode }: { categoryCode: string }) {
           </div>
         </div>
 
+        <div className="mt-4">
+          <SyncBanner />
+        </div>
+
         {lockedForDataEntry ? (
           <div
             className={clsx(
@@ -297,6 +331,8 @@ export function CategoryWizard({ categoryCode }: { categoryCode: string }) {
               readOnly={!canWrite}
               onRawChange={(v) => handleRawChange(ind.code, v)}
               onManualScore={(s) => handleManualScore(ind.code, s)}
+              onClear={canWrite ? () => handleClear(ind.code) : undefined}
+              onNoData={canWrite ? () => handleNoData(ind.code) : undefined}
             />
           ))}
         </div>
@@ -378,6 +414,8 @@ export function IndicatorRow({
   readOnly = false,
   onRawChange,
   onManualScore,
+  onClear,
+  onNoData,
 }: {
   indicator: Indicator;
   index: number;
@@ -387,6 +425,10 @@ export function IndicatorRow({
   readOnly?: boolean;
   onRawChange: (v: string) => void;
   onManualScore: (score: number) => void;
+  /** Remove the saved value. Omitted (e.g. in the guide's sandbox) → no clear control. */
+  onClear?: () => void;
+  /** Record "No data" for a required number indicator. */
+  onNoData?: () => void;
 }) {
   const setAccent = SET_ACCENT[setCode];
   const isOptional = !!indicator.optional;
@@ -403,6 +445,11 @@ export function IndicatorRow({
     isNumeric && hasRaw && currentScore === undefined;
   // Advisory only — does not block saving.
   const outlier = hasRaw && isNumeric ? checkOutlier(rawValue, indicator.thresholds) : null;
+  const noData = isNumeric && isNoData(rawValue);
+  // "49.721" read as 49.7 when 49721 fits the bands — offer the other reading.
+  const ambiguity = hasRaw && isNumeric && !noData ? ambiguousNumber(rawValue, indicator.thresholds) : null;
+  // 0 on a lower-is-better indicator is the BEST score; usually it means "unknown".
+  const zeroOnInverse = direction === 'lower' && /^0+(?:[.,]0+)?$/.test(rawValue.trim());
 
   return (
     <div
@@ -499,24 +546,61 @@ export function IndicatorRow({
               </label>
 
               {isNumeric ? (
-                <>
-                  <input
-                    type="text"
-                    value={rawValue}
-                    onChange={(e) => onRawChange(e.target.value)}
-                    placeholder={indicator.unit}
-                    required={!isOptional}
-                    disabled={readOnly}
-                    className={clsx(
-                      'mt-1 w-full rounded-lg border bg-slate-50 px-3 py-2 text-sm text-slate-900 placeholder-slate-400 outline-none transition focus:bg-white focus:ring-2',
-                      readOnly && 'cursor-not-allowed opacity-60',
-                      hasRaw
-                        ? 'border-slate-200 focus:border-slate-400 focus:ring-slate-200'
-                        : isOptional
-                          ? 'border-purple-200 focus:border-purple-500 focus:ring-purple-500/20'
-                          : 'border-slate-200 focus:border-emerald-500 focus:ring-emerald-500/20',
+                noData ? (
+                  <div className="mt-1 rounded-lg border border-slate-300 bg-slate-100 px-3 py-2">
+                    <p className="flex items-center gap-1.5 text-sm font-semibold text-slate-700">
+                      <CircleSlash className="h-4 w-4 text-slate-500" /> No data available
+                    </p>
+                    <p className="mt-0.5 text-[10px] text-slate-500">Recorded as “{NO_DATA_VALUE}” — scores 0.</p>
+                    {!readOnly && onClear && (
+                      <button
+                        type="button"
+                        onClick={onClear}
+                        className="mt-1.5 text-[11px] font-semibold text-sky-700 hover:text-sky-900"
+                      >
+                        Enter a value instead
+                      </button>
                     )}
-                  />
+                  </div>
+                ) : (
+                <>
+                  <div className="relative mt-1">
+                    <input
+                      type="text"
+                      value={rawValue}
+                      onChange={(e) => onRawChange(e.target.value)}
+                      // Emptying the box and moving on removes the saved value.
+                      // (Typing a replacement passes through empty for a moment,
+                      // so this waits for blur rather than reacting to "".)
+                      onBlur={(e) => {
+                        if (!e.target.value.trim() && currentScore !== undefined) onClear?.();
+                      }}
+                      placeholder={indicator.unit}
+                      required={!isOptional}
+                      disabled={readOnly}
+                      className={clsx(
+                        'w-full rounded-lg border bg-slate-50 py-2 pl-3 text-sm text-slate-900 placeholder-slate-400 outline-none transition focus:bg-white focus:ring-2',
+                        onClear && hasRaw && !readOnly ? 'pr-8' : 'pr-3',
+                        readOnly && 'cursor-not-allowed opacity-60',
+                        hasRaw
+                          ? 'border-slate-200 focus:border-slate-400 focus:ring-slate-200'
+                          : isOptional
+                            ? 'border-purple-200 focus:border-purple-500 focus:ring-purple-500/20'
+                            : 'border-slate-200 focus:border-emerald-500 focus:ring-emerald-500/20',
+                      )}
+                    />
+                    {onClear && hasRaw && !readOnly && (
+                      <button
+                        type="button"
+                        onClick={onClear}
+                        aria-label={`Clear the value of ${indicator.code}`}
+                        title="Clear this value"
+                        className="absolute right-1.5 top-1/2 -translate-y-1/2 rounded p-1 text-slate-400 transition hover:bg-slate-200 hover:text-slate-700"
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    )}
+                  </div>
                   {!hasRaw && (
                     <p className={clsx(
                       'mt-1 text-[10px]',
@@ -526,10 +610,59 @@ export function IndicatorRow({
                       <span className="font-medium">{indicator.unit}</span>
                     </p>
                   )}
+                  {!hasRaw && !isOptional && !readOnly && onNoData && (
+                    <button
+                      type="button"
+                      onClick={onNoData}
+                      className="mt-1 text-left text-[11px] font-semibold text-sky-700 hover:text-sky-900"
+                      title="Records “No data”, which scores 0. Use this instead of typing 0."
+                    >
+                      I don’t have this number
+                    </button>
+                  )}
                   {hasRaw && isComplete && (
                     <p className="mt-1 flex items-center gap-1 text-[10px] text-emerald-600">
                       <Zap className="h-3 w-3" />
                       Auto-scored: <span className="font-semibold">{currentScore}</span>
+                    </p>
+                  )}
+                  {ambiguity && (
+                    <div className="mt-1.5 rounded-md bg-amber-50 px-2 py-1.5 text-[10px] text-amber-800 ring-1 ring-amber-200">
+                      <p className="flex items-start gap-1">
+                        <AlertCircle className="mt-0.5 h-3 w-3 shrink-0" />
+                        <span>
+                          {/* Plain digits, no grouping: "4,500" reads as 4.5 to a Turkish user. */}
+                          “{rawValue.trim()}” is read as <strong>{ambiguity.readAs}</strong>.
+                          Did you mean <strong>{ambiguity.suggestion}</strong>?
+                        </span>
+                      </p>
+                      {!readOnly && (
+                        <button
+                          type="button"
+                          onClick={() => onRawChange(ambiguity.suggestion)}
+                          className="mt-1 rounded bg-amber-600 px-2 py-0.5 text-[10px] font-semibold text-white hover:bg-amber-700"
+                        >
+                          Use {ambiguity.suggestion}
+                        </button>
+                      )}
+                    </div>
+                  )}
+                  {zeroOnInverse && (
+                    <p className="mt-1.5 flex items-start gap-1 rounded-md bg-amber-50 px-2 py-1.5 text-[10px] text-amber-800 ring-1 ring-amber-200">
+                      <AlertCircle className="mt-0.5 h-3 w-3 shrink-0" />
+                      <span>
+                        0 gives this indicator its <strong>best</strong> score, because lower is better. Keep it only
+                        if the real value is zero.{' '}
+                        {!readOnly && onNoData && !isOptional && (
+                          <button
+                            type="button"
+                            onClick={onNoData}
+                            className="font-semibold underline underline-offset-2 hover:text-amber-950"
+                          >
+                            I don’t have this number
+                          </button>
+                        )}
+                      </span>
                     </p>
                   )}
                   {autoUnresolved && (
@@ -538,7 +671,7 @@ export function IndicatorRow({
                       Value doesn't match any threshold. Check the number.
                     </p>
                   )}
-                  {outlier && (
+                  {outlier && !ambiguity && (
                     <p className="mt-1 flex items-start gap-1 text-[10px] text-amber-600">
                       <AlertCircle className="mt-0.5 h-3 w-3 shrink-0" />
                       {outlier.severity === 'high'
@@ -547,6 +680,7 @@ export function IndicatorRow({
                     </p>
                   )}
                 </>
+                )
               ) : (
                 <>
                   {/* Descriptive / maturity indicator: the level IS the answer.
@@ -587,9 +721,18 @@ export function IndicatorRow({
                       automatically.
                     </p>
                   ) : (
-                    <p className="mt-1 flex items-center gap-1 text-[10px] text-emerald-600">
+                    <p className="mt-1 flex flex-wrap items-center gap-1 text-[10px] text-emerald-600">
                       <CheckCircle2 className="h-3 w-3" />
                       Level <span className="font-semibold">{currentScore}</span> selected
+                      {onClear && !readOnly && (
+                        <button
+                          type="button"
+                          onClick={onClear}
+                          className="ml-1 font-semibold text-slate-500 underline-offset-2 hover:text-slate-800 hover:underline"
+                        >
+                          Clear
+                        </button>
+                      )}
                     </p>
                   )}
                 </>

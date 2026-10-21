@@ -13,14 +13,12 @@ import { DecisionMakerReview } from './DecisionMakerReview';
 import { useEffectiveMunicipality } from '@/hooks/useEffectiveMunicipality';
 import { useSubmission } from '@/hooks/useSubmission';
 import { hasSeenGuide } from './guide/DataEntryGuide';
+import { SyncStatusPill, SyncBanner } from './SyncStatus';
 import {
   Lock,
   CheckCircle2,
   ChevronRight,
   ClipboardList,
-  Loader2,
-  Cloud,
-  CloudOff,
   RotateCcw,
   Eye,
   FileDown,
@@ -72,6 +70,7 @@ const GUIDE_HINT_DISMISSED = 'scald-guide-hint-dismissed';
 export function DataEntryDashboard() {
   const [mounted, setMounted] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [resetConfirmText, setResetConfirmText] = useState('');
   // Suggest the guide to someone who has never opened it. Read after mount —
   // localStorage doesn't exist during server rendering.
   const [showGuideHint, setShowGuideHint] = useState(false);
@@ -194,7 +193,7 @@ export function DataEntryDashboard() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <YearPicker size="sm" />
-          <SyncStatusPill status={syncStatus} initialized={!!currentMunicipalityId} />
+          <SyncStatusPill initialized={!!currentMunicipalityId} />
         </div>
         <div className="flex items-center gap-2">
           {canWrite && (
@@ -218,15 +217,20 @@ export function DataEntryDashboard() {
           </Link>
           {canWrite && !lockedForDataEntry && (overall.done > 0 || Object.keys(completed).length > 0) && (
             <button
-              onClick={() => setShowResetConfirm(true)}
+              onClick={() => {
+                setResetConfirmText('');
+                setShowResetConfirm(true);
+              }}
               className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-[11px] font-medium text-slate-500 shadow-sm transition hover:border-red-200 hover:text-red-600"
             >
               <RotateCcw className="h-3 w-3" />
-              <span className="hidden sm:inline">Reset all</span>
+              <span className="hidden sm:inline">Clear {selectedYear}</span>
             </button>
           )}
         </div>
       </div>
+
+      <SyncBanner />
 
       {canWrite && showGuideHint && (
         <div className="relative flex flex-col gap-4 rounded-2xl border-2 border-sky-200 bg-gradient-to-r from-sky-50 to-white p-5 sm:flex-row sm:items-center">
@@ -369,21 +373,43 @@ export function DataEntryDashboard() {
         );
       })}
 
-      {/* Reset confirm modal */}
+      {/* Clear-year confirm. It used to say "Reset all data?" and delete every
+          year of the municipality; it now deletes the selected year only, and
+          asks for the year to be typed so it can't be confirmed by reflex. */}
       {showResetConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="clear-year-title"
+        >
           <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-red-50 text-red-600">
                 <RotateCcw className="h-5 w-5" />
               </div>
-              <h3 className="text-lg font-bold text-slate-900">Reset all data?</h3>
+              <h3 id="clear-year-title" className="text-lg font-bold text-slate-900">
+                Delete all values for {selectedYear}?
+              </h3>
             </div>
             <p className="mt-3 text-sm text-slate-600">
-              This will permanently delete all your indicator entries and
-              category completions — both locally and on the server. This
-              action cannot be undone.
+              Every indicator value, category tick and badge for <strong>{selectedYear}</strong> will be
+              permanently deleted — on this computer and on the server. Other years are not affected. This cannot
+              be undone.
             </p>
+            <p className="mt-2 text-sm text-slate-600">
+              To change a single value you don’t need this — just type over it, or clear that one box.
+            </p>
+            <label className="mt-4 block text-sm font-medium text-slate-700">
+              Type <strong>{selectedYear}</strong> to confirm
+              <input
+                value={resetConfirmText}
+                onChange={(e) => setResetConfirmText(e.target.value)}
+                inputMode="numeric"
+                autoFocus
+                className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-base outline-none focus:border-red-400 focus:ring-2 focus:ring-red-200"
+              />
+            </label>
             <div className="mt-5 flex justify-end gap-2">
               <button
                 onClick={() => setShowResetConfirm(false)}
@@ -396,54 +422,16 @@ export function DataEntryDashboard() {
                   resetAll();
                   setShowResetConfirm(false);
                 }}
-                className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700"
+                disabled={resetConfirmText.trim() !== String(selectedYear)}
+                className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-40"
               >
-                Yes, delete everything
+                Delete {selectedYear}
               </button>
             </div>
           </div>
         </div>
       )}
     </div>
-  );
-}
-
-function SyncStatusPill({
-  status,
-  initialized,
-}: {
-  status: 'idle' | 'loading' | 'syncing' | 'error';
-  initialized: boolean;
-}) {
-  if (status === 'loading' || !initialized) {
-    return (
-      <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[10px] font-medium text-slate-500">
-        <Loader2 className="h-3 w-3 animate-spin" />
-        Loading from server…
-      </span>
-    );
-  }
-  if (status === 'syncing') {
-    return (
-      <span className="inline-flex items-center gap-1.5 rounded-full border border-blue-200 bg-blue-50 px-2.5 py-1 text-[10px] font-medium text-blue-700">
-        <Loader2 className="h-3 w-3 animate-spin" />
-        Syncing…
-      </span>
-    );
-  }
-  if (status === 'error') {
-    return (
-      <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-[10px] font-medium text-amber-700">
-        <CloudOff className="h-3 w-3" />
-        Offline — changes saved locally
-      </span>
-    );
-  }
-  return (
-    <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[10px] font-medium text-emerald-700">
-      <Cloud className="h-3 w-3" />
-      Synced with server
-    </span>
   );
 }
 

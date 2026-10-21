@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Eye, Hand, Calculator, ArrowDown, Equal } from 'lucide-react';
 import { clsx } from 'clsx';
 import type { Indicator } from '@/lib/scald-indicators';
-import { autoScore } from '@/lib/auto-score';
+import { autoScore, isNoData, NO_DATA_VALUE } from '@/lib/auto-score';
 import { useProfile } from '@/hooks/useProfile';
 import { IndicatorRow, SCORE_LABELS } from '../CategoryWizard';
 import {
@@ -90,6 +90,8 @@ function SandboxCard({
   interactive,
   onRaw,
   onLevel,
+  onClear,
+  onNoData,
   focus,
 }: {
   indicator: Indicator;
@@ -98,6 +100,8 @@ function SandboxCard({
   interactive: boolean;
   onRaw?: (v: string) => void;
   onLevel?: (s: number) => void;
+  onClear?: () => void;
+  onNoData?: () => void;
   focus?: string | null;
 }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -112,6 +116,8 @@ function SandboxCard({
         currentScore={score}
         onRawChange={onRaw ?? (() => {})}
         onManualScore={onLevel ?? (() => {})}
+        onClear={interactive ? onClear : undefined}
+        onNoData={interactive ? onNoData : undefined}
       />
     </div>
   );
@@ -119,12 +125,21 @@ function SandboxCard({
 
 function scoreOf(ind: Indicator, raw: string): number | undefined {
   if (!raw.trim()) return undefined;
+  if (isNoData(raw)) return 0; // matches the real form: "No data" is stored with score 0
   return autoScore(raw, ind.thresholds) ?? undefined;
 }
 
 /** Tell the user, in words, what the card just did with their number. */
 function ScoreReadout({ raw, score, unit }: { raw: string; score: number | undefined; unit: string }) {
   if (!raw.trim()) return null;
+  if (isNoData(raw)) {
+    return (
+      <p className="guide-pop text-[15px] text-slate-700">
+        Recorded as <strong>No data</strong> — it scores 0, and the category can still be finished. Press{' '}
+        <em>Enter a value instead</em> if you find the number later.
+      </p>
+    );
+  }
   if (score === undefined) {
     return (
       <p className="guide-pop text-[15px] text-amber-800">
@@ -240,6 +255,8 @@ export function TypeNumberScene() {
           score={score}
           interactive={mode === 'try'}
           onRaw={setTryRaw}
+          onClear={() => setTryRaw('')}
+          onNoData={() => setTryRaw(NO_DATA_VALUE)}
           focus={mode === 'watch' ? (frame > sample.length || reduced ? 'scores' : 'value') : null}
         />
         <div className="mt-3 min-h-[1.5rem]">
@@ -263,7 +280,12 @@ export function TypeNumberScene() {
       </Stage>
       <Callout kind="safe">
         <strong>Saved as you type.</strong> On the real page there is no Save button — each value is stored
-        the moment you type it. To change it, type over it.
+        the moment you type it. To change it, type over it; to remove it, empty the box or press the ×.
+      </Callout>
+      <Callout kind="tip">
+        <strong>No number for a required indicator?</strong> Press <em>I don’t have this number</em> under the
+        box (try it above). It records “No data”, which scores 0 — honest, and it still lets you submit.{' '}
+        <strong>Don’t type 0 instead:</strong> for indicators where lower is better, 0 is the best score.
       </Callout>
       {/* Matches auto-score.ts: in a raw value a dot is always a decimal point,
           while a comma followed by exactly three digits is read as thousands
@@ -271,8 +293,8 @@ export function TypeNumberScene() {
           rule that is never misread. */}
       <Callout kind="warn">
         <strong>Numbers: a dot for decimals, nothing between thousands.</strong> Type <strong>49721</strong>,
-        not <strong>49.721</strong> — the system would read that as 49.7. Write decimals with a dot:{' '}
-        <strong>0.6</strong>, <strong>12.5</strong>.
+        not <strong>49.721</strong> — the system would read that as 49.7. If you slip, the card usually spots it
+        and offers a one-click fix. Write decimals with a dot: <strong>0.6</strong>, <strong>12.5</strong>.
       </Callout>
     </div>
   );
@@ -540,6 +562,7 @@ export function LevelScene() {
           score={score}
           interactive={mode === 'try'}
           onLevel={setTryScore}
+          onClear={() => setTryScore(undefined)}
           focus={mode === 'watch' ? 'scores' : null}
         />
         {score !== undefined && (
@@ -594,6 +617,8 @@ export function InverseScene() {
           score={score}
           interactive={mode === 'try'}
           onRaw={setTryRaw}
+          onClear={() => setTryRaw('')}
+          onNoData={() => setTryRaw(NO_DATA_VALUE)}
           focus={mode === 'watch' ? 'direction' : null}
         />
         <div className="mt-3 min-h-[1.5rem]">
@@ -622,7 +647,15 @@ export function OptionalScene() {
         has — a coastline, forests, farmland, heavy industry.
       </p>
       <Stage>
-        <SandboxCard indicator={OPTIONAL} raw={raw} score={score} interactive onRaw={setRaw} focus="optional" />
+        <SandboxCard
+          indicator={OPTIONAL}
+          raw={raw}
+          score={score}
+          interactive
+          onRaw={setRaw}
+          onClear={() => setRaw('')}
+          focus="optional"
+        />
       </Stage>
       <div className="grid gap-3 sm:grid-cols-2">
         <Callout kind="safe">

@@ -31,6 +31,43 @@ export type ServerSnapshot = {
   badges: ServerBadge[];
 };
 
+/**
+ * A write that did not reach the database. `transient` = worth retrying (no
+ * connection, session briefly unavailable); otherwise the server refused it
+ * (RLS on a locked year, a constraint) and retrying would fail the same way.
+ *
+ * supabase-js does NOT throw on a failed query — it resolves with `{ error }`.
+ * Every write here used to ignore that, so a failed save looked identical to
+ * a successful one and the "Offline" badge could never appear.
+ */
+export class SaveError extends Error {
+  constructor(message: string, readonly transient: boolean) {
+    super(message);
+    this.name = 'SaveError';
+  }
+}
+
+/** Throw for a supabase-js `{ error }`. Postgres/PostgREST errors carry a code;
+ * a network failure comes back without one. */
+function raise(error: { message: string; code?: string } | null): void {
+  if (error) throw new SaveError(error.message, !error.code);
+}
+
+/** Run a query, turning both a thrown network error and a returned `{ error }`
+ * into a SaveError. */
+async function run<T extends { error: { message: string; code?: string } | null }>(
+  query: PromiseLike<T>,
+): Promise<T> {
+  let res: T;
+  try {
+    res = await query;
+  } catch (err) {
+    throw new SaveError(err instanceof Error ? err.message : String(err), true);
+  }
+  raise(res.error);
+  return res;
+}
+
 // Untyped client for the SCALD data-entry tables. RLS enforces access.
 function scaldClient() {
   return createBrowserClient(
@@ -99,6 +136,15 @@ export async function fetchServerSnapshot(municipalityId: string): Promise<Serve
         .eq('municipality_id', municipalityId),
     ]);
 
+    // A failed query resolves with data = null. Treating that as "no rows"
+    // made a brief connection drop wipe every value from the screen — and from
+    // the local cache, which the store then persisted. Fail instead, so the
+    // caller keeps what it already has.
+    const failed = entriesRes.error ?? completionsRes.error ?? badgesRes.error;
+    if (failed) {
+      console.warn('[SCALD] fetchServerSnapshot failed:', failed.message);
+      return null;
+    }
     return {
       entries: (entriesRes.data ?? []) as ServerEntry[],
       completions: (completionsRes.data ?? []) as ServerCompletion[],
@@ -161,6 +207,13 @@ export async function fetchApprovedMunicipalityScores(year: number): Promise<Mun
   }
 }
 
+async function requireUser(): Promise<string> {
+  const userId = await getUserId();
+  // getUser() also returns null when the network is down, so this is retryable.
+  if (!userId) throw new SaveError('Not signed in (or no connection)', true);
+  return userId;
+}
+
 export async function upsertEntry(
   municipalityId: string,
   indicatorCode: string,
@@ -168,13 +221,12 @@ export async function upsertEntry(
   rawValue: string,
   year: number,
 ): Promise<void> {
-  const userId = await getUserId();
-  if (!userId || !municipalityId) return;
+  if (!municipalityId) throw new SaveError('No municipality selected', false);
   const lookup = lookupIndicatorCategory(indicatorCode);
-  if (!lookup) return;
-  try {
-    const supabase = scaldClient();
-    await supabase
+  if (!lookup) throw new SaveError(`Unknown indicator ${indicatorCode}`, false);
+  const userId = await requireUser();
+  await run(
+    scaldClient()
       .from('scald_indicator_entries')
       .upsert(
         {
@@ -188,10 +240,22 @@ export async function upsertEntry(
           year,
         },
         { onConflict: 'municipality_id,indicator_code,year' },
-      );
-  } catch (err) {
-    console.warn('[SCALD] upsertEntry failed:', err);
-  }
+      ),
+  );
+}
+
+/** Remove one indicator value (the user emptied its box). */
+export async function deleteEntry(municipalityId: string, indicatorCode: string, year: number): Promise<void> {
+  if (!municipalityId) throw new SaveError('No municipality selected', false);
+  await requireUser();
+  await run(
+    scaldClient()
+      .from('scald_indicator_entries')
+      .delete()
+      .eq('municipality_id', municipalityId)
+      .eq('indicator_code', indicatorCode)
+      .eq('year', year),
+  );
 }
 
 export async function upsertCategoryCompletion(
@@ -199,56 +263,68 @@ export async function upsertCategoryCompletion(
   categoryCode: string,
   year: number,
 ): Promise<void> {
-  const userId = await getUserId();
-  if (!userId || !municipalityId) return;
-  try {
-    const supabase = scaldClient();
-    await supabase
+  if (!municipalityId) return;
+  const userId = await requireUser();
+  await run(
+    scaldClient()
       .from('scald_category_completions')
       .upsert(
-        {
-          municipality_id: municipalityId,
-          completed_by: userId,
-          category_code: categoryCode,
-          year,
-        },
+        { municipality_id: municipalityId, completed_by: userId, category_code: categoryCode, year },
         { onConflict: 'municipality_id,category_code,year' },
-      );
-  } catch (err) {
-    console.warn('[SCALD] upsertCategoryCompletion failed:', err);
-  }
+      ),
+  );
 }
 
-export async function upsertBadge(
+/** A required value was removed, so the category is no longer complete. */
+export async function deleteCategoryCompletion(
   municipalityId: string,
-  setCode: string,
+  categoryCode: string,
   year: number,
 ): Promise<void> {
   if (!municipalityId) return;
-  try {
-    const supabase = scaldClient();
-    await supabase
-      .from('scald_set_badges')
-      .upsert(
-        { municipality_id: municipalityId, set_code: setCode, year },
-        { onConflict: 'municipality_id,set_code,year' },
-      );
-  } catch (err) {
-    console.warn('[SCALD] upsertBadge failed:', err);
-  }
+  await run(
+    scaldClient()
+      .from('scald_category_completions')
+      .delete()
+      .eq('municipality_id', municipalityId)
+      .eq('category_code', categoryCode)
+      .eq('year', year),
+  );
 }
 
-/** Admin-only wipe of a municipality's data-entry state (all years). */
-export async function deleteAllMunicipalityData(municipalityId: string): Promise<void> {
+export async function upsertBadge(municipalityId: string, setCode: string, year: number): Promise<void> {
   if (!municipalityId) return;
-  try {
-    const supabase = scaldClient();
-    await Promise.all([
-      supabase.from('scald_indicator_entries').delete().eq('municipality_id', municipalityId),
-      supabase.from('scald_category_completions').delete().eq('municipality_id', municipalityId),
-      supabase.from('scald_set_badges').delete().eq('municipality_id', municipalityId),
-    ]);
-  } catch (err) {
-    console.warn('[SCALD] deleteAllMunicipalityData failed:', err);
-  }
+  await run(
+    scaldClient()
+      .from('scald_set_badges')
+      .upsert({ municipality_id: municipalityId, set_code: setCode, year }, { onConflict: 'municipality_id,set_code,year' }),
+  );
+}
+
+export async function deleteBadge(municipalityId: string, setCode: string, year: number): Promise<void> {
+  if (!municipalityId) return;
+  await run(
+    scaldClient()
+      .from('scald_set_badges')
+      .delete()
+      .eq('municipality_id', municipalityId)
+      .eq('set_code', setCode)
+      .eq('year', year),
+  );
+}
+
+/**
+ * Wipe ONE reporting year's data-entry state. This used to delete every year
+ * of the municipality (no year filter) behind a button the UI presented as
+ * clearing the current screen. Locked years are protected by RLS regardless.
+ */
+export async function deleteYearData(municipalityId: string, year: number): Promise<void> {
+  if (!municipalityId) return;
+  await requireUser();
+  const supabase = scaldClient();
+  await Promise.all([
+    run(supabase.from('scald_indicator_entries').delete().eq('municipality_id', municipalityId).eq('year', year)),
+    run(supabase.from('scald_category_completions').delete().eq('municipality_id', municipalityId).eq('year', year)),
+    run(supabase.from('scald_set_badges').delete().eq('municipality_id', municipalityId).eq('year', year)),
+  ]);
 }

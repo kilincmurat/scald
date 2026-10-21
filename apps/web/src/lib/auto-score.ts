@@ -256,3 +256,67 @@ export function autoScore(rawValue: string, thresholds: string[]): number | null
 
   return null;
 }
+
+/**
+ * Stored as the raw value when a required numeric indicator has no data.
+ * V6 gives "None / No data" the 0 band, so it scores 0 — an honest entry,
+ * where the alternative people reach for is typing 0, which on the 31
+ * inverse indicators (consumption, losses, pollution) is the BEST score.
+ * autoScore() can't parse it, so stored-score resync leaves it alone.
+ */
+export const NO_DATA_VALUE = 'No data';
+
+export function isNoData(rawValue: string | undefined | null): boolean {
+  return (rawValue ?? '').trim() === NO_DATA_VALUE;
+}
+
+export type AmbiguousNumber = {
+  /** What the form reads the typed value as. */
+  readAs: number;
+  /**
+   * The other reading, ready to put in the box — written the way the guide
+   * teaches (dot for decimals, nothing between thousands) so the hint itself
+   * can't be misread: "4500" and "1.5", never "4,500" or "1.500".
+   */
+  suggestion: string;
+};
+
+/**
+ * "49.721" and "1,234" can be read two ways a thousand times apart. The form
+ * reads a dot as a decimal point (49.721) and a comma before exactly three
+ * digits as thousands (1234). When the OTHER reading sits far closer to the
+ * indicator's own value range, the user very likely meant it — return it so
+ * the form can offer a one-click fix. Returns null when the value isn't
+ * ambiguous, or when the form's reading is already the plausible one (so a
+ * genuine "1.204 stations per 10,000" raises no false alarm).
+ */
+export function ambiguousNumber(rawValue: string, thresholds: string[]): AmbiguousNumber | null {
+  const m = rawValue.trim().match(/^([1-9]\d{0,2})([.,])(\d{3})$/);
+  if (!m) return null;
+  const [, whole, sep, frac] = m;
+  const readAs = normalizeNumber(rawValue);
+  if (readAs === null) return null;
+  const suggestionValue = Number(sep === '.' ? whole + frac : `${whole}.${frac}`);
+
+  const nums: number[] = [];
+  for (let i = 1; i <= 5; i++) nums.push(...thresholdNumbers(thresholds[i] ?? ''));
+  const positive = nums.filter((n) => n > 0);
+  if (positive.length === 0) return null;
+  // Typical range from the band edges. Lower bound = the smallest POSITIVE
+  // edge: V6's first band is ">0–≤X", so the raw minimum is always 0 and would
+  // call 7.5 "in range" on an indicator whose bands start at 1000.
+  const lo = Math.min(...positive);
+  const hi = Math.max(...positive);
+
+  // Orders of magnitude outside [lo, hi]; 0 when inside.
+  const distance = (v: number) => {
+    if (v > hi) return Math.log10(v / hi);
+    if (v < lo) return Math.log10(lo / v);
+    return 0;
+  };
+  // ~30× closer: thousands-vs-decimal is a 1000× gap, so this separates the
+  // two readings cleanly without flagging values near a band edge.
+  return distance(suggestionValue) + 1.5 < distance(readAs)
+    ? { readAs, suggestion: String(suggestionValue) }
+    : null;
+}
