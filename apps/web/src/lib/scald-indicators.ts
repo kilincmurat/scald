@@ -9,7 +9,8 @@ export interface Indicator {
   method: string;
   thresholds: [string, string, string, string, string, string]; // 0..5
   normalisation: string;
-  source: 'v5' | 'v4' | 'v2';
+  /** Workbook version the definition was taken from. All 152 are V6 (Final). */
+  source: 'v6' | 'v5' | 'v4' | 'v2';
   /** Optional indicators (purple in source workbook) don't block category completion. */
   optional?: boolean;
 }

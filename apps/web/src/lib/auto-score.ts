@@ -1,19 +1,22 @@
 /**
- * Automatic 0–5 scoring based on the SCALD threshold cells in the xlsx.
+ * Automatic 0–5 scoring based on the SCALD indicator threshold cells.
  *
  * Threshold cell shapes handled:
- *   "None"                → non-numeric, treated as "no data"
+ *   ">15–≤30"             → two-sided half-open range (15, 30]   ← V6 notation
+ *   "≥0–≤10"              → two-sided closed range [0, 10]       ← V6 notation
+ *   "None", "No data"     → non-numeric, treated as "no data"
  *   ">7000", "> 7000"     → strict greater than
  *   "<3000", "< 3000"     → strict less than
  *   "≥ 90", "≥90"         → greater or equal
  *   "≤ 20", "≤20"         → less or equal
- *   "15.1-30"             → inclusive range [15.1, 30]
+ *   "15.1-30"             → inclusive range [15.1, 30]  (V5 notation)
  *   "15.1–30"             → same, en-dash
- *   "0.1–0.5"             → decimal range
  *   "1"                   → exact match
- *   "0.6–1"               → decimal range
- *   "3000-4999"           → range with comma-free integers
  *   Categorical labels (e.g. "Fully implemented", "Maturity level") → unparseable
+ *
+ * V6 states every band as an explicit (lower, upper] interval, so adjacent
+ * bands meet without the gaps V5 had ("30" then "30.1"). The V5 shapes stay
+ * supported because admin threshold overrides may still be stored in them.
  */
 
 const NON_NUMERIC_KEYWORDS =
@@ -54,6 +57,12 @@ function normalizeNumber(s: string, opts: { threshold?: boolean } = {}): number 
   if (opts.threshold) {
     const euroPeriod = cleaned.match(/^([1-9]\d*)\.(\d{3})$/);
     if (euroPeriod) cleaned = euroPeriod[1] + euroPeriod[2];
+    // A threshold cell must be a number in its entirety. parseFloat alone
+    // would read "24/7 operational center" (MS_URB8) as 24, turning a
+    // maturity indicator numeric — the entry form then shows a raw-value box
+    // instead of the level picker, and typing "24" scores 5. User-typed raw
+    // values keep the lenient parse ("15%" → 15).
+    if (!/^\d+(\.\d+)?$/.test(cleaned)) return null;
   }
 
   const n = parseFloat(cleaned);
@@ -63,10 +72,28 @@ function normalizeNumber(s: string, opts: { threshold?: boolean } = {}): number 
 
 type Rule = { test: (v: number) => boolean };
 
+/** V6 two-sided band: ">15–<=30", ">=0–<=10" (after ≥/≤ normalisation). */
+const TWO_SIDED = /^(>=?)\s*(-?\d[\d,\.]*)\s*[-–—]\s*(<=?)\s*(-?\d[\d,\.]*)$/;
+
 function parseThreshold(raw: string): Rule | null {
   if (!raw) return null;
   const s = raw.trim().replace(/[≥]/g, '>=').replace(/[≤]/g, '<=');
   if (NON_NUMERIC_KEYWORDS.test(s)) return null;
+
+  // V6 two-sided band — checked first: it also contains a dash, and the plain
+  // range pattern below would otherwise reject it outright.
+  const two = s.match(TWO_SIDED);
+  if (two) {
+    const lo = normalizeNumber(two[2], { threshold: true });
+    const hi = normalizeNumber(two[4], { threshold: true });
+    if (lo !== null && hi !== null) {
+      const loInclusive = two[1] === '>=';
+      const hiInclusive = two[3] === '<=';
+      return {
+        test: (v) => (loInclusive ? v >= lo : v > lo) && (hiInclusive ? v <= hi : v < hi),
+      };
+    }
+  }
 
   // Range: N-M with various dashes (hyphen, en-dash, em-dash)
   const rangeMatch = s.match(
@@ -117,12 +144,21 @@ export function isNumericIndicator(thresholds: string[]): boolean {
 
 /**
  * Extract the numeric boundary value(s) mentioned in a single threshold cell.
- * "<15" → [15], "15-30" → [15,30], ">61" → [61], "1" → [1], "None" → [].
+ * ">15–≤30" → [15,30], "<15" → [15], "15-30" → [15,30], ">61" → [61],
+ * "1" → [1], "None" → [].
  */
 function thresholdNumbers(raw: string): number[] {
   if (!raw) return [];
   const s = raw.trim().replace(/[≥]/g, '>=').replace(/[≤]/g, '<=');
   if (NON_NUMERIC_KEYWORDS.test(s)) return [];
+
+  const two = s.match(TWO_SIDED);
+  if (two) {
+    return [
+      normalizeNumber(two[2], { threshold: true }),
+      normalizeNumber(two[4], { threshold: true }),
+    ].filter((n): n is number => n !== null);
+  }
 
   const range = s.match(/^(-?\d[\d,\.]*)\s*[-–—]\s*(-?\d[\d,\.]*)$/);
   if (range) {

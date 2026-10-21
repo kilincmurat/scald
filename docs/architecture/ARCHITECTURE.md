@@ -79,11 +79,23 @@ are enforced in the database rather than the UI:
 
 ### Scoring
 
-Scores are computed in the browser from the raw entries, in
-`src/lib/scores.ts` — per category, per set, and an overall figure, weighted
-by `category_weight_overrides`. 31 indicators score inversely (lower raw
-value is better); this is carried in the indicator metadata as
-`scoringDirection`, not special-cased in the scoring code.
+Indicator definitions live in `src/lib/scald-indicators.json`, generated from
+the **SCALD Indicators V6 (Final)** workbook. Each indicator carries six
+threshold cells (scores 0–5) in V6 interval notation — `>15–≤30` means
+(15, 30], `≥0–≤10` means [0, 10] — so adjacent bands meet with no gaps.
+
+A raw value is turned into a 0–5 score by `autoScore()` in
+`src/lib/auto-score.ts`, which also accepts the older V5 shapes (`15-30`,
+`<15`) because admin threshold overrides may still be stored that way.
+Category, set and overall figures are then computed in `src/lib/scores.ts`,
+weighted by `category_weight_overrides`.
+
+Nothing about an indicator's scoring is hand-flagged; it is all derived from
+its thresholds. 31 indicators score inversely (lower raw value is better) —
+`scoringDirection()` detects this by comparing the score-1 and score-5 bands.
+11 are maturity levels with descriptive labels instead of numbers;
+`isNumericIndicator()` detects those, and the entry form shows a level picker
+instead of a number box.
 
 ### Portability
 
