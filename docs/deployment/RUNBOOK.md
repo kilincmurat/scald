@@ -205,7 +205,7 @@ export DATABASE_URL="postgresql://postgres:<POSTGRES_PASSWORD>@localhost:5432/po
 ./scripts/migrate.sh
 ```
 
-Beklenen çıktı: `Applied 22 migration(s).`
+Beklenen çıktı: `Applied 24 migration(s).`
 
 **Doğrula** — RLS kapsamı eksiksiz olmalı:
 
@@ -220,7 +220,7 @@ SELECT count(*) AS rls_kapali_tablo
 herkese açık demektir.
 
 ```bash
-psql "$DATABASE_URL" -c "SELECT count(*) FROM schema_migrations;"   # 22
+psql "$DATABASE_URL" -c "SELECT count(*) FROM schema_migrations;"   # 24
 ```
 
 ---
@@ -360,6 +360,33 @@ SELECT name, count(*) FROM municipalities GROUP BY name HAVING count(*) > 1;"
 > hedefte doğru şifre kabul, yanlış şifre ret edildi. Kullanıcılar mevcut
 > şifreleriyle girebilir; `JWT_SECRET` değişimi yalnızca açık oturumları
 > düşürür. Yine de 8. adımda gerçek bir hesapla giriş yapın.
+
+### 5.3 Gösterge setini V6'ya getir
+
+Cloud'daki veri gösterge setinin eski sürümüne (V5) göre girilmiş
+olabilir. 4. adımda şema V6'ya göre kuruldu, ama veritabanı o sırada
+boştu — V6 dönüşümü taşınan veriye hiç uygulanmadı. Şimdi uygulayın
+(5.2'deki sayı karşılaştırmasını **önce** yapın; bu adım girdi sayısını
+düşürebilir):
+
+```bash
+psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f supabase/migrations/023_v6_indicator_codes.sql
+psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f supabase/migrations/024_v6_redefined_indicators.sql
+```
+
+İki dosya da tekrar çalıştırılmak üzere yazıldı: Cloud verisi zaten V6'ya
+çevrilmişse hiçbir şey değiştirmezler. Çevrilmemişse `ES_SI1…8` kodları
+`ES_IN1…8` olur (023); tanımı değişen 23 göstergenin eski değerleri
+arşivlenip silinir ve Yomra 2025 düzeltmeye açılır (024). Gönderilmiş ya
+da onaylanmış yıllara dokunulmaz, `NOTICE` ile raporlanır.
+
+2026-10-04 yedeğiyle prova edildi: 455 → 409 girdi, 46 değer arşivlendi,
+1 kilitli yıl raporlandı — sonuç, dönüşümü doğrudan Cloud'a uygulamakla
+satır satır aynı.
+
+```bash
+psql "$DATABASE_URL" -c "SELECT count(*) FROM scald_indicator_entries WHERE indicator_code LIKE 'ES\_SI%';"   # 0
+```
 
 ---
 
@@ -525,6 +552,23 @@ cd infrastructure/docker
 docker compose -f docker-compose.prod.yml up -d --force-recreate web
 ```
 
+**Supabase Cloud'a migration uygulamak** (Cloud hâlâ kullanılıyorsa):
+Cloud'un şeması SQL Editor'a yapıştırılarak kuruldu, `schema_migrations`
+tablosu yok — düz bir `migrate.sh` 001'den başlar ve ilk dosyada durur.
+İlk seferde bir kez `--baseline` ile işaretleyin, sonra normal çalıştırın.
+Adres 5.1'deki Session pooler adresidir:
+
+```bash
+export DATABASE_URL="postgresql://postgres.<proje-ref>:<sifre>@aws-1-<bölge>.pooler.supabase.com:5432/postgres"
+./scripts/migrate.sh --baseline 022   # yalnızca ilk sefer: 001–022'yi uygulanmış say
+./scripts/migrate.sh --dry-run
+./scripts/migrate.sh
+```
+
+`--baseline`, veritabanının gerçekten 022'de olduğunu kontrol eder;
+değilse reddeder. `psql` kurulu olmayan bir makineden: 023 ve 024'ün
+içeriğini sırayla SQL Editor'a yapıştırmak aynı sonucu verir.
+
 Şema değişikliği yapılacaksa **Studio'nun SQL Editor'ında elle DDL
 çalıştırmayın** — `supabase/migrations/NNN_*.sql` dosyası olarak yazın ve
 `migrate.sh` ile uygulayın. Aksi halde bir sonraki kurulumda o değişiklik
@@ -543,6 +587,7 @@ kaybolur.
 | `migrate.sh: FAILED` | Bir migration patladı | Hata mesajını okuyun; veritabanı önceki migration'da kaldı, düzeltip tekrar çalıştırın (uygulananlar atlanır) |
 | Kullanıcı ekleme "Server not configured" | `SUPABASE_SERVICE_ROLE_KEY` compose `.env`'inde yok | 7. adımdaki `.env`'i kontrol edin, `web` konteynerini recreate edin |
 | `/explore`'da onaysız veri görünüyor | Migration 022 uygulanmamış | `./scripts/migrate.sh` çalıştırın |
+| Smart Infrastructure (`ES_IN`) göstergeleri boş görünüyor | Taşınan veri V5 kodlu (`ES_SI*`) | 5.3'ü uygulayın |
 | Veri yüklerken `must be owner of table users` | `DISABLE TRIGGER` kullanılmış | `SET session_replication_role = replica` (bkz. 5.2) |
 | Veri yükleme `duplicate key ... municipalities_pkey` ile duruyor | Dump `COPY` biçiminde alınmış | `--inserts --on-conflict-do-nothing` ile yeniden alın (5.1) |
 | Yükleme bitti ama `profiles` boş | Yukarıdaki çakışma yüklemeyi ortada kesmiş | Dump'ı 5.1'deki bayraklarla yenileyip 5.2'yi tekrarlayın |

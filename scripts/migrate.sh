@@ -5,6 +5,15 @@
 #   DATABASE_URL=postgresql://postgres:PASS@localhost:5432/postgres \
 #     ./scripts/migrate.sh [--dry-run]
 #
+#   ./scripts/migrate.sh --baseline 022
+#     For a database whose schema was built WITHOUT this runner — e.g. the
+#     Supabase Cloud project, where migrations were pasted into the SQL Editor.
+#     It has no schema_migrations table, so a plain run would start at 001
+#     and fail ("type already exists"). --baseline records 001…022 as applied
+#     without running them; the next plain run applies 023 onwards. It first
+#     checks a fingerprint of the given version so a wrong number can't
+#     silently skip a migration the database never had.
+#
 # Why a runner instead of `psql -f` in a loop: the migrations are NOT
 # idempotent (001 creates types, 004 rewrites enum values, 012 creates
 # policies). Re-running one aborts halfway. This records what has been
@@ -17,7 +26,11 @@
 set -euo pipefail
 
 DRY_RUN=false
-[[ "${1:-}" == "--dry-run" ]] && DRY_RUN=true
+BASELINE=""
+case "${1:-}" in
+  --dry-run)  DRY_RUN=true ;;
+  --baseline) BASELINE="${2:?--baseline needs a version number, e.g. --baseline 022}" ;;
+esac
 
 : "${DATABASE_URL:?DATABASE_URL is required}"
 
@@ -36,6 +49,30 @@ CREATE TABLE IF NOT EXISTS public.schema_migrations (
 );
 ALTER TABLE public.schema_migrations ENABLE ROW LEVEL SECURITY;
 REVOKE ALL ON public.schema_migrations FROM anon, authenticated;" >/dev/null
+
+if [[ -n "$BASELINE" ]]; then
+  # Fingerprints: an object each migration creates, to prove the database
+  # really is at that version before we mark everything up to it as done.
+  case "$BASELINE" in
+    022) probe="SELECT to_regprocedure('public.is_year_approved(uuid,integer)') IS NOT NULL" ;;
+    021) probe="SELECT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='profiles' AND column_name='tour_completed_at')" ;;
+    *)   echo "No fingerprint known for $BASELINE; supported: 021, 022." >&2; exit 1 ;;
+  esac
+  if [[ "$(psql_q -c "$probe")" != "t" ]]; then
+    echo "This database does not look like it is at $BASELINE — refusing to baseline." >&2
+    exit 1
+  fi
+  n=0
+  for f in "$DIR"/*.sql; do
+    version="$(basename "$f" .sql)"
+    [[ "${version%%_*}" > "$BASELINE" ]] && break
+    psql_q -c "INSERT INTO public.schema_migrations (version) VALUES ('$version') ON CONFLICT DO NOTHING;" >/dev/null
+    n=$((n + 1))
+  done
+  echo "Baselined: $n migration(s) up to $BASELINE recorded as applied (none were run)."
+  echo "Now run without --baseline to apply the rest."
+  exit 0
+fi
 
 applied="$(psql_q -c "SELECT version FROM public.schema_migrations;")"
 

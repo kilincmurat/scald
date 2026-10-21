@@ -20,6 +20,10 @@
 -- bilemez; sessizce birini silmek yerine DURUR ve satırları listeler.
 --
 -- Tekrar çalıştırılabilir: ikinci kez ES_SI* bulamaz, hiçbir şey yapmaz.
+--
+-- updated_at KORUNUR. Kod değişikliği değeri değiştirmez; 024 eski (V5) ile
+-- yeni (V6) değeri updated_at'e bakarak ayırır. Tetikleyici burada now()
+-- yazsaydı ES_IN1/5/7/8'in V5 değerleri yeni girilmiş sanılıp silinmezdi.
 -- ============================================================
 
 BEGIN;
@@ -56,9 +60,13 @@ BEGIN
   END IF;
 END $$;
 
+ALTER TABLE scald_indicator_entries DISABLE TRIGGER trg_scald_entries_updated_at;
+
 UPDATE scald_indicator_entries
    SET indicator_code = regexp_replace(indicator_code, '^ES_SI', 'ES_IN')
  WHERE indicator_code LIKE 'ES\_SI%';
+
+ALTER TABLE scald_indicator_entries ENABLE TRIGGER trg_scald_entries_updated_at;
 
 UPDATE indicator_threshold_overrides
    SET indicator_code = regexp_replace(indicator_code, '^ES_SI', 'ES_IN')
