@@ -3,6 +3,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { INDICATORS, REQUIRED_INDICATORS } from '@/lib/scald-indicators';
+import { autoScore, isNumericIndicator } from '@/lib/auto-score';
 import {
   fetchServerSnapshot,
   upsertEntry,
@@ -67,6 +68,12 @@ export type DataEntryState = {
   setAdminMunicipality: (municipalityId: string | null) => void;
   setYear: (year: number) => void;
   saveEntry: (indicatorCode: string, score: number, rawValue?: string) => void;
+  /**
+   * Re-derive stored scores of numeric indicators in the selected year from
+   * their raw values and the current thresholds; returns the codes it fixed.
+   * Callers must only invoke this when the year is writable.
+   */
+  resyncScores: (thresholdsFor: (indicatorCode: string) => string[]) => string[];
   completeCategory: (categoryCode: string) => void;
   isCategoryComplete: (categoryCode: string) => boolean;
   isCategoryUnlocked: (categoryCode: string) => boolean;
@@ -173,6 +180,28 @@ export const useDataEntry = create<DataEntryState>()(
             .then(() => set({ syncStatus: 'idle', lastSyncedAt: Date.now() }))
             .catch(() => set({ syncStatus: 'error' }));
         }
+      },
+
+      // A score is stored at save time, so it goes stale when thresholds change
+      // — the V6 switch moved boundary values into the upper band (">3000–≤4500"
+      // now contains 4500), and an admin override does the same. The raw value
+      // is the real data; this brings the derived score back in line with it.
+      // Maturity indicators are skipped: there the picked level IS the score.
+      resyncScores: (thresholdsFor) => {
+        const fixed: string[] = [];
+        const entries = get().entries;
+        for (const [code, entry] of Object.entries(entries)) {
+          const raw = entry.rawValue?.trim();
+          if (!raw) continue;
+          const thresholds = thresholdsFor(code);
+          if (!isNumericIndicator(thresholds)) continue;
+          const score = autoScore(raw, thresholds);
+          if (score !== null && score !== entry.score) {
+            get().saveEntry(code, score, raw);
+            fixed.push(code);
+          }
+        }
+        return fixed;
       },
 
       completeCategory: (categoryCode) => {
@@ -311,7 +340,27 @@ export const useDataEntry = create<DataEntryState>()(
     }),
     {
       name: 'scald-data-entry',
-      version: 2,
+      version: 3,
+      // v3 = indicator set V6. Caches from before it hold ES_SI* codes and the
+      // old values of indicators V6 redefined. The server snapshot replaces all
+      // of it on load anyway; dropping the cached data up front keeps it from
+      // flashing on screen until then. Municipality and year choice are kept.
+      migrate: (persisted, version) => {
+        const state = persisted as Partial<DataEntryState>;
+        if (version < 3) {
+          return {
+            ...state,
+            entriesByYear: {},
+            completedByYear: {},
+            badgesByYear: {},
+            entries: {},
+            completed: {},
+            badges: [],
+            xp: 0,
+          } as DataEntryState;
+        }
+        return state as DataEntryState;
+      },
       onRehydrateStorage: () => (state) => {
         if (state) {
           state.hydrated = true;

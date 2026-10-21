@@ -1,9 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { INDICATORS, type SetCode } from '@/lib/scald-indicators';
-import { useDataEntry } from '@/stores/data-entry';
+import { useDataEntry, isYearEditable } from '@/stores/data-entry';
+import { useThresholds, getEffectiveThresholds } from '@/stores/thresholds';
 import { useProfile } from '@/hooks/useProfile';
 import { canWriteDataEntry } from '@/lib/roles';
 import { YearPicker } from './YearPicker';
@@ -88,8 +89,44 @@ export function DataEntryDashboard() {
 
   // Once a year is submitted/approved it is locked for the data-entry team;
   // hide destructive actions (only an admin can override).
-  const { locked } = useSubmission(currentMunicipalityId, selectedYear);
+  const { locked, loading: submissionLoading } = useSubmission(currentMunicipalityId, selectedYear);
   const lockedForDataEntry = !isAdmin && locked;
+
+  // Bring stale stored scores in line with the current thresholds (V6 moved
+  // boundary values between bands). Runs once per municipality/year, only
+  // after the server snapshot is in, and NEVER on a submitted/approved year —
+  // not even for an admin: RLS lets an admin write there, and what a decision
+  // maker approved must not change silently.
+  const storeMunicipalityId = useDataEntry((s) => s.municipalityId);
+  const lastSyncedAt = useDataEntry((s) => s.lastSyncedAt);
+  const resyncScores = useDataEntry((s) => s.resyncScores);
+  const thresholdOverrides = useThresholds((s) => s.overrides);
+  const overridesLoaded = useThresholds((s) => s.loaded);
+  const resyncedFor = useRef<string | null>(null);
+  useEffect(() => {
+    if (!canWrite || submissionLoading || locked) return;
+    if (!isYearEditable(selectedYear) || !overridesLoaded) return;
+    // The store briefly holds the previous municipality while an admin
+    // switches; resyncing then would write its scores under the new one.
+    if (!currentMunicipalityId || storeMunicipalityId !== currentMunicipalityId) return;
+    if (syncStatus !== 'idle' || lastSyncedAt === null) return;
+    const key = `${currentMunicipalityId}:${selectedYear}`;
+    if (resyncedFor.current === key) return;
+    resyncedFor.current = key;
+    resyncScores((code) => getEffectiveThresholds(code, thresholdOverrides));
+  }, [
+    canWrite,
+    submissionLoading,
+    locked,
+    selectedYear,
+    overridesLoaded,
+    currentMunicipalityId,
+    storeMunicipalityId,
+    syncStatus,
+    lastSyncedAt,
+    resyncScores,
+    thresholdOverrides,
+  ]);
 
   const setCodes: SetCode[] = ['ES', 'SS', 'MS', 'ECS'];
 
