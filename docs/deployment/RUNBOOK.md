@@ -266,12 +266,14 @@ CLOUD_URL="postgresql://postgres:<sifre>@db.<proje>.supabase.co:5432/postgres" \
 Script iki dosya üretir (`~/scald-yedek-<tarih>/` altına) ve ne taşıdığını
 özetler. Yerelde `pg_dump` yoksa Docker'dan kullanır.
 
-Elle çalıştırmak isterseniz kritik bayraklar şunlar:
+Uygulama verisini elle almak isterseniz kritik bayraklar şunlar (hesaplar
+için elle `pg_dump` kullanmayın, gerekçesi aşağıda):
 
 ```bash
 pg_dump "$CLOUD_URL" --data-only --no-owner --no-privileges \
   --inserts --on-conflict-do-nothing --rows-per-insert=500 \
-  --table=auth.users -f ~/scald-auth-users.sql
+  --schema=public --exclude-table=schema_migrations \
+  -f ~/scald-public-data.sql
 ```
 
 > **`auth.users` neden `pg_dump` ile alınmıyor?** GoTrue'nun `auth.users`
@@ -283,6 +285,21 @@ pg_dump "$CLOUD_URL" --data-only --no-owner --no-privileges \
 > yüklüyor: hedef tabloda karşılığı olmayan alanlar sessizce atlanıyor.
 > İki sürüm arasında (35 → 21 kolon) prova edildi, 8 hesap eksiksiz
 > taşındı ve bcrypt şifre hash'leri korundu.
+>
+> Güncel GoTrue'da bazı kolonlar `GENERATED` (ör. `confirmed_at`) ve
+> onlara değer yazılamaz. Bu yüzden dosyanın başında küçük bir yükleyici
+> var (`scripts/sql/load-auth-user.sql`): hedef tablonun **yazılabilir**
+> kolonlarını yükleme anında okur, gerisini veritabanına bırakır.
+> GoTrue v2.189 (35 kolon, `confirmed_at` generated) ile prova edildi:
+> 8 hesap yüklendi, `confirmed_at` 7'sinde kaynakla aynı hesaplandı.
+>
+> **Kasım 2026'dan önce alınmış bir yedeğiniz varsa** (dosyadaki satırlar
+> `INSERT INTO auth.users SELECT (jsonb_populate_record(...)).*` ile
+> başlıyorsa) yüklemeden önce yeni biçime çevirin — veri değişmez:
+> ```bash
+> ./scripts/upgrade-auth-dump.sh scald-auth-users.sql > scald-auth-users.yeni.sql
+> ```
+> ve 5.2'de `scald-auth-users.yeni.sql` dosyasını yükleyin.
 
 > **Neden `--inserts --on-conflict-do-nothing`?** Migration'lar
 > belediyeleri, üniversiteleri ve bazı profilleri kendileri seed ediyor.
@@ -589,6 +606,7 @@ kaybolur.
 | `/explore`'da onaysız veri görünüyor | Migration 022 uygulanmamış | `./scripts/migrate.sh` çalıştırın |
 | Smart Infrastructure (`ES_IN`) göstergeleri boş görünüyor | Taşınan veri V5 kodlu (`ES_SI*`) | 5.3'ü uygulayın |
 | Veri yüklerken `must be owner of table users` | `DISABLE TRIGGER` kullanılmış | `SET session_replication_role = replica` (bkz. 5.2) |
+| Hesap yüklerken `cannot insert a non-DEFAULT value into column "confirmed_at"` | Yedek, cloud-dump.sh'ın eski sürümüyle alınmış | `./scripts/upgrade-auth-dump.sh` ile çevirip 5.2'yi tekrarlayın (bkz. 5.1) |
 | Veri yükleme `duplicate key ... municipalities_pkey` ile duruyor | Dump `COPY` biçiminde alınmış | `--inserts --on-conflict-do-nothing` ile yeniden alın (5.1) |
 | Yükleme bitti ama `profiles` boş | Yukarıdaki çakışma yüklemeyi ortada kesmiş | Dump'ı 5.1'deki bayraklarla yenileyip 5.2'yi tekrarlayın |
 | Şifre sıfırlama maili gelmiyor | SMTP ayarları yanlış | `docker compose logs auth \| grep -i smtp` |

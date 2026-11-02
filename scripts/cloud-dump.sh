@@ -55,17 +55,19 @@ DUMP_OPTS=(--data-only --no-owner --no-privileges
 # columns" veriyor. jsonb_populate_record, hedef tabloda KARŞILIĞI
 # OLMAYAN anahtarları sessizce atlar; böylece hedefin GoTrue sürümü
 # kaynaktan eski de olsa yükleme çalışır, ortak alanlar taşınır.
+# Hedefin GENERATED kolonlarını (confirmed_at) da atlamak için satırlar
+# doğrudan INSERT değil, dosyanın başındaki yükleyiciyle yazılır
+# (scripts/sql/load-auth-user.sql).
 echo "→ Hesaplar (auth.users)"
 if [ -n "${OUT_IN_CMD:-}" ]; then
   PSQL=(docker run --rm -i -v "$OUT:/out" supabase/postgres:17.6.1.136 psql)
 else
   PSQL=(psql)
 fi
-"${PSQL[@]}" "$CLOUD_URL" -tA -o "$TARGET/scald-auth-users.sql" -c "
-SELECT format(
-  'INSERT INTO auth.users SELECT (jsonb_populate_record(NULL::auth.users, %L::jsonb)).* ON CONFLICT (id) DO NOTHING;',
-  to_jsonb(u))
-FROM auth.users u ORDER BY created_at;"
+cat "$(dirname "${BASH_SOURCE[0]}")/sql/load-auth-user.sql" > "$OUT/scald-auth-users.sql"
+"${PSQL[@]}" "$CLOUD_URL" -tA -c "
+SELECT format('SELECT pg_temp.scald_load_user(%L::jsonb);', to_jsonb(u))
+FROM auth.users u ORDER BY created_at;" >> "$OUT/scald-auth-users.sql"
 
 echo "→ Uygulama verisi (public şeması)"
 "${PGD[@]}" "$CLOUD_URL" "${DUMP_OPTS[@]}" --schema=public \
