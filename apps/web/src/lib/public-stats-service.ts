@@ -12,7 +12,7 @@
  * shows, so the public sees consistent figures.
  */
 
-import { createBrowserClient } from '@supabase/ssr';
+import { createClient } from '@supabase/supabase-js';
 import type { IndicatorEntry } from '@/stores/data-entry';
 import {
   computeOverallScore,
@@ -50,11 +50,16 @@ function isConfigured(): boolean {
   );
 }
 
+// Always anonymous, even for a signed-in visitor: the public page must show
+// exactly what the public sees (approved years only). A cookie-session client
+// would send the user's token and, through their role's RLS, put their own
+// unapproved figures on a page that looks public.
+let anon: ReturnType<typeof createClient> | null = null;
 function client() {
-  return createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-  );
+  anon ??= createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, {
+    auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
+  });
+  return anon;
 }
 
 /**

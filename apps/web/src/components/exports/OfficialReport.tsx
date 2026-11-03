@@ -3,7 +3,10 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useProfile } from '@/hooks/useProfile';
+import { useEffectiveMunicipality } from '@/hooks/useEffectiveMunicipality';
+import { useSubmission } from '@/hooks/useSubmission';
 import { useDataEntry, DEFAULT_YEAR, MIN_YEAR, MAX_YEAR } from '@/stores/data-entry';
+import { SUBMITTER_DECLARATION_TEXT, APPROVER_DECLARATION_TEXT } from '@/components/data-entry/SubmissionCard';
 import { useEffectiveWeights } from '@/stores/weights';
 import {
   computeCategoryScores,
@@ -36,16 +39,11 @@ export function OfficialReport() {
   const yearParam = clampYear(Number(params.get('year') ?? DEFAULT_YEAR));
 
   const { profile } = useProfile();
-  const loadMunicipality = useDataEntry((s) => s.loadMunicipality);
-  const currentMunicipalityId = useDataEntry((s) => s.municipalityId);
+  // The municipality the report is about: an admin's picked one, otherwise
+  // the user's own (also loads its data into the store).
+  const { municipalityId, municipality } = useEffectiveMunicipality();
+  const { submission } = useSubmission(municipalityId, yearParam);
   const entriesByYear = useDataEntry((s) => s.entriesByYear);
-
-  useEffect(() => {
-    if (!mounted) return;
-    if (profile?.municipalityId && profile.municipalityId !== currentMunicipalityId) {
-      void loadMunicipality(profile.municipalityId);
-    }
-  }, [mounted, profile?.municipalityId, currentMunicipalityId, loadMunicipality]);
 
   const entries = useMemo(() => entriesByYear[yearParam] ?? {}, [entriesByYear, yearParam]);
   const weights = useEffectiveWeights();
@@ -54,7 +52,6 @@ export function OfficialReport() {
   const catScores = useMemo(() => computeCategoryScores(entries, weights), [entries, weights]);
   const band = scoreBand(overall.score);
 
-  const municipality = profile?.municipality;
   const generatedAt = new Date().toLocaleDateString('en-GB');
 
   if (!mounted) return null;
@@ -354,6 +351,35 @@ export function OfficialReport() {
           );
         })}
 
+        {/* Declarations: the audit trail of who vouched for the data */}
+        <section className="avoid-break mt-10">
+          <h2 className="text-sm font-bold uppercase tracking-wider text-slate-500">Declarations</h2>
+          {submission ? (
+            <div className="mt-3 grid gap-4 sm:grid-cols-2">
+              <Declaration
+                title="Submitter’s declaration"
+                text={SUBMITTER_DECLARATION_TEXT}
+                at={submission.submitter_declaration ? submission.submitted_at : null}
+                note={submission.submitter_note}
+              />
+              <Declaration
+                title="Approver’s declaration"
+                text={APPROVER_DECLARATION_TEXT}
+                at={submission.status === 'approved' && submission.approval_declaration ? submission.reviewed_at : null}
+                note={submission.status === 'approved' ? submission.reviewer_note : null}
+              />
+            </div>
+          ) : (
+            <p className="mt-2 text-xs text-slate-500">This year has not been submitted for review.</p>
+          )}
+          {submission && submission.status !== 'approved' && (
+            <p className="mt-3 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
+              Not approved yet — status: {submission.status === 'submitted' ? 'submitted, awaiting review' : 'changes requested'}.
+              Figures in this report may still change.
+            </p>
+          )}
+        </section>
+
         {/* Signature area */}
         <section className="avoid-break mt-12 border-t border-slate-300 pt-8">
           <div className="grid grid-cols-2 gap-8">
@@ -387,6 +413,21 @@ function SignatureBlock({ label, who }: { label: string; who?: string }) {
       <div className="mt-8 border-b border-slate-400" />
       <p className="mt-1 text-xs text-slate-700">{who || 'Name / Title'}</p>
       <p className="text-[10px] text-slate-400">Signature · Date</p>
+    </div>
+  );
+}
+
+function Declaration({ title, text, at, note }: { title: string; text: string; at: string | null; note: string | null }) {
+  return (
+    <div className="rounded-lg border border-slate-200 p-3 text-xs">
+      <p className="font-semibold text-slate-800">{title}</p>
+      <p className="mt-1 leading-relaxed text-slate-600">“{text}”</p>
+      <p className="mt-2 text-[10px] font-medium text-slate-500">
+        {at
+          ? `Confirmed ${new Date(at).toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' })}`
+          : 'Not confirmed yet'}
+      </p>
+      {note && <p className="mt-1 text-[10px] text-slate-500">Note: {note}</p>}
     </div>
   );
 }
