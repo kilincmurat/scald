@@ -79,7 +79,7 @@ function buildNav(role: Role, t: (k: string) => string): NavStructure {
           { href: '/efct', label: t('efct'), icon: Leaf, badge: 'read' },
           { href: '/map', label: t('map'), icon: Map },
         ],
-        bottom: [],
+        bottom: [{ href: '/feedback', label: 'Help & feedback', icon: MessageSquare }],
       };
     case 'decision_maker':
       return {

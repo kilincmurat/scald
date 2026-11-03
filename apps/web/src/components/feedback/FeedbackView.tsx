@@ -16,13 +16,28 @@ import {
 } from 'lucide-react';
 import { clsx } from 'clsx';
 
+// Platform users (data entry) ask for help here; the decision maker of their
+// municipality and the administrators read and answer in the inbox.
 const CATEGORIES = [
-  { id: 'environment', label: 'Environment' },
-  { id: 'social', label: 'Social' },
-  { id: 'transport', label: 'Transport' },
-  { id: 'waste', label: 'Waste' },
-  { id: 'general', label: 'General' },
+  { id: 'problem', label: 'Something isn’t working' },
+  { id: 'data_question', label: 'Question about an indicator or the data' },
+  { id: 'access', label: 'Account or access' },
+  { id: 'suggestion', label: 'Suggestion' },
+  { id: 'general', label: 'Other' },
 ];
+
+// Labels for categories used by older (citizen) feedback rows.
+const CATEGORY_LABELS: Record<string, string> = {
+  ...Object.fromEntries(CATEGORIES.map((c) => [c.id, c.label])),
+  environment: 'Environment',
+  social: 'Social',
+  transport: 'Transport',
+  waste: 'Waste',
+};
+
+export function categoryLabel(id: string | null | undefined): string {
+  return id ? CATEGORY_LABELS[id] ?? id : '—';
+}
 
 type Status = 'new' | 'seen' | 'in_progress' | 'resolved' | 'dismissed';
 
@@ -51,11 +66,12 @@ export function FeedbackView() {
 function FeedbackForm() {
   const { profile } = useProfile();
   const [subject, setSubject] = useState('');
-  const [category, setCategory] = useState('general');
+  const [category, setCategory] = useState('problem');
   const [message, setMessage] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [sent, setSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [reload, setReload] = useState(0);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,18 +83,21 @@ function FeedbackForm() {
     setError(null);
     try {
       const supabase = client();
+      const text = message.trim();
       const { error: insErr } = await supabase.from('feedback').insert({
         user_id: profile.id,
         municipality_id: profile.municipalityId,
-        subject: subject.trim() || null,
+        // subject is required in the database; fall back to the message's start
+        subject: subject.trim() || (text.length > 60 ? `${text.slice(0, 57)}…` : text),
         category,
-        message: message.trim(),
+        message: text,
       });
       if (insErr) throw insErr;
       setSent(true);
       setSubject('');
       setMessage('');
-      setCategory('general');
+      setCategory('problem');
+      setReload((n) => n + 1);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to send feedback.');
     } finally {
@@ -94,18 +113,17 @@ function FeedbackForm() {
             <MessageSquare className="h-5 w-5" />
           </div>
           <div>
-            <h2 className="text-sm font-semibold text-slate-900">
-              Share feedback with {profile?.municipality?.name ?? 'your municipality'}
-            </h2>
+            <h2 className="text-sm font-semibold text-slate-900">Ask for help or send feedback</h2>
             <p className="text-xs text-slate-500">
-              Your message goes to the municipality's decision makers.
+              Your message goes to the decision maker of {profile?.municipality?.name ?? 'your municipality'} and
+              to the SCALD administrators. Their replies appear below.
             </p>
           </div>
         </div>
 
         {sent && (
           <div className="mb-4 rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800">
-            ✅ Thanks — your feedback was sent. You can send more messages any time.
+            ✅ Your message was sent. You will see the reply under “Your messages”.
           </div>
         )}
 
@@ -171,11 +189,63 @@ function FeedbackForm() {
             )}
           >
             <Send className="h-4 w-4" />
-            {submitting ? 'Sending…' : 'Send feedback'}
+            {submitting ? 'Sending…' : 'Send message'}
           </button>
         </form>
+
+        <MyMessages userId={profile?.id ?? null} reload={reload} />
       </div>
     </div>
+  );
+}
+
+/** The signed-in user's own messages with their status and the reply. */
+function MyMessages({ userId, reload }: { userId: string | null; reload: number }) {
+  const [rows, setRows] = useState<Row[] | null>(null);
+
+  useEffect(() => {
+    if (!userId) return;
+    let cancelled = false;
+    void client()
+      .from('feedback')
+      .select('id, user_id, municipality_id, subject, message, category, status, response, responded_at, created_at')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+      .then(({ data }) => {
+        if (!cancelled) setRows((data as Row[] | null) ?? []);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [userId, reload]);
+
+  if (!rows || rows.length === 0) return null;
+  return (
+    <section className="mt-6">
+      <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Your messages</h3>
+      <ul className="space-y-3">
+        {rows.map((r) => (
+          <li key={r.id} className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <p className="text-sm font-semibold text-slate-900">{r.subject}</p>
+              <span className={clsx('rounded-full px-2 py-0.5 text-[10px] font-semibold', STATUS_META[r.status].color)}>
+                {STATUS_META[r.status].label}
+              </span>
+            </div>
+            <p className="mt-0.5 text-[11px] text-slate-400">
+              {categoryLabel(r.category)} · {new Date(r.created_at).toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' })}
+            </p>
+            <p className="mt-2 whitespace-pre-wrap text-sm text-slate-700">{r.message}</p>
+            {r.response && (
+              <div className="mt-3 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2">
+                <p className="text-[11px] font-semibold text-emerald-800">Reply</p>
+                <p className="mt-0.5 whitespace-pre-wrap text-sm text-emerald-900">{r.response}</p>
+              </div>
+            )}
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }
 
@@ -290,7 +360,7 @@ function FeedbackInbox() {
                 </div>
                 <p className="mt-1 line-clamp-2 text-xs text-slate-600">{r.message}</p>
                 <p className="mt-1.5 text-[10px] text-slate-400">
-                  {r.category ?? 'general'} · {new Date(r.created_at).toLocaleString('en-GB')}
+                  {categoryLabel(r.category)} · {new Date(r.created_at).toLocaleString('en-GB')}
                 </p>
               </li>
             ))}
@@ -361,15 +431,20 @@ function ItemModal({
     setError(null);
     try {
       const supabase = client();
+      const reply = response.trim();
       const payload: {
         status: Status;
         response: string | null;
-        responded_at: string | null;
-      } = {
-        status,
-        response: response.trim() || null,
-        responded_at: response.trim() ? new Date().toISOString() : row.responded_at,
-      };
+        responded_at?: string | null;
+        responded_by?: string | null;
+      } = { status, response: reply || null };
+      // Stamp who answered and when only when the answer itself changes,
+      // not on a status-only save.
+      if (reply !== (row.response ?? '').trim()) {
+        const { data: { user } } = await supabase.auth.getUser();
+        payload.responded_at = reply ? new Date().toISOString() : null;
+        payload.responded_by = reply ? (user?.id ?? null) : null;
+      }
       const { error: err } = await supabase.from('feedback').update(payload).eq('id', row.id);
       if (err) throw err;
       onSaved();
@@ -387,7 +462,7 @@ function ItemModal({
           <div className="min-w-0">
             <h3 className="text-sm font-semibold text-slate-900">{row.subject || 'Feedback'}</h3>
             <p className="mt-0.5 text-[10px] text-slate-500">
-              {row.category ?? 'general'} · {new Date(row.created_at).toLocaleString('en-GB')}
+              {categoryLabel(row.category)} · {new Date(row.created_at).toLocaleString('en-GB')}
             </p>
           </div>
           <button onClick={onClose} className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100">
@@ -417,13 +492,13 @@ function ItemModal({
 
           <div>
             <label className="mb-1 block text-[11px] font-semibold text-slate-600">
-              Internal response <span className="font-normal text-slate-400">(optional)</span>
+              Reply to the sender <span className="font-normal text-slate-400">(optional)</span>
             </label>
             <textarea
               value={response}
               onChange={(e) => setResponse(e.target.value)}
               rows={4}
-              placeholder="Notes / action taken. Only staff can see this."
+              placeholder="Your answer. The sender sees it under “Your messages” on their Help & feedback page."
               className="w-full resize-y rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-200"
             />
           </div>

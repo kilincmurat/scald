@@ -58,6 +58,7 @@ const ACCESS_MATRIX: Record<Role, string[]> = {
     '/data-entry',
     '/efct', // read-only
     '/map',
+    '/feedback', // ask for help; replies come from the decision maker / admins
     '/settings',
   ],
   decision_maker: [
@@ -74,7 +75,7 @@ const ACCESS_MATRIX: Record<Role, string[]> = {
     '/settings',
   ],
   researcher: [
-    '/', // aggregate overview across all municipalities
+    '/', // overview of any municipality, picked one at a time (read-only)
     '/map',
     '/settings',
   ],
