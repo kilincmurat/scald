@@ -83,7 +83,6 @@ export function MapView({ municipalities, activeLayer, onSelect, selectedId }: M
         onMove={(e) => setViewState(e.viewState)}
         mapStyle="https://basemaps.cartocdn.com/gl/positron-gl-style/style.json"
         style={{ width: '100%', height: '100%' }}
-        attributionControl={false}
       >
         <NavigationControl position="bottom-right" />
         <ScaleControl position="bottom-left" unit="metric" />

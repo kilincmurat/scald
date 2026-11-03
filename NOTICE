@@ -12,34 +12,35 @@ Third-party components
 ------------------------------------------------------------------------
 This product bundles or depends on the following open-source components.
 Each remains under its own licence; copies of those licences are retained
-by the respective packages under node_modules / the Python environment.
+by the respective packages under node_modules or in the upstream images.
 
-Frontend (apps/web):
+Web application (apps/web):
   next                     MIT        (Vercel, Inc.)
   react, react-dom         MIT        (Meta Platforms, Inc.)
   tailwindcss              MIT
   zustand                  MIT
-  @tanstack/react-query    MIT
-  @radix-ui/*              MIT
-  react-hook-form          MIT
-  @hookform/resolvers      MIT
-  zod                      MIT
-  date-fns                 MIT
-  axios                    MIT
-  clsx, tailwind-merge     MIT
+  @radix-ui/react-dialog   MIT
+  clsx                     MIT
   lucide-react             ISC
   next-intl                MIT
   maplibre-gl              BSD-3-Clause
   react-map-gl             MIT
   echarts, echarts-for-react   Apache-2.0
-  exceljs                  MIT
   xlsx (SheetJS CE)        Apache-2.0
   @supabase/supabase-js    MIT
   @supabase/ssr            MIT
 
-Backend (apps/api, apps/ai-service):
-  fastapi                  MIT
-  (see each service's dependency manifest for the complete list)
+Back end (run from upstream images, not bundled):
+  PostgreSQL               PostgreSQL Licence
+  Supabase Auth (GoTrue)   MIT
+  PostgREST                MIT
+  Other Supabase services  Apache-2.0 / MIT (see the supabase/docker repository)
+  Caddy                    Apache-2.0
 
-Map tiles / styles are served by a self-hostable MapLibre-compatible
-source; no proprietary Mapbox SDK or Mapbox-hosted service is used.
+Map data and tiles:
+  The base map is CARTO's "Positron" style, loaded from basemaps.cartocdn.com
+  and built from OpenStreetMap data. Map data (c) OpenStreetMap contributors,
+  available under the Open Database Licence (ODbL); map tiles (c) CARTO.
+  The attribution is shown on the map itself. No proprietary Mapbox SDK or
+  Mapbox-hosted service is used; a self-hosted MapLibre style can replace
+  the CARTO one by changing a single URL in apps/web/src/components/map/MapView.tsx.
