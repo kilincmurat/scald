@@ -24,6 +24,8 @@ import {
   Globe,
   MapPin,
   ArrowLeft,
+  RotateCcw,
+  UserCog,
 } from 'lucide-react';
 import { clsx } from 'clsx';
 
@@ -35,6 +37,12 @@ const KIND_META: Record<
   entry: { label: 'Entry', icon: ClipboardList, color: 'text-purple-700 bg-purple-100' },
   submission: { label: 'Submitted', icon: Send, color: 'text-amber-700 bg-amber-100' },
   approval: { label: 'Approved', icon: ShieldCheck, color: 'text-emerald-700 bg-emerald-100' },
+  revision: {
+    label: 'Changes requested',
+    icon: RotateCcw,
+    color: 'text-orange-700 bg-orange-100',
+  },
+  admin: { label: 'Admin change', icon: UserCog, color: 'text-slate-700 bg-slate-200' },
   feedback_new: {
     label: 'New feedback',
     icon: MessageSquare,
@@ -62,6 +70,8 @@ const ALL_KINDS: LogEntryKind[] = [
   'entry',
   'submission',
   'approval',
+  'revision',
+  'admin',
   'feedback_new',
   'feedback_response',
 ];
@@ -126,6 +136,8 @@ export function LogsView() {
       entry: 0,
       submission: 0,
       approval: 0,
+      revision: 0,
+      admin: 0,
       feedback_new: 0,
       feedback_response: 0,
       category_complete: 0,
@@ -363,9 +375,12 @@ export function LogsView() {
       </section>
 
       <p className="text-[10px] text-slate-400">
-        Activity is derived from live table rows (entries, submissions, feedback). Login events
-        are recorded in the audit log with the sign-in IP, device and timezone. Location is
-        inferred from the browser timezone (no external geo-IP lookup, for portability).
+        Values entered, changed or removed, submissions, approvals, change requests and
+        administrator changes come from the database audit trail, with who made them and when.
+        Activity from before the audit trail was switched on is reconstructed from current table
+        rows, so values overwritten back then are not shown. Login events record the sign-in IP,
+        device and timezone; location is inferred from the browser timezone (no external geo-IP
+        lookup, for portability).
       </p>
     </div>
   );

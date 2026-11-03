@@ -399,7 +399,8 @@ da onaylanmış yıllara dokunulmaz, `NOTICE` ile raporlanır.
 
 2026-10-04 yedeğiyle prova edildi: 455 → 409 girdi, 46 değer arşivlendi,
 1 kilitli yıl raporlandı — sonuç, dönüşümü doğrudan Cloud'a uygulamakla
-satır satır aynı.
+satır satır aynı. Dönüşüm denetim kaydına (026) kullanıcısız "sistem"
+işlemi olarak yazılır; yönetici kayıt sayfasında görünür.
 
 ```bash
 psql "$DATABASE_URL" -c "SELECT count(*) FROM scald_indicator_entries WHERE indicator_code LIKE 'ES\_SI%';"   # 0
@@ -583,8 +584,8 @@ export DATABASE_URL="postgresql://postgres.<proje-ref>:<sifre>@aws-1-<bölge>.po
 ```
 
 `--baseline`, veritabanının gerçekten 022'de olduğunu kontrol eder;
-değilse reddeder. `psql` kurulu olmayan bir makineden: 023 ve 024'ün
-içeriğini sırayla SQL Editor'a yapıştırmak aynı sonucu verir.
+değilse reddeder. `psql` kurulu olmayan bir makineden: 023, 024, 025 ve
+026'nın içeriğini bu sırayla SQL Editor'a yapıştırmak aynı sonucu verir.
 
 Şema değişikliği yapılacaksa **Studio'nun SQL Editor'ında elle DDL
 çalıştırmayın** — `supabase/migrations/NNN_*.sql` dosyası olarak yazın ve
