@@ -103,16 +103,16 @@ const TOURS: Record<Exclude<Role, 'admin'>, Step[]> = {
     {
       target: '/ai-dss',
       icon: BrainCircuit,
-      tag: 'AI DSS',
-      title: 'AI Decision Support',
-      body: 'AI-generated improvement strategies for your weakest areas, with impact and feasibility.',
+      tag: 'Decision Support',
+      title: 'Decision Support',
+      body: 'Prioritised improvement strategies for your weakest categories, with estimated impact and feasibility.',
     },
     {
       target: '/ai-rt',
       icon: FileBarChart2,
-      tag: 'AI RT',
-      title: 'AI Report Tool',
-      body: 'Generate narrative reports from your data for council briefings and project reporting.',
+      tag: 'Reporting',
+      title: 'Reporting',
+      body: 'Print-ready report templates built from your scores, for council briefings and project reporting.',
     },
     {
       target: '/exports',
@@ -154,8 +154,8 @@ const TOURS: Record<Exclude<Role, 'admin'>, Step[]> = {
       target: '/',
       icon: LayoutDashboard,
       tag: 'Overview',
-      title: 'Aggregate overview',
-      body: 'An aggregated sustainability overview across all participating municipalities.',
+      title: 'Overview',
+      body: 'The sustainability results of any participating municipality — pick one at the top of the page.',
     },
     {
       target: '/map',

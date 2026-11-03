@@ -57,10 +57,10 @@ const LAYERS: { id: 'total' | SetCode; label: string }[] = [
 ];
 
 const DIMENSION_INFO: { code: SetCode; icon: typeof Leaf; blurb: string }[] = [
-  { code: 'ES', icon: Leaf, blurb: 'Green space, energy, water, waste, air quality and climate resilience.' },
-  { code: 'SS', icon: HeartHandshake, blurb: 'Health, education, equity, participation and quality of urban life.' },
-  { code: 'MS', icon: Landmark, blurb: 'Governance, planning, transparency and institutional capacity.' },
-  { code: 'ECS', icon: Coins, blurb: 'Local economy, resource efficiency and financial sustainability.' },
+  { code: 'ES', icon: Leaf, blurb: 'Green infrastructure, energy, climate, land use, water, waste, disaster risk and smart infrastructure.' },
+  { code: 'SS', icon: HeartHandshake, blurb: 'Climate awareness, inclusion of vulnerable groups, risk management and social protection, green livelihoods.' },
+  { code: 'MS', icon: Landmark, blurb: 'Institutional capacity, digital management, participation, climate governance and urban resilience.' },
+  { code: 'ECS', icon: Coins, blurb: 'Adaptation financing, circularity, climate-resilient infrastructure, resource efficiency and green budgeting.' },
 ];
 
 export function ExploreClient() {

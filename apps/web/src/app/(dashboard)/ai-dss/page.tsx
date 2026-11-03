@@ -6,7 +6,7 @@ export default function AiDssPage() {
     <main id="main-content" className="flex-1">
       <Header
         title="Decision Support"
-        subtitle="AI-generated strategies from your weakest indicators"
+        subtitle="Prioritised strategies for your weakest categories"
       />
       <DssView />
     </main>

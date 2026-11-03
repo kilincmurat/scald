@@ -1,7 +1,9 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { MUNICIPALITIES } from '@/lib/pilot-municipalities';
+import { fetchHealthSnapshot, type HealthSnapshot } from '@/lib/admin-monitoring-service';
 import { INDICATORS, TOTAL_INDICATORS } from '@/lib/scald-indicators';
 import {
   Users2,
@@ -17,19 +19,26 @@ import {
 } from 'lucide-react';
 
 export function AdminPanel() {
+  // A live probe (same as System Health), not a fixed "OK".
+  const [health, setHealth] = useState<HealthSnapshot | null>(null);
+  useEffect(() => {
+    void fetchHealthSnapshot().then(setHealth).catch(() => setHealth(null));
+  }, []);
+  const healthy = health ? health.db.reachable && health.auth.authenticated : null;
+
   const tools = [
     {
       href: '/admin/users',
       icon: Users2,
       title: 'Users',
-      desc: 'Invite staff, assign roles, activate/deactivate accounts.',
+      desc: 'Create accounts, assign roles and affiliations, deactivate accounts.',
       bg: 'from-blue-500 to-indigo-600',
     },
     {
       href: '/admin/municipalities',
       icon: Building2,
       title: 'Municipalities',
-      desc: 'Manage municipalities, boundaries and population data.',
+      desc: 'Manage municipalities: location, population, area and visibility.',
       bg: 'from-emerald-500 to-teal-600',
     },
     {
@@ -50,7 +59,7 @@ export function AdminPanel() {
       href: '/admin/weights',
       icon: Scale,
       title: 'Score Weights',
-      desc: 'Tune the relative weight of each set, category and indicator in the final score.',
+      desc: 'Set how much each category counts within its sustainability set (equal by default).',
       bg: 'from-pink-500 to-rose-600',
     },
     {
@@ -64,7 +73,7 @@ export function AdminPanel() {
       href: '/admin/logs',
       icon: ScrollText,
       title: 'Log Management',
-      desc: 'Chronological trace of every entry, submission, approval and feedback across all municipalities.',
+      desc: 'Audit trail: value changes, submissions, approvals, change requests, account and settings changes, sign-ins.',
       bg: 'from-orange-500 to-amber-600',
     },
   ];
@@ -94,8 +103,14 @@ export function AdminPanel() {
         <StatCard
           icon={<Activity className="h-3.5 w-3.5 text-orange-500" />}
           label="System Status"
-          value="OK"
-          sub="All services healthy"
+          value={healthy === null ? '…' : healthy ? 'OK' : 'Check'}
+          sub={
+            healthy === null
+              ? 'Checking database and session'
+              : healthy
+                ? `Database reachable${health?.db.responseMs != null ? ` · ${health.db.responseMs} ms` : ''}`
+                : 'See System Health'
+          }
         />
       </section>
 

@@ -6,7 +6,7 @@ export default function AdminWeightsPage() {
     <main id="main-content" className="flex-1">
       <Header
         title="Score Weights"
-        subtitle="Tune the relative influence of sets, categories, and indicators"
+        subtitle="How much each category counts within its sustainability set"
       />
       <WeightsAdmin />
     </main>

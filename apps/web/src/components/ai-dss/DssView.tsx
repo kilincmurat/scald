@@ -21,7 +21,6 @@ import {
   Sparkles,
   Filter,
   ClipboardList,
-  RefreshCw,
   Target,
   Clock,
   Wallet,
@@ -248,7 +247,6 @@ export function DssView() {
 
   const [setFilter, setSetFilter] = useState<'all' | SetCode>('all');
   const [priorityFilter, setPriorityFilter] = useState<'all' | Strategy['priority']>('all');
-  const [regenerating, setRegenerating] = useState(false);
 
   const filtered = strategies.filter(
     (s) =>
@@ -257,11 +255,6 @@ export function DssView() {
   );
 
   const overallEntered = Object.keys(entries).length;
-
-  const handleRegenerate = () => {
-    setRegenerating(true);
-    setTimeout(() => setRegenerating(false), 1200);
-  };
 
   if (!mounted) {
     return (
@@ -371,14 +364,6 @@ export function DssView() {
             ))}
           </div>
         </div>
-        <button
-          onClick={handleRegenerate}
-          disabled={regenerating}
-          className="inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 px-3 py-2 text-xs font-semibold text-white shadow-sm transition hover:opacity-90 disabled:opacity-60"
-        >
-          <RefreshCw className={clsx('h-3.5 w-3.5', regenerating && 'animate-spin')} />
-          {regenerating ? 'Analysing…' : 'Regenerate'}
-        </button>
       </section>
 
       {/* Strategy list */}

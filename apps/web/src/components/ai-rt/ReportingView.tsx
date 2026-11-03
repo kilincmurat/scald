@@ -35,7 +35,6 @@ type Template = {
   title: string;
   description: string;
   minCoveragePct: number;
-  pages: string;
   format: string;
   icon: React.ComponentType<{ className?: string }>;
   color: string;
@@ -47,49 +46,45 @@ const TEMPLATES: Template[] = [
     id: 'quarterly',
     title: 'Quarterly Progress Report',
     description:
-      'Quick snapshot of current sustainability posture — set-level scores, top weak categories and 90-day recommendations.',
+      'Snapshot of the current position — set scores, the strongest and weakest categories, and data coverage.',
     minCoveragePct: 25,
-    pages: '10–14',
-    format: 'PDF',
+    format: 'PDF (print)',
     icon: CalendarDays,
     color: 'text-blue-600 bg-blue-50',
-    includes: ['Set scores', 'Top 5 categories', 'Data quality assessment'],
+    includes: ['Set scores', 'Top & weak 5 categories', 'Data coverage'],
   },
   {
     id: 'annual',
     title: 'Annual Ecological Performance Report',
     description:
-      'Comprehensive annual review across all 24 categories, radar charts, target vs. current analysis and trend narrative.',
+      'Annual review across all 24 categories with charts, a target-vs-current comparison and data coverage.',
     minCoveragePct: 60,
-    pages: '24–32',
-    format: 'PDF / DOCX',
+    format: 'PDF (print)',
     icon: FileBarChart2,
     color: 'text-emerald-600 bg-emerald-50',
-    includes: ['All 24 categories', 'Ecological footprint (gHa)', 'Weak/strong analysis'],
+    includes: ['All 24 categories', 'Ecological footprint (gha)', 'Target vs current'],
   },
   {
     id: 'strategic',
     title: 'Strategic Climate Adaptation Plan',
     description:
-      'Long-form strategic plan document with prioritised strategies, cost/timeframe analysis and 2030 targets.',
+      'Planning document: full assessment, the 8 strongest and weakest categories, target vs current and an indicative path to 2030.',
     minCoveragePct: 90,
-    pages: '48–60',
-    format: 'PDF / DOCX / PPTX',
+    format: 'PDF (print)',
     icon: FileSearch,
     color: 'text-purple-600 bg-purple-50',
-    includes: ['Full strategy list', 'Set breakdowns', 'Roadmap 2025–2030'],
+    includes: ['Set breakdowns', 'Top & weak 8 categories', 'Indicative path to 2030'],
   },
   {
     id: 'footprint',
     title: 'Ecological Footprint Summary',
     description:
-      'Focused report explaining how the footprint value is derived from all 4 sustainability sets, with radar, gauge and set/category breakdown.',
+      'How the footprint estimate is derived from the four sustainability sets, with gauge, radar and category contributions.',
     minCoveragePct: 40,
-    pages: '16–22',
-    format: 'PDF',
+    format: 'PDF (print)',
     icon: Leaf,
     color: 'text-teal-600 bg-teal-50',
-    includes: ['4-set contribution', 'gHa/capita mapping', 'Improvement pathway'],
+    includes: ['4-set contribution', 'gha/capita estimate', 'Category contributions'],
   },
 ];
 
@@ -342,8 +337,6 @@ function TemplateCard({
             {tpl.description}
           </p>
           <div className="mt-2 flex flex-wrap items-center gap-2 text-[10px] text-slate-400">
-            <span>{tpl.pages} pages</span>
-            <span>·</span>
             <span>{tpl.format}</span>
             <span>·</span>
             <span
@@ -543,9 +536,8 @@ function PreviewModal({
               <div className="flex items-start gap-2">
                 <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
                 <p className="text-xs leading-relaxed text-emerald-800">
-                  This preview shows a subset of the report. The full document includes detailed
-                  indicator tables, methodology, benchmarking against EU and national averages, and
-                  a 2025–2030 roadmap.
+                  This preview shows a subset of the report. Open the full report to see every
+                  section, then print it or save it as PDF from the browser.
                 </p>
               </div>
             </div>

@@ -61,10 +61,10 @@ const SET_STATS = SET_ORDER.map((code) => {
 });
 
 const SET_DESC: Record<SetCode, string> = {
-  ES: 'Green infrastructure, energy, water, waste, air quality and climate resilience.',
-  SS: 'Health, education, equity, participation and quality of urban life.',
-  MS: 'Governance, planning, transparency and institutional capacity.',
-  ECS: 'Local economy, resource efficiency and financial sustainability.',
+  ES: 'Green infrastructure, energy, climate, land use, water, waste, disaster risk and smart infrastructure.',
+  SS: 'Climate awareness, inclusion of vulnerable groups, risk management and social protection, green livelihoods.',
+  MS: 'Institutional capacity, digital management, participation, climate governance and urban resilience.',
+  ECS: 'Adaptation financing, circularity, climate-resilient infrastructure, resource efficiency and green budgeting.',
 };
 
 // ── Static content ───────────────────────────────────────────────────────────
@@ -73,24 +73,24 @@ const WORKFLOW: Step[] = [
   { icon: ClipboardList, title: 'Enter data', actor: 'Data Entry', note: 'Fill the 0–5 scored indicators for each category.' },
   { icon: Send, title: 'Submit', actor: 'Data Entry', note: 'Confirm accuracy and submit the year for review.' },
   { icon: ShieldCheck, title: 'Review & approve', actor: 'Decision Maker', note: 'Check the data and declaration, then approve.' },
-  { icon: Calculator, title: 'Calculate', actor: 'System', note: 'Ecological footprint is computed — only when approved.' },
+  { icon: Calculator, title: 'Calculate', actor: 'System', note: 'Scores and the footprint estimate open once the year is approved.' },
   { icon: FileBarChart2, title: 'Publish', actor: 'Decision Maker', note: 'Reports, exports and the map read from the results.' },
 ];
 
 type Level = { level: string; title: string; formula: string };
 const SCORING: Level[] = [
   { level: '1', title: 'Indicator score (0–5)', formula: 'Auto-scored from the raw value against the indicator thresholds.' },
-  { level: '2', title: 'Category score', formula: 'Weighted average of the indicator scores in the category.' },
-  { level: '3', title: 'Set score', formula: 'Weighted average of the category scores in the dimension.' },
-  { level: '4', title: 'Overall footprint', formula: 'Weighted average of the four dimension scores.' },
+  { level: '2', title: 'Category score (0–100)', formula: 'Average of the indicator scores entered in the category.' },
+  { level: '3', title: 'Set score (0–100)', formula: 'Weighted average of its category scores — category weights are set by the admin, equal by default.' },
+  { level: '4', title: 'Overall score & footprint', formula: 'Average of the four set scores (25 % each); the ecological footprint is estimated from it.' },
 ];
 
 type RoleInfo = { role: Role; blurb: string; screens: string };
 const ROLES: RoleInfo[] = [
   { role: 'admin', blurb: 'Manages users, municipalities, indicators, weights and thresholds — system-wide oversight.', screens: 'Admin Panel · System Map · every module' },
-  { role: 'data_entry', blurb: "Enters and submits the municipality's indicator data for the year.", screens: 'Data Entry · EFCT (read) · Map' },
-  { role: 'decision_maker', blurb: 'Reviews and approves submissions, reads analytics, exports reports, answers feedback.', screens: 'Overview · EFCT · AI-DSS · AI-RT · Exports · Feedback' },
-  { role: 'researcher', blurb: 'Read-only access to scores across all municipalities for cross-city research.', screens: 'Overview · Map' },
+  { role: 'data_entry', blurb: "Enters and submits the municipality's indicator data for the year.", screens: 'Data Entry · Guide · EFCT (read) · Map · Help & feedback' },
+  { role: 'decision_maker', blurb: 'Reviews and approves submissions, reads analytics, exports reports, answers feedback.', screens: 'Overview · EFCT · Decision Support · Reporting · Exports · Feedback' },
+  { role: 'researcher', blurb: 'Read-only access to the scores of every municipality, one at a time, for cross-city research.', screens: 'Overview · Map' },
 ];
 
 type Module = { icon: LucideIcon; name: string; note: string };
@@ -98,19 +98,19 @@ const MODULES: Module[] = [
   { icon: LayoutDashboard, name: 'Overview', note: 'Municipality dashboard & scores' },
   { icon: ClipboardList, name: 'Data Entry', note: 'Indicator data collection' },
   { icon: Leaf, name: 'EFCT', note: 'Ecological footprint calculation' },
-  { icon: BrainCircuit, name: 'AI-DSS', note: 'AI strategy recommendations' },
-  { icon: FileBarChart2, name: 'AI-RT', note: 'AI-generated reports' },
+  { icon: BrainCircuit, name: 'Decision Support', note: 'Rule-based strategy suggestions' },
+  { icon: FileBarChart2, name: 'Reporting', note: 'Report templates (print / PDF)' },
   { icon: MapIcon, name: 'Map', note: 'Geographic visualisation' },
   { icon: Download, name: 'Exports', note: 'Official reports & Excel' },
-  { icon: MessageSquare, name: 'Feedback', note: 'Municipal feedback inbox' },
+  { icon: MessageSquare, name: 'Feedback', note: 'Help requests & feedback inbox' },
   { icon: ShieldCheck, name: 'Admin Panel', note: 'Users, indicators, weights' },
 ];
 
 type ArchLayer = { icon: LucideIcon; label: string; detail: string };
 const ARCH: ArchLayer[] = [
   { icon: Monitor, label: 'Interface', detail: 'Next.js + React web application (English)' },
-  { icon: Database, label: 'Platform', detail: 'Supabase — Auth + PostgreSQL (PostGIS · pgvector) · per-municipality Row-Level Security' },
-  { icon: Sparkles, label: 'Intelligence', detail: 'AI for strategy recommendations and report generation' },
+  { icon: Database, label: 'Platform', detail: 'Supabase — PostgreSQL with per-municipality row-level security · Auth · REST API · audit trail' },
+  { icon: Sparkles, label: 'Decision support', detail: 'Rule-based strategy suggestions and report templates, computed from the approved scores' },
 ];
 
 // ── Section shell ────────────────────────────────────────────────────────────
@@ -161,9 +161,9 @@ export function SystemMap() {
           </div>
         </div>
         <p className="mt-4 max-w-2xl text-sm leading-relaxed text-slate-300">
-          SCALD helps municipalities measure their ecological footprint from real indicator data,
-          turn it into a 0–5 sustainability score, and act on it with AI-supported strategies and
-          reports — across four sustainability dimensions.
+          SCALD helps municipalities measure their sustainability from real indicator data: every
+          value gets a 0–5 score, rolled up into a 0–100 overall score and a footprint estimate, and
+          weak areas turn into prioritised strategies and reports — across four sustainability dimensions.
         </p>
 
         <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-5">

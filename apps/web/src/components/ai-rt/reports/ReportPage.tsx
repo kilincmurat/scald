@@ -46,7 +46,7 @@ const TITLES: Record<ReportTemplateId, { title: string; subtitle: string }> = {
   strategic: {
     title: 'Strategic Climate Adaptation Plan',
     subtitle:
-      'Long-form strategic document covering full assessment, 2025–2030 roadmap and target-vs-current analysis.',
+      'Planning document covering the full assessment, target-vs-current analysis and an indicative path to 2030.',
   },
   footprint: {
     title: 'Ecological Footprint Summary',
