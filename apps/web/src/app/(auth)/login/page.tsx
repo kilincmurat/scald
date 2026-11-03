@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -12,17 +12,17 @@ const features = [
   {
     icon: Leaf,
     title: 'Ecological Footprint',
-    desc: 'Measure your municipality’s environmental performance with 15 core indicators',
+    desc: 'Score your municipality on 152 indicators across environmental, social, managerial and economic sustainability',
   },
   {
     icon: Cpu,
-    title: 'AI Decision Support',
-    desc: 'Generate 30+ strategies with AI and improve your climate adaptation score',
+    title: 'Decision Support',
+    desc: 'Get prioritised improvement strategies for your weakest categories',
   },
   {
     icon: BarChart3,
-    title: 'Automated Reporting',
-    desc: 'Create transparent, data-driven strategic reports with a single click',
+    title: 'Reports & Exports',
+    desc: 'Print-ready reports and an Excel export of every indicator and score',
   },
   {
     icon: Globe2,
@@ -31,6 +31,8 @@ const features = [
   },
 ];
 
+const DEACTIVATED = 'This account has been deactivated. Contact your SCALD administrator.';
+
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -38,6 +40,13 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+
+  // The middleware sends deactivated accounts here after signing them out.
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get('reason') === 'deactivated') {
+      setError(DEACTIVATED);
+    }
+  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,7 +60,9 @@ export default function LoginPage() {
       setError(
         signInError.message === 'Invalid login credentials'
           ? 'Incorrect email or password.'
-          : 'An error occurred while signing in.'
+          : /banned/i.test(signInError.message)
+            ? DEACTIVATED
+            : 'An error occurred while signing in.'
       );
       setLoading(false);
       return;

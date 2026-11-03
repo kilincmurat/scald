@@ -10,6 +10,7 @@ import {
 } from '@/lib/municipalities-service';
 import { fetchUniversities, type University } from '@/lib/universities-service';
 import { ROLE_LABELS, ROLE_BADGE_COLOR, type Role } from '@/lib/roles';
+import { useProfile } from '@/hooks/useProfile';
 import {
   ArrowLeft,
   Search,
@@ -54,6 +55,7 @@ export function UsersAdmin() {
   const [editing, setEditing] = useState<ProfileRow | null>(null);
   const [inviting, setInviting] = useState(false);
   const [deleting, setDeleting] = useState<ProfileRow | null>(null);
+  const { profile: me } = useProfile();
 
   const load = async () => {
     setLoading(true);
@@ -251,16 +253,18 @@ export function UsersAdmin() {
                                 disabled
                               </span>
                             )}
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setDeleting(r);
-                              }}
-                              className="rounded-lg p-1.5 text-slate-400 transition hover:bg-red-50 hover:text-red-600"
-                              title="Delete user"
-                            >
-                              <Trash2 className="h-3.5 w-3.5" />
-                            </button>
+                            {r.id !== me?.id && (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setDeleting(r);
+                                }}
+                                className="rounded-lg p-1.5 text-slate-400 transition hover:bg-red-50 hover:text-red-600"
+                                title="Delete user"
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </button>
+                            )}
                           </div>
                         </td>
                       </tr>
@@ -614,6 +618,9 @@ function EditUserModal({
   const [isActive, setIsActive] = useState(row.is_active);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // An administrator cannot lock themselves out (the server refuses it too).
+  const { profile: me } = useProfile();
+  const isSelf = me?.id === row.id;
 
   // Active institutions, plus the currently-assigned one even if it went inactive.
   const editableUniversities = useMemo(
@@ -629,18 +636,22 @@ function EditUserModal({
     setBusy(true);
     setError(null);
     try {
-      const supabase = client();
-      const { error: err } = await supabase
-        .from('profiles')
-        .update({
+      // Through the server: deactivation must also block sign-in in the
+      // auth server, which needs the service role.
+      const res = await fetch('/api/admin/users', {
+        method: 'PATCH',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          id: row.id,
           role,
           municipality_id: municipalityId || null,
           university_id: universityId || null,
           full_name: fullName.trim() || null,
           is_active: isActive,
-        })
-        .eq('id', row.id);
-      if (err) throw err;
+        }),
+      });
+      const json = (await res.json().catch(() => ({}))) as { error?: string };
+      if (!res.ok) throw new Error(json.error ?? `Save failed (${res.status})`);
       onSaved();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Save failed');
@@ -678,7 +689,9 @@ function EditUserModal({
             <select
               value={role}
               onChange={(e) => setRole(e.target.value as Role)}
-              className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-200"
+              disabled={isSelf}
+              title={isSelf ? 'You cannot change your own role' : undefined}
+              className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-200 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {(['admin', 'decision_maker', 'data_entry', 'researcher'] as Role[]).map((r) => (
                 <option key={r} value={r}>
@@ -753,9 +766,15 @@ function EditUserModal({
               type="checkbox"
               checked={isActive}
               onChange={(e) => setIsActive(e.target.checked)}
-              className="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+              disabled={isSelf}
+              className="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 disabled:cursor-not-allowed disabled:opacity-60"
             />
           </label>
+          <p className="-mt-2 text-[10px] text-slate-400">
+            {isSelf
+              ? 'This is your own account — it cannot be deactivated here.'
+              : 'A deactivated account can no longer sign in and loses access to all data.'}
+          </p>
 
           {error && (
             <div className="flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">

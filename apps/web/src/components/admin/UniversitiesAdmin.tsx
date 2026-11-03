@@ -135,7 +135,8 @@ export function UniversitiesAdmin() {
                   <div className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500">
                     <Globe className="h-3 w-3 text-slate-500" /> Website
                   </div>
-                  {u.website ? (
+                  {/* Only http(s) links: a stored javascript: URL would run on click. */}
+                  {u.website && /^https?:\/\//i.test(u.website) ? (
                     <a
                       href={u.website}
                       target="_blank"
@@ -144,6 +145,8 @@ export function UniversitiesAdmin() {
                     >
                       {u.website.replace(/^https?:\/\//, '')}
                     </a>
+                  ) : u.website ? (
+                    <p className="mt-1 truncate text-xs text-slate-600">{u.website}</p>
                   ) : (
                     <p className="mt-1 text-xs text-slate-400">—</p>
                   )}

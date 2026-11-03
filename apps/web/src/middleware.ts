@@ -67,10 +67,20 @@ export async function middleware(request: NextRequest) {
   try {
     const { data } = await supabase
       .from('profiles')
-      .select('role')
+      .select('role, is_active')
       .eq('id', user.id)
       .maybeSingle();
-    role = normaliseRole((data as { role?: string } | null)?.role ?? null);
+    const profile = data as { role?: string; is_active?: boolean } | null;
+    // A deactivated account keeps a valid session until it expires; the
+    // database already refuses it everything (migration 025), so end the
+    // session here and say why instead of showing empty screens.
+    if (profile?.is_active === false) {
+      await supabase.auth.signOut();
+      const to = NextResponse.redirect(new URL('/login?reason=deactivated', request.url));
+      response.cookies.getAll().forEach((cookie) => to.cookies.set(cookie));
+      return to;
+    }
+    role = normaliseRole(profile?.role ?? null);
   } catch {
     // Fall back to default role; the RoleGate client wrapper will re-check.
   }
